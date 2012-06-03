@@ -20,6 +20,7 @@
 import pegl
 from pegl.display import Display, init
 from pegl.config import get_configs
+from pegl.attribs import Attribs, ClientAPIs, CBufferTypes
 
 d = Display()
 print('Initialised EGL version {0[0]}.{0[1]} ({1} {2}).'.format(init(d),
@@ -28,3 +29,13 @@ print('Initialised EGL version {0[0]}.{0[1]} ({1} {2}).'.format(init(d),
 
 c = get_configs(d)
 print('There are', len(c), 'configurations available.')
+reqs = {Attribs.RENDERABLE_TYPE: ClientAPIs(vg=1)}
+c_vg = get_configs(d, reqs)
+print(len(c_vg), 'configurations support OpenVG.')
+
+reqs[Attribs.RENDERABLE_TYPE].gl_es2 = 1
+c_vg_es = get_configs(d, reqs)
+print(len(c_vg_es), 'configurations support OpenVG and OpenGL ES 2.x.')
+
+c_lum = get_configs(d, {Attribs.COLOR_BUFFER_TYPE: CBufferTypes.luminance})
+print(len(c_lum), 'configurations support a luminance colour buffer.')

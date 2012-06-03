@@ -24,6 +24,7 @@ from ctypes import POINTER, c_int, c_void_p
 
 # Local imports.
 from . import egl, error_check
+from .attribs import AttribList
 
 MAX_CONFIGS = 256 # Arbitrary!
 int_p = POINTER(c_int)
@@ -38,6 +39,8 @@ def get_configs(display, attribs=None):
         error_check(egl.eglGetConfigs(display, configs, MAX_CONFIGS,
                                       actual_count))
     else:
+        if type(attribs) is not AttribList:
+            attribs = AttribList(attribs)._as_parameter_
         error_check(egl.eglChooseConfig(display, attribs, configs, MAX_CONFIGS,
                                         actual_count))
 
