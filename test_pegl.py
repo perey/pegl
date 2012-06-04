@@ -119,7 +119,6 @@ bit_alloc = {'RGB': 'Red/green/blue/alpha bits are allocated '
              'luminance': 'The buffer has {luminance} luminance and '
                           '{alpha_size} alpha bits.'}
 print(bit_alloc[cbuf['type']].format(**cbuf))
-print('The alpha mask has', cbuf['alpha_mask_size'], 'bits.')
 print('The transparency type is {0!s}, with RGB values '
       '({1[r]},{1[g]},{1[b]}).'.format(*conf.transparent_pixels))
 print('The configuration comes with',

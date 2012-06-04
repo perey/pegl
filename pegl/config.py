@@ -183,8 +183,7 @@ class Config:
         '''Get the color buffer attributes of this configuration.'''
         btype = self._attr(Attribs.COLOR_BUFFER_TYPE)
         buffer_info = {'size': self._attr(Attribs.BUFFER_SIZE),
-                       'alpha_size': self._attr(Attribs.ALPHA_SIZE),
-                       'alpha_mask_size': self._attr(Attribs.ALPHA_MASK_SIZE)}
+                       'alpha_size': self._attr(Attribs.ALPHA_SIZE)}
         if btype == CBufferTypes.rgb:
             buffer_info['type'] = 'RGB'
             for key, attr in (('r', Attribs.RED_SIZE),

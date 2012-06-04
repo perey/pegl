@@ -195,7 +195,7 @@ class Attribs:
                ALPHA_SIZE: Details('Number of alpha bits in the color buffer',
                                    c_int, False, 0),
                ALPHA_MASK_SIZE: Details('Number of alpha mask bits in the '
-                                        'color buffer', c_int, False, 0),
+                                        'mask buffer', c_int, False, 0),
                LUMINANCE_SIZE: Details('Number of luminance bits in the color '
                                  'buffer', c_int, False, 0),
 
