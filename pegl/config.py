@@ -24,7 +24,7 @@ from ctypes import POINTER, c_int, c_void_p
 
 # Local imports.
 from . import egl, error_check
-from .attribs import AttribList
+from .attribs import Attribs, AttribList, CBufferTypes
 
 MAX_CONFIGS = 256 # Arbitrary!
 int_p = POINTER(c_int)
@@ -53,9 +53,38 @@ class Config:
         self.chandle = chandle
         self.display = display
 
+    @property
+    def _as_parameter_(self):
+        return self.chandle
+
     def _attr(self, attr):
         '''Get the value of a configuration attribute.'''
         result = int_p()
+        result.contents = c_int(0)
 
-        errorcheck(egl.eglGetConfigAttrib(self.display, self, attr, result))
+        error_check(egl.eglGetConfigAttrib(self.display, self, attr, result))
         return result[0]
+
+    @property
+    def config_id(self):
+        return self._attr(Attribs.CONFIG_ID)
+
+    @property
+    def color_buffer(self):
+        btype = self._attr(Attribs.COLOR_BUFFER_TYPE)
+        buffer_info = {'size': self._attr(Attribs.BUFFER_SIZE),
+                       'alpha_size': self._attr(Attribs.ALPHA_SIZE),
+                       'alpha_mask_size': self._attr(Attribs.ALPHA_MASK_SIZE)}
+        if btype == CBufferTypes.rgb:
+            buffer_info['type'] = 'RGB'
+            for key, attr in (('r', Attribs.RED_SIZE),
+                              ('g', Attribs.GREEN_SIZE),
+                              ('b', Attribs.BLUE_SIZE)):
+                buffer_info[key] = self._attr(attr)
+        elif btype == CBufferTypes.luminance:
+            buffer_info['type'] = 'luminance'
+            buffer_info['luminance'] = self._attr(Attribs.LUMINANCE_SIZE)
+        else:
+            buffer_info['type'] = 'unknown'
+
+        return buffer_info

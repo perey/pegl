@@ -24,8 +24,8 @@ from pegl.attribs import Attribs, ClientAPIs, CBufferTypes
 
 d = Display()
 print('Initialised EGL version {0[0]}.{0[1]} ({1} {2}).'.format(init(d),
-                                                                 d.vendor,
-                                                                 d.version))
+                                                                d.vendor,
+                                                                d.version))
 
 c = get_configs(d)
 print('There are', len(c), 'configurations available.')
@@ -39,3 +39,13 @@ print(len(c_vg_es), 'configurations support OpenVG and OpenGL ES 2.x.')
 
 c_lum = get_configs(d, {Attribs.COLOR_BUFFER_TYPE: CBufferTypes.luminance})
 print(len(c_lum), 'configurations support a luminance colour buffer.')
+
+conf = c_vg_es[0]
+print('The first OpenVG/OpenGL ES 2.x config (ID #{}) has this colour '
+      'buffer:'.format(conf.config_id))
+print(conf.color_buffer)
+
+reqs[Attribs.BUFFER_SIZE] = 32
+c_vg_es_32 = get_configs(d, reqs)
+print(len(c_vg_es),
+      'configurations support OpenVG, OpenGL ES 2.x, and 32-bit colour.')
