@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''EGL 1.4 Python wrapper.'''
+'''PEGL: A Python wrapper for the EGL 1.4 API.'''
 
 # Copyright © 2012 Tim Pederick.
 #
@@ -19,7 +19,8 @@
 
 __author__ = 'Tim Pederick'
 __version__ = '0.0+1.4' # The +N.n part is the EGL API version wrapped.
-__all__ = ['attribs', 'config', 'display', 'egl', 'error_check', 'sync',
+__all__ = ['attribs', 'config', 'display', 'sync',
+           'egl', 'error_check', 'make_int_p',
            'EGLError', 'NotInitializedError', 'BadAccessError',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',
            'BadContextError', 'BadCurrentSurfaceError', 'BadDisplayError',
@@ -29,8 +30,9 @@ __all__ = ['attribs', 'config', 'display', 'egl', 'error_check', 'sync',
 # Standard library imports.
 from ctypes import CDLL, POINTER, c_char_p, c_int, c_uint, c_void_p
 
-# Foreign library imports and definitions.
-egl = CDLL('libEGL.so')
+# Foreign library imports and type definitions.
+egl = CDLL('libEGL.so') # TODO: Cross-platform loading.
+
 ebool = enum = c_uint
 config = context = surface = display = c_void_p
 n_display = n_pixmap = n_window = c_void_p
@@ -38,6 +40,19 @@ client_buffer = c_void_p
 attr_list = int_p = POINTER(c_int)
 configs = POINTER(config)
 
+def make_int_p(ival=0):
+    '''Create and initialise a pointer to an integer.
+
+    Keyword arguments:
+        ival -- The initial value of the referenced integer. The default
+            is 0.
+
+    '''
+    p = int_p()
+    p.contents = c_int(ival)
+    return p
+
+# Set argument and return types for all foreign functions.
 egl.eglGetError.argtypes = ()
 
 egl.eglGetDisplay.argtypes = (n_display,)
@@ -137,7 +152,7 @@ egl.eglBindTexImage.restype = ebool
 egl.eglReleaseTexImage.argtypes = (display, surface, c_int)
 egl.eglReleaseTexImage.restype = ebool
 
-# Exceptions for EGL errors.
+# Exceptions for handling EGL errors.
 class EGLError(Exception):
     '''Base class for all EGL errors.'''
     pass
@@ -183,16 +198,27 @@ class BadSurfaceError(EGLError):
 class ContextLostError(EGLError):
     '''Context has been lost due to a power management event.'''
     pass
-error_codes = {0x3000: None, 0x3001: NotInitializedError,
-               0x3002: BadAccessError, 0x3003: BadAllocError,
-               0x3004: BadAttributeError, 0x3005: BadConfigError,
-               0x3006: BadContextError, 0x3007: BadCurrentSurfaceError,
-               0x3008: BadDisplayError, 0x3009: BadMatchError,
-               0x300A: BadNativePixmapError, 0x300B: BadNativeWindowError,
-               0x300C: BadParameterError, 0x300D: BadSurfaceError,
-               0x300E: ContextLostError}
+error_codes = {0x3000: None, # Success code.
+               0x3001: NotInitializedError, 0x3002: BadAccessError,
+               0x3003: BadAllocError, 0x3004: BadAttributeError,
+               0x3005: BadConfigError, 0x3006: BadContextError,
+               0x3007: BadCurrentSurfaceError, 0x3008: BadDisplayError,
+               0x3009: BadMatchError, 0x300A: BadNativePixmapError,
+               0x300B: BadNativeWindowError, 0x300C: BadParameterError,
+               0x300D: BadSurfaceError, 0x300E: ContextLostError}
 def error_check(fn):
-    '''Check the EGL error trap after a function is called.'''
+    '''Check the EGL error trap after a function is called.
+
+    This can be used directly on a foreign function to be called, or as
+    a decorator on a Python function that calls a foreign function.
+
+    Keyword arguments:
+        fn -- The function to wrap with EGL error checking.
+
+    Returns:
+        A function object with error checking included.
+
+    '''
     def wrapped_fn(*args, **kwargs):
         result = fn(*args, **kwargs)
         errcode = error_codes.get(egl.eglGetError(), EGLError)

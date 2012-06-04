@@ -22,18 +22,41 @@
 # Local imports.
 from . import egl, error_check
 
+CORE_NATIVE_ENGINE = 0x305B
+
 @error_check
 def release_thread():
+    '''Release any implicit EGL resources attached to this thread.'''
     return bool(egl.eglReleaseThread())
 
 @error_check
 def wait_client():
+    '''Instruct native rendering to wait on any client API rendering.
+
+    This is an EGL-level instruction equivalent to API-specific calls
+    such as glFinish().
+
+    '''
     return bool(egl.eglWaitClient())
 
 @error_check
 def wait_GL():
+    '''Instruct native rendering to wait on any OpenGL rendering.
+
+    This is provided for backwards compatibility. New code should use
+    wait_client() after binding the OpenGL API.
+
+    '''
     return bool(egl.eglWaitGL())
 
 @error_check
-def wait_native():
-    return bool(egl.eglWaitNative())
+def wait_native(engine=CORE_NATIVE_ENGINE):
+    '''Instruct client API rendering to wait on any native rendering.
+
+    Keyword arguments:
+        engine -- An implementation-defined reference to a native
+            rendering engine. If omitted, the reference points to the
+            EGL core native engine.
+
+    '''
+    return bool(egl.eglWaitNative(engine))

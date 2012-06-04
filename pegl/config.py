@@ -20,47 +20,85 @@
 # along with PEGL. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
-from ctypes import POINTER, c_int, c_void_p
+from ctypes import c_void_p
 
 # Local imports.
-from . import egl, error_check
+from . import egl, error_check, make_int_p
 from .attribs import Attribs, AttribList, CBufferTypes
 
-MAX_CONFIGS = 256 # Arbitrary!
-int_p = POINTER(c_int)
+MAX_CONFIGS = 256 # Arbitrary! But it's sufficient for MY computer...
 
 def get_configs(display, attribs=None):
-    '''Get supported configurations for a given display.'''
+    '''Get supported configurations for a given display.
+
+    Keyword arguments:
+        display -- The EGL display for which to check configurations.
+        attribs -- An optional mapping (a dict or AttribList) that lists
+            attributes required of any configurations. The EGL standard
+            specifies which attributes must match exactly, which match
+            "at least" the given value, and which match at least the
+            given flags in a bit mask.
+
+    '''
     configs = (c_void_p * MAX_CONFIGS)()
-    actual_count = int_p()
-    actual_count.contents = c_int(0)
+    actual_count = make_int_p()
 
     if attribs is None:
+        # Get all configurations.
         error_check(egl.eglGetConfigs(display, configs, MAX_CONFIGS,
                                       actual_count))
     else:
+        # Get configurations that match the required attributes.
         if type(attribs) is not AttribList:
+            # FIXME: Why do I need to get this _as_parameter_?
+            # Isn't ctypes supposed to do that for itself? But
+            # when I leave it off, it complains that I gave it
+            # "LP_c_int instance instead of c_int_Array_3", so
+            # there's clearly a difference when I do it myself.
             attribs = AttribList(attribs)._as_parameter_
         error_check(egl.eglChooseConfig(display, attribs, configs, MAX_CONFIGS,
                                         actual_count))
 
     return tuple(Config(cfg, display) for cfg in configs[:actual_count[0]])
 
+
 class Config:
-    '''A set of EGL configuration options.'''
+    '''A set of EGL configuration options.
+
+    Instance attributes:
+        chandle -- The foreign object handle for this configuration.
+        display -- The EGL display to which this configuration belongs.
+        config_id -- The unique identifier for this configuration.
+        color_buffer -- A dict of the color buffer type and bit sizes.
+
+    '''
     def __init__(self, chandle, display):
-        '''Initialise the configuration.'''
+        '''Initialise the configuration.
+
+        Keyword arguments:
+            chandle -- As the instance attribute. This is treated as an
+                opaque value and should be passed unchanged from the
+                foreign function that provided this configuration.
+            display -- As the instance attribute.
+
+        '''
         self.chandle = chandle
         self.display = display
 
     @property
     def _as_parameter_(self):
+        '''Get the config reference for use by foreign functions.'''
         return self.chandle
 
     def _attr(self, attr):
-        '''Get the value of a configuration attribute.'''
-        result = int_p()
-        result.contents = c_int(0)
+        '''Get the value of a configuration attribute.
+
+        Keyword arguments:
+            attr -- The value identifying the desired attribute. Best
+                supplied as a symbolic constant from Attribs.
+
+        '''
+        result = make_int_p()
 
         error_check(egl.eglGetConfigAttrib(self.display, self, attr, result))
         return result[0]

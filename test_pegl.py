@@ -22,13 +22,21 @@ from pegl.display import Display
 from pegl.config import get_configs
 from pegl.attribs import Attribs, ClientAPIs, CBufferTypes
 
+# TODO: Obsolete this file by writing real unit tests!
+
+# 1. Initialising the EGL display.
 d = Display(delay_init=True)
 print('Initialised EGL version {0[0]}.{0[1]} ({1} {2}).'.format(d.initialize(),
                                                                 d.vendor,
                                                                 d.version))
+print('This implementation supports "{}" APIs and "{}" '
+      'extensions.'.format(d.client_apis, d.extensions))
 
+# 2. Getting available configurations.
 c = get_configs(d)
 print('There are', len(c), 'configurations available.')
+
+# 2a. Paring down the configurations by selecting desired attributes.
 reqs = {Attribs.RENDERABLE_TYPE: ClientAPIs(vg=1)}
 c_vg = get_configs(d, reqs)
 print(len(c_vg), 'configurations support OpenVG.')
@@ -37,15 +45,16 @@ reqs[Attribs.RENDERABLE_TYPE].gl_es2 = 1
 c_vg_es = get_configs(d, reqs)
 print(len(c_vg_es), 'configurations support OpenVG and OpenGL ES 2.x.')
 
-c_lum = get_configs(d, {Attribs.COLOR_BUFFER_TYPE: CBufferTypes.luminance})
-print(len(c_lum), 'configurations support a luminance colour buffer.')
-
-conf = c_vg_es[0]
-print('The first OpenVG/OpenGL ES 2.x config (ID #{}) has this colour '
-      'buffer:'.format(conf.config_id))
-print(conf.color_buffer)
-
 reqs[Attribs.BUFFER_SIZE] = 32
 c_vg_es_32 = get_configs(d, reqs)
 print(len(c_vg_es),
       'configurations support OpenVG, OpenGL ES 2.x, and 32-bit colour.')
+
+c_lum = get_configs(d, {Attribs.COLOR_BUFFER_TYPE: CBufferTypes.luminance})
+print(len(c_lum), 'configurations support a luminance colour buffer.')
+
+# 3. Attribute access on a configuration.
+conf = c_vg_es[0]
+print('The first OpenVG/OpenGL ES 2.x config (ID #{}) has this colour '
+      'buffer:'.format(conf.config_id))
+print(conf.color_buffer)

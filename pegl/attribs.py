@@ -21,50 +21,114 @@
 
 # Standard library imports.
 from collections import namedtuple
-from ctypes import c_bool, c_int
+from ctypes import c_int
 from itertools import cycle
+
+# EGL uses 0/1 integers for boolean values, and anyway, every attribute key
+# and value needs to be an integer.
+ebool = c_int
 
 Details = namedtuple('Details', ('desc', 'values', 'dontcare', 'default'))
 
+# The constant EGL_NONE is used for a few different purposes.
 NONE = 0x3038
 
 def bitmask(bit_positions):
-    '''Generate a bitmask with convenient Python representations.'''
+    '''Generate a bit mask with convenient Python representations.
+
+    Keyword arguments:
+        bit_positions -- A sequence of names for bits in the mask (least
+            significant first). The length of this sequence defines the
+            size of the bit mask. Set the label for any unneeded bits to
+            None.
+
+    Returns:
+        A class for the bit mask.
+
+    '''
     class BitMask:
-        '''A bitmask with convenient Python representations.'''
+        '''A bit mask with convenient Python representations.
+
+        Class attributes:
+            width -- The number of bits in the mask.
+            bit_names -- A sequence of names for the bits in the mask
+                (least significant first). Any bits without names have
+                None for the name. Each bit with a name in bit_names
+                can also be accessed as an instance attribute with that
+                name (assuming the name is a valid Python identifier).
+
+        Instance attributes:
+            bits -- The raw bits of the mask (least significant first).
+
+        '''
         width = len(bit_positions)
         bit_names = bit_positions
         def __init__(self, *args, **kwargs):
+            '''Set up the bit mask.
+
+            Positional arguments:
+                Integer values to use in initialising the bit mask. Each
+                value is used in turn, effectively being OR'd together
+                to create the mask.
+
+            Keyword arguments:
+                Initial bit values by name. The boolean value of the
+                argument sets the relevant bit, overriding anything set
+                from positional arguments.
+
+            '''
             self.bits = [0] * self.width
 
+            # Set up access to bits by name.
             for n, posname in enumerate(self.bit_names):
                 if posname is None:
+                    # Unnamed bit.
                     continue
                 getter = lambda self: self.bits[n]
                 setter = lambda self, val: self._set_bit(n, val)
                 self.__setattr__(posname, property(getter, setter))
 
+            # Initialise values from positional arguments.
             for mask in args:
                 self._from_int(mask)
 
+            # Initialise values from keyword arguments.
             for bit_name in kwargs:
-                # Allow an AttributeError to propagate upwards
+                # If the keyword is not a valid bit name, we allow the
+                # resulting AttributeError to propagate upwards.
                 setter = self.__getattribute__(bit_name).fset
                 setter(self, kwargs[bit_name])
 
         @property
         def _as_parameter_(self):
+            '''Get the bit mask value for use by foreign functions.'''
             return int(self)
 
         def __int__(self):
+            '''Convert the bits to the corresponding integer.'''
             return sum(2 ** i if bit else 0 for i, bit in enumerate(self.bits))
 
         def _set_bit(self, bit_pos, val):
+            '''Set or unset a specified bit in the mask.
+
+            Keyword arguments:
+                bit_pos -- The numeric position of the bit.
+                val -- Whether to set (True) or unset (False) the bit.
+
+            '''
             self.bits[bit_pos] = bool(val)
 
         def _from_int(self, mask):
+            '''Set this bit mask from an integer mask value.
+
+            Keyword arguments:
+                mask -- The integer mask to use. Any bits in excess of
+                    this mask's width are ignored.
+
+            '''
             pos = 0
             mask = int(mask)
+            # Go bit by bit until we run out of bits in either mask.
             while mask > 0 and pos < self.width:
                 mask, bit = divmod(mask, 2)
                 self.bits[pos] = bool(bit)
@@ -72,15 +136,18 @@ def bitmask(bit_positions):
 
     return BitMask
 
+# Bit mask attribute types.
 SurfaceTypes = bitmask(('pbuffer', 'pixmap', 'window', None, None,
                         'vg_col_linear', 'vg_alpha_pre', None, None,
                         'multisample_box', 'swap_preserve'))
 ClientAPIs = bitmask(('gl_es', 'vg', 'gl_es2', 'gl'))
 
+# A symbolic don't-care value that can't be confused with anything else.
 class DONT_CARE:
     '''A don't-care value for an attribute.'''
     _as_parameter_ = -1
 
+# Enumerations of EGL values.
 CBufferTypes = namedtuple('CBufferTypes',
                           ('rgb', 'luminance')
                           )(0x308E, 0x308F)
@@ -92,7 +159,21 @@ TransparentTypes = namedtuple('TransparentTypes',
                               )(NONE, 0x3052)
 
 class Attribs:
-    '''The set of available EGL attribute values.'''
+    '''The set of available EGL attributes.
+
+    All useful information is available in class attributes and class
+    methods, so this class does not need to be instantiated.
+
+    Class attributes:
+        details -- A mapping with the attribute's integer value as the
+            key, and a Details named-tuple instance (with a text
+            description, the attribute type, whether it can be
+            DONT_CARE, and the default) as the value.
+        Additionally, symbolic constants for all the known attributes
+        are available as class attributes. Their names are the same as
+        in the EGL standard, except without the EGL_ prefix.
+
+    '''
     (BUFFER_SIZE, ALPHA_SIZE, BLUE_SIZE, GREEN_SIZE, RED_SIZE, DEPTH_SIZE,
      STENCIL_SIZE, CONFIG_CAVEAT, CONFIG_ID, LEVEL, MAX_PBUFFER_HEIGHT,
      MAX_PBUFFER_PIXELS, MAX_PBUFFER_WIDTH, NATIVE_RENDERABLE,
@@ -162,10 +243,10 @@ class Attribs:
                                      SurfaceTypes, False,
                                      SurfaceTypes(window=1)),
                BIND_TO_TEXTURE_RGB: Details('Whether or not this is bindable '
-                                            'to RGB textures', c_bool, True,
+                                            'to RGB textures', ebool, True,
                                             DONT_CARE),
                BIND_TO_TEXTURE_RGBA: Details('Whether or not this is bindable '
-                                             'to RGBA textures', c_bool, True,
+                                             'to RGBA textures', ebool, True,
                                              DONT_CARE),
 
                CONFIG_CAVEAT: Details('Caveat for performance or conformance '
@@ -180,7 +261,7 @@ class Attribs:
                                    ClientAPIs, False, ClientAPIs()),
 
                NATIVE_RENDERABLE: Details('Whether or not native APIs can '
-                                          'render to the surface', c_bool,
+                                          'render to the surface', ebool,
                                           True, DONT_CARE),
                NATIVE_VISUAL_ID: Details('Identifier for the native visual',
                                          c_int, False, 0),
@@ -197,14 +278,32 @@ class Attribs:
         attribute. If the return value is None, the value supplied does
         not map to any known attribute.
 
+        Keyword arguments:
+            value -- The value representing the desired attribute.
+
         '''
         details = cls.details.get(value)
         return (None if details is None else details.desc)
 
 
 class AttribList:
-    '''A list of context attributes.'''
+    '''A list of EGL attributes.
+
+    This class implements the mapping interface, namely the __getitem__,
+    __setitem__, __delitem__ and items methods.
+
+    Instance attributes:
+        _items -- Direct access to the attributes set in this list.
+
+    '''
     def __init__(self, mapping=None):
+        '''Initialise the attribute list.
+
+        Keyword arguments:
+            mapping -- An optional dictionary from which to initialise
+                this attribute list.
+
+        '''
         self._items = {}
 
         if mapping is not None:
@@ -212,13 +311,29 @@ class AttribList:
                 self[key] = val
 
     def __getitem__(self, index):
-        '''Get the value of an attribute, or None if it is unset.'''
+        '''Get the value of an attribute, or None if it is unset.
+
+        See also get(), which returns the default for an attribute
+        (rather than None) if it is unset.
+
+        Keyword arguments:
+            index -- The attribute requested.
+
+        '''
         if Attribs.desc(index) is None:
             raise ValueError('not a valid attribute type')
         return self._items.get(index)
 
     def __setitem__(self, index, val):
-        '''Set the value of an attribute.'''
+        '''Set the value of an attribute.
+
+        Keyword arguments:
+            index -- The attribute to set.
+            val -- The value to set for the attribute. If None, the
+                attribute will be set to its default value instead.
+
+        '''
+        # Check that the given value is valid.
         details = Attribs.details.get(index)
         if details is None:
             raise ValueError('not a valid attribute type')
@@ -226,24 +341,31 @@ class AttribList:
             raise ValueError('attribute cannot be DONT_CARE')
         elif val is None:
             val = details.default
-
-        try:
-            if val not in details.values:
-                raise ValueError('not a legal attribute value')
-        except TypeError:
-            # "in" is not applicable to this attribute type.
-            if type(val) is not type(details.values):
-                val = details.values(val)
+        else:
+            # Is this value legal for this attribute?
+            try:
+                if val not in details.values:
+                    raise ValueError('not a legal attribute value')
+            except TypeError:
+                # "in" is not applicable to this attribute type. Try passing
+                # the given value to the attribute type instead.
+                if type(val) is not type(details.values):
+                    val = details.values(val)
 
         self._items[index] = val
 
     def __delitem__(self, index):
-        '''Remove the value set for an attribute.'''
+        '''Remove the value set for an attribute.
+
+        Keyword arguments:
+            index -- The attribute requested.
+
+        '''
         del(self._items[index])
 
     @property
     def _as_parameter_(self):
-        '''Convert to an array for use as a foreign function argument.'''
+        '''Convert to an array for use by foreign functions.'''
         arr_len = 2 * len(self._items) + 1
         arr_type = c_int * arr_len
 
@@ -255,7 +377,14 @@ class AttribList:
         return arr_type(*arr)
 
     def get(self, index):
-        '''Get the value of an attribute, or its default if it is unset.'''
+        '''Get the value of an attribute, or its default if it is unset.
+
+        See also __getitem__(), which returns the None if it is unset.
+
+        Keyword arguments:
+            index -- The attribute requested.
+
+        '''
         val = self[index]
         if val is None:
             return Attribs.details[value].default
