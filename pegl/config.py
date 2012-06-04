@@ -24,7 +24,8 @@ from ctypes import c_void_p
 
 # Local imports.
 from . import egl, error_check, make_int_p
-from .attribs import Attribs, AttribList, CBufferTypes
+from .attribs import (Attribs, AttribList, BitMask, Caveats, CBufferTypes,
+                      DONT_CARE)
 
 MAX_CONFIGS = 256 # Arbitrary! But it's sufficient for MY computer...
 
@@ -97,18 +98,89 @@ class Config:
             attr -- The value identifying the desired attribute. Best
                 supplied as a symbolic constant from Attribs.
 
+        Returns:
+            An integer, boolean, or bit mask value, as appropriate to
+            the attribute in question, or None if value indicates the
+            EGL symbolic constant NONE, or DONT_CARE if that value is
+            allowed and indicated.
+
         '''
         result = make_int_p()
-
         error_check(egl.eglGetConfigAttrib(self.display, self, attr, result))
-        return result[0]
+
+        # Dereference the pointer.
+        result = result[0]
+
+        # Convert to an appropriate type.
+        details = Attribs.details[attr]
+        if details.dontcare and result == DONT_CARE._as_parameter_:
+            return DONT_CARE
+        elif details.values is bool:
+            return bool(result)
+        elif (result == Attribs.NONE and
+              issubclass(type(details.values), tuple) and
+              Attribs.NONE in details.values):
+            # The value is the EGL symbolic constant for NONE, in an
+            # enumeration (named tuple) that supports it.
+            return None
+        else:
+            try:
+                if issubclass(details.values, BitMask):
+                    return details.values(result)
+            except TypeError:
+                # details.values is not a class.
+                pass
+
+        # Finally...
+        return result
+
+    @property
+    def bind_textures(self):
+        '''Get texture types that this configuration allows binding to.'''
+        texs = []
+        if self._attr(Attribs.BIND_TO_TEXTURE_RGB):
+            texs.append('RGB')
+        if self._attr(Attribs.BIND_TO_TEXTURE_RGBA):
+            texs.append('RGBA')
+        return tuple(texs)
+
+    @property
+    def caveat(self):
+        '''Get the rendering caveat for this configuration, if any.
+
+        Note that the caveat of non-conformance refers only to OpenGL ES
+        and is superseded by the conformant_apis attribute, which should
+        be relied upon instead.
+
+        '''
+        cav = self._attr(Attribs.CONFIG_CAVEAT)
+
+        if cav == Caveats.slow:
+            return 'slow'
+        elif cav == Caveats.nonconformant:
+            return 'non-conformant'
+        else:
+            # Could be None, DONT_CARE, or unrecognised.
+            return cav
+
+    @property
+    def conformant_apis(self):
+        '''List client APIs to which this configuration is conformant.
+
+        The claim of conformance is made by the EGL implementation
+        itself, and should be trusted or not trusted accordingly.
+
+        '''
+        return self._attr(Attribs.CONFORMANT)._flags_set
 
     @property
     def config_id(self):
+        '''Get the unique identifier for this configuration.'''
         return self._attr(Attribs.CONFIG_ID)
 
     @property
     def color_buffer(self):
+        '''Get the color buffer attributes of this configuration.'''
         btype = self._attr(Attribs.COLOR_BUFFER_TYPE)
         buffer_info = {'size': self._attr(Attribs.BUFFER_SIZE),
                        'alpha_size': self._attr(Attribs.ALPHA_SIZE),
@@ -126,3 +198,23 @@ class Config:
             buffer_info['type'] = 'unknown'
 
         return buffer_info
+
+    @property
+    def renderable_contexts(self):
+        '''List client APIs to which this configuration can render.'''
+        return self._attr(Attribs.RENDERABLE_TYPE)._flags_set
+
+    @property
+    def surface_types(self):
+        '''List surface types to which this configuration can render.'''
+        return self._attr(Attribs.SURFACE_TYPE)._flags_set
+
+    @property
+    def transparent_pixels(self):
+        '''Get the transparent pixel support of this configuration.'''
+        ttype = self._attr(Attribs.TRANSPARENT_TYPE)
+        return (None if (ttype is None or ttype == TransparentTypes.none) else
+                'RGB' if ttype == TransparentTypes.rgb else
+                'unknown', {'r': self._attr(Attribs.TRANSPARENT_RED_VALUE),
+                            'g': self._attr(Attribs.TRANSPARENT_GREEN_VALUE),
+                            'b': self._attr(Attribs.TRANSPARENT_BLUE_VALUE)})

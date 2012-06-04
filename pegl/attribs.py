@@ -22,125 +22,122 @@
 # Standard library imports.
 from collections import namedtuple
 from ctypes import c_int
-from itertools import cycle
+from itertools import compress
 
-# EGL uses 0/1 integers for boolean values, and anyway, every attribute key
-# and value needs to be an integer.
-ebool = c_int
-
+# Named tuple for storing the details of an attribute field.
 Details = namedtuple('Details', ('desc', 'values', 'dontcare', 'default'))
 
 # The constant EGL_NONE is used for a few different purposes.
 NONE = 0x3038
 
-def bitmask(bit_positions):
-    '''Generate a bit mask with convenient Python representations.
+# Bit mask attribute types.
+class BitMask:
+    '''A bit mask with convenient Python representations.
 
-    Keyword arguments:
-        bit_positions -- A sequence of names for bits in the mask (least
-            significant first). The length of this sequence defines the
-            size of the bit mask. Set the label for any unneeded bits to
-            None.
+    Class attributes:
+        bit_names -- A sequence of names for the bits in the mask
+            (least significant first). Any bits without names have
+            None for the name. Each bit with a name in bit_names
+            can also be accessed as an instance attribute with that
+            name (assuming the name is a valid Python identifier).
 
-    Returns:
-        A class for the bit mask.
+    Instance attributes:
+        bits -- The raw bits of the mask (least significant first).
 
     '''
-    class BitMask:
-        '''A bit mask with convenient Python representations.
+    bit_names = ()
+    def __init__(self, *args, **kwargs):
+        '''Set up the bit mask.
 
-        Class attributes:
-            width -- The number of bits in the mask.
-            bit_names -- A sequence of names for the bits in the mask
-                (least significant first). Any bits without names have
-                None for the name. Each bit with a name in bit_names
-                can also be accessed as an instance attribute with that
-                name (assuming the name is a valid Python identifier).
+        Positional arguments:
+            Integer values to use in initialising the bit mask. Each
+            value is used in turn, effectively being OR'd together
+            to create the mask.
 
-        Instance attributes:
-            bits -- The raw bits of the mask (least significant first).
+        Keyword arguments:
+            Initial bit values by name. The boolean value of the
+            argument sets the relevant bit, overriding anything set
+            from positional arguments.
 
         '''
-        width = len(bit_positions)
-        bit_names = bit_positions
-        def __init__(self, *args, **kwargs):
-            '''Set up the bit mask.
+        self.bits = [False] * len(self.bit_names)
 
-            Positional arguments:
-                Integer values to use in initialising the bit mask. Each
-                value is used in turn, effectively being OR'd together
-                to create the mask.
+        # Set up access to bits by name.
+        for n, posname in enumerate(self.bit_names):
+            if posname is None:
+                # Unnamed bit.
+                continue
+            getter = lambda self: self.bits[n]
+            setter = lambda self, val: self._set_bit(n, val)
+            setattr(self.__class__, posname, property(getter, setter))
 
-            Keyword arguments:
-                Initial bit values by name. The boolean value of the
-                argument sets the relevant bit, overriding anything set
-                from positional arguments.
+        # Initialise values from positional arguments.
+        for mask in args:
+            self._from_int(mask)
 
-            '''
-            self.bits = [0] * self.width
+        # Initialise values from keyword arguments.
+        for bit_name in kwargs:
+            # If the keyword is not a valid bit name, we allow the
+            # resulting AttributeError to propagate upwards.
+            setter = getattr(self.__class__, bit_name).fset
+            setter(self, kwargs[bit_name])
 
-            # Set up access to bits by name.
-            for n, posname in enumerate(self.bit_names):
-                if posname is None:
-                    # Unnamed bit.
-                    continue
-                getter = lambda self: self.bits[n]
-                setter = lambda self, val: self._set_bit(n, val)
-                self.__setattr__(posname, property(getter, setter))
+    @property
+    def _as_parameter_(self):
+        '''Get the bit mask value for use by foreign functions.'''
+        return int(self)
 
-            # Initialise values from positional arguments.
-            for mask in args:
-                self._from_int(mask)
+    @property
+    def _flags_set(self):
+        '''Get the set bits by name.'''
+        return tuple(compress(self.bit_names, self.bits))
 
-            # Initialise values from keyword arguments.
-            for bit_name in kwargs:
-                # If the keyword is not a valid bit name, we allow the
-                # resulting AttributeError to propagate upwards.
-                setter = self.__getattribute__(bit_name).fset
-                setter(self, kwargs[bit_name])
+    def __int__(self):
+        '''Convert the bits to the corresponding integer.'''
+        return sum(2 ** i if bit else 0 for i, bit in enumerate(self.bits))
 
-        @property
-        def _as_parameter_(self):
-            '''Get the bit mask value for use by foreign functions.'''
-            return int(self)
+    def __str__(self):
+        '''List the set bits by name, separated by commas.'''
+        return ','.join(self._flags_set)
 
-        def __int__(self):
-            '''Convert the bits to the corresponding integer.'''
-            return sum(2 ** i if bit else 0 for i, bit in enumerate(self.bits))
+    def _set_bit(self, bit_pos, val):
+        '''Set or unset a specified bit in the mask.
 
-        def _set_bit(self, bit_pos, val):
-            '''Set or unset a specified bit in the mask.
+        Keyword arguments:
+            bit_pos -- The numeric position of the bit.
+            val -- Whether to set (True) or unset (False) the bit.
 
-            Keyword arguments:
-                bit_pos -- The numeric position of the bit.
-                val -- Whether to set (True) or unset (False) the bit.
+        '''
+        self.bits[bit_pos] = bool(val)
 
-            '''
-            self.bits[bit_pos] = bool(val)
+    def _from_int(self, mask):
+        '''Set this bit mask from an integer mask value.
 
-        def _from_int(self, mask):
-            '''Set this bit mask from an integer mask value.
+        Keyword arguments:
+            mask -- The integer mask to use. Any bits in excess of
+                this mask's width are ignored.
 
-            Keyword arguments:
-                mask -- The integer mask to use. Any bits in excess of
-                    this mask's width are ignored.
+        '''
+        pos = 0
+        mask = int(mask)
+        # Go bit by bit until we run out of bits in either mask.
+        while mask > 0 and pos < len(self.bits):
+            mask, bit = divmod(mask, 2)
+            self.bits[pos] = bool(bit)
+            pos += 1
 
-            '''
-            pos = 0
-            mask = int(mask)
-            # Go bit by bit until we run out of bits in either mask.
-            while mask > 0 and pos < self.width:
-                mask, bit = divmod(mask, 2)
-                self.bits[pos] = bool(bit)
-                pos += 1
 
-    return BitMask
+class SurfaceTypes(BitMask):
+    '''A bit mask representing types of EGL surfaces.'''
+    bit_names = ('pbuffer', 'pixmap', 'window', None, None,
+                 'vg_colorspace_linear', 'vg_alpha_format_pre', None, None,
+                 'multisample_resolve_box', 'swap_behavior_preserved')
 
-# Bit mask attribute types.
-SurfaceTypes = bitmask(('pbuffer', 'pixmap', 'window', None, None,
-                        'vg_col_linear', 'vg_alpha_pre', None, None,
-                        'multisample_box', 'swap_preserve'))
-ClientAPIs = bitmask(('gl_es', 'vg', 'gl_es2', 'gl'))
+
+class ClientAPIs(BitMask):
+    '''A bit mask representing client APIs supported by EGL.'''
+    bit_names = ('opengl_es', 'openvg', 'opengl_es2', 'opengl')
+
 
 # A symbolic don't-care value that can't be confused with anything else.
 class DONT_CARE:
@@ -152,7 +149,7 @@ CBufferTypes = namedtuple('CBufferTypes',
                           ('rgb', 'luminance')
                           )(0x308E, 0x308F)
 Caveats = namedtuple('Caveats',
-                     ('none', 'slow', 'nonconform')
+                     ('none', 'slow', 'nonconformant')
                      )(NONE, 0x3050, 0x3051)
 TransparentTypes = namedtuple('TransparentTypes',
                               ('none', 'rgb')
@@ -243,10 +240,10 @@ class Attribs:
                                      SurfaceTypes, False,
                                      SurfaceTypes(window=1)),
                BIND_TO_TEXTURE_RGB: Details('Whether or not this is bindable '
-                                            'to RGB textures', ebool, True,
+                                            'to RGB textures', bool, True,
                                             DONT_CARE),
                BIND_TO_TEXTURE_RGBA: Details('Whether or not this is bindable '
-                                             'to RGBA textures', ebool, True,
+                                             'to RGBA textures', bool, True,
                                              DONT_CARE),
 
                CONFIG_CAVEAT: Details('Caveat for performance or conformance '
@@ -256,12 +253,12 @@ class Attribs:
                                   True, DONT_CARE),
                RENDERABLE_TYPE: Details('Bitmask of available client '
                                         'rendering APIs', ClientAPIs, False,
-                                        ClientAPIs(gl_es=1)),
+                                        ClientAPIs(opengl_es=1)),
                CONFORMANT: Details('Bitmask of specs to which contexts conform',
                                    ClientAPIs, False, ClientAPIs()),
 
                NATIVE_RENDERABLE: Details('Whether or not native APIs can '
-                                          'render to the surface', ebool,
+                                          'render to the surface', bool,
                                           True, DONT_CARE),
                NATIVE_VISUAL_ID: Details('Identifier for the native visual',
                                          c_int, False, 0),
