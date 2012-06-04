@@ -38,12 +38,14 @@ def current_display():
 
 class Display:
     '''An EGL display.'''
-    def __init__(self, dhandle=None, native_id=None):
+    def __init__(self, dhandle=None, native_id=None, delay_init=False):
         '''Get a display, either a specified one or the default one.'''
         self.dhandle = (dhandle if dhandle is not None else
                         egl.eglGetDisplay(DEFAULT_DISPLAY
                                           if native_id is None else
                                           native_id))
+        if not delay_init:
+            self.initialize()
 
     def __eq__(self, other):
         '''Compare two displays for equivalence.'''
@@ -83,13 +85,12 @@ class Display:
         '''Get the EGL version of this EGL instance.'''
         return self._query(VERSION)
 
+    @error_check
+    def initialize(self):
+        '''Initialise EGL for this display.'''
+        # Create and initialize the return pointers.
+        major, minor = int_p(), int_p()
+        major.contents, minor.contents = c_int(0), c_int(0)
 
-@error_check
-def init(display=None, native_id=None):
-    '''Initialise EGL for a given display.'''
-    if display is None:
-        display = Display(native_id)
-    major, minor = int_p(), int_p()
-    major.contents, minor.contents = c_int(0), c_int(0)
-    egl.eglInitialize(display, major, minor)
-    return (major[0], minor[0])
+        egl.eglInitialize(self, major, minor)
+        return (major[0], minor[0])

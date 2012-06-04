@@ -18,12 +18,12 @@
 # along with PEGL. If not, see <http://www.gnu.org/licenses/>.
 
 import pegl
-from pegl.display import Display, init
+from pegl.display import Display
 from pegl.config import get_configs
 from pegl.attribs import Attribs, ClientAPIs, CBufferTypes
 
-d = Display()
-print('Initialised EGL version {0[0]}.{0[1]} ({1} {2}).'.format(init(d),
+d = Display(delay_init=True)
+print('Initialised EGL version {0[0]}.{0[1]} ({1} {2}).'.format(d.initialize(),
                                                                 d.vendor,
                                                                 d.version))
 
