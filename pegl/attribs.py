@@ -46,6 +46,29 @@ class BitMask:
 
     '''
     bit_names = ()
+
+    @classmethod
+    def _make_property(cls, bit_number):
+        '''Create a property to get and set a specified bit value.
+
+        This is necessary because code like this doesn't work:
+        >>> getter = lambda self: self.bits[bit_number]
+
+        For some reason, probably to do with the scope of the variable
+        bit_number, every function so defined ends up taking on the same
+        value of bit_number (the value it last had).
+
+        '''
+        def getter(self):
+            '''Get the value of the bit at position {}.'''.format(bit_number)
+            return self.bits[bit_number]
+
+        def setter(self, val):
+            '''Set or unset the bit at position {}.'''.format(bit_number)
+            self.bits[bit_number] = bool(val)
+
+        return property(getter, setter)
+
     def __init__(self, *args, **kwargs):
         '''Set up the bit mask.
 
@@ -63,13 +86,13 @@ class BitMask:
         self.bits = [False] * len(self.bit_names)
 
         # Set up access to bits by name.
-        for n, posname in enumerate(self.bit_names):
+        bit_number = -1
+        for posname in self.bit_names:
+            bit_number += 1
             if posname is None:
                 # Unnamed bit.
                 continue
-            getter = lambda self: self.bits[n]
-            setter = lambda self, val: self._set_bit(n, val)
-            setattr(self.__class__, posname, property(getter, setter))
+            setattr(self.__class__, posname, self._make_property(bit_number))
 
         # Initialise values from positional arguments.
         for mask in args:
@@ -99,16 +122,6 @@ class BitMask:
     def __str__(self):
         '''List the set bits by name, separated by commas.'''
         return ','.join(self._flags_set)
-
-    def _set_bit(self, bit_pos, val):
-        '''Set or unset a specified bit in the mask.
-
-        Keyword arguments:
-            bit_pos -- The numeric position of the bit.
-            val -- Whether to set (True) or unset (False) the bit.
-
-        '''
-        self.bits[bit_pos] = bool(val)
 
     def _from_int(self, mask):
         '''Set this bit mask from an integer mask value.
@@ -194,8 +207,6 @@ class Attribs:
                                   c_int, True, 0),
                ALPHA_SIZE: Details('Number of alpha bits in the color buffer',
                                    c_int, False, 0),
-               ALPHA_MASK_SIZE: Details('Number of alpha mask bits in the '
-                                        'mask buffer', c_int, False, 0),
                LUMINANCE_SIZE: Details('Number of luminance bits in the color '
                                  'buffer', c_int, False, 0),
 
@@ -210,6 +221,8 @@ class Attribs:
                                 False, 0),
                SAMPLE_BUFFERS: Details('Number of multisample buffers', c_int,
                                        False, 0),
+               ALPHA_MASK_SIZE: Details('Number of alpha mask bits in the '
+                                        'mask buffer', c_int, False, 0),
 
                DEPTH_SIZE: Details('Number of Z bits in the depth buffer',
                                    c_int, False, 0),
@@ -262,8 +275,8 @@ class Attribs:
                                           True, DONT_CARE),
                NATIVE_VISUAL_ID: Details('Identifier for the native visual',
                                          c_int, False, 0),
-               NATIVE_VISUAL_TYPE: Details('Native visual type', c_int, True,
-                                           DONT_CARE),
+               NATIVE_VISUAL_TYPE: Details('Type of the native visual', c_int,
+                                           True, DONT_CARE),
                MATCH_NATIVE_PIXMAP: Details('Handle of a valid native pixmap',
                                             c_int, False, NONE)}
 

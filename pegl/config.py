@@ -36,8 +36,8 @@ def get_configs(display, attribs=None):
         display -- The EGL display for which to check configurations.
         attribs -- An optional mapping (a dict or AttribList) that lists
             attributes required of any configurations. The EGL standard
-            specifies which attributes must match exactly, which match
-            "at least" the given value, and which match at least the
+            specifies which attributes must match exactly, which must be
+            the given value or greater, and which match at least the
             given flags in a bit mask.
 
     '''
@@ -67,10 +67,41 @@ class Config:
     '''A set of EGL configuration options.
 
     Instance attributes:
+        config_id -- The unique identifier for this configuration.
         chandle -- The foreign object handle for this configuration.
         display -- The EGL display to which this configuration belongs.
-        config_id -- The unique identifier for this configuration.
-        color_buffer -- A dict of the color buffer type and bit sizes.
+        alpha_mask_size -- The size in bits of the alpha mask buffer.
+        bind_textures -- Texture types that this configuration allows
+            binding to.
+        caveat -- A caveat regarding speed or conformance when using
+            this configuration.
+        conformant_apis -- A bit mask specifying the APIs to which this
+            configuration claims conformance.
+        color_buffer -- A dict of the color buffer type and bit sizes
+            in this configuration.
+        depth_buffer_size -- The size in bits of the depth buffer.
+        frame_buffer_level -- The level at which surfaces are created
+            in the frame buffer.
+        multisample -- A dict giving the number of multisample buffers
+            available and the number of samples per pixel. Note that the
+            EGL specification limits the former value to 0 or 1.
+        native_renderable -- Whether or not this configuration allows
+            rendering to its surfaces from the native system.
+        native_visual -- A 2-tuple of the ID and type of the native
+            visual associated with this configuration, if any.
+        pbuffer_limits -- The maximum width, height, and total number of
+            pixels accepted by the pbuffer (pixel buffer).
+        renderable_contexts -- A bit mask specifying which client APIs
+            can render to contexts in this configuration.
+        stencil_buffer_size -- The size in bits of the stencil buffer.
+        surface_types -- A bit mask specifying which EGL surface type
+            attributes are supported by this configuration.
+        swap_intervals -- The range of values accepted for the number of
+            swap intervals between buffer swaps. A 2-tuple in the form
+            (min, max + 1).
+        transparent_pixels -- A dict specifying which type of
+            transparency this configuration supports, if any, and what
+            the relevant transparency values are if it does.
 
     '''
     def __init__(self, chandle, display):
@@ -105,6 +136,7 @@ class Config:
             allowed and indicated.
 
         '''
+        # Call the foreign function, which stores its result in a pointer.
         result = make_int_p()
         error_check(egl.eglGetConfigAttrib(self.display, self, attr, result))
 
@@ -133,6 +165,11 @@ class Config:
 
         # Finally...
         return result
+
+    @property
+    def alpha_mask_size(self):
+        '''Get the size in bits of the alpha mask buffer.'''
+        return self._attr(Attribs.ALPHA_MASK_SIZE)
 
     @property
     def bind_textures(self):
@@ -199,14 +236,71 @@ class Config:
         return buffer_info
 
     @property
+    def depth_buffer_size(self):
+        '''Get the size in bits of the depth buffer.'''
+        return self._attr(Attribs.DEPTH_SIZE)
+
+    @property
+    def frame_buffer_level(self):
+        '''Get the frame buffer level at which new surfaces are created.
+
+        The default level is 0. Other levels represent overlays and
+        underlays, the exact behaviour of which depends on the native
+        windowing system.
+
+        '''
+        return self._attr(Attribs.LEVEL)
+
+    @property
+    def multisample(self):
+        '''Get details of the multisample buffer in this configuration.'''
+        return {'buffers': self._attr(Attribs.SAMPLE_BUFFERS),
+                'samples': self._attr(Attribs.SAMPLES)}
+
+    @property
+    def native_renderable(self):
+        '''Determine whether native calls can render to EGL surfaces.'''
+        return self._attr(Attribs.NATIVE_RENDERABLE)
+
+    @property
+    def native_visual(self):
+        '''Get the native visual associated with this configuration.'''
+        nvid, nvtype = (self._attr(attr)
+                        for attr in (Attribs.NATIVE_VISUAL_ID,
+                                     Attribs.NATIVE_VISUAL_TYPE))
+        return {'id': nvid,
+                'type': (None if (nvid == 0 and
+                                  nvtype == Attribs.NONE) # Which it should.
+                         else nvtype)}
+
+    @property
+    def pbuffer_limits(self):
+        '''Get the maximum dimensions of the pbuffer (pixel buffer).'''
+        return {'width': self._attr(ATTRIBS.MAX_PBUFFER_WIDTH),
+                'height': self._attr(ATTRIBS.MAX_PBUFFER_HEIGHT),
+                'pixels': self._attr(ATTRIBS.MAX_PBUFFER_PIXELS)}
+
+    @property
     def renderable_contexts(self):
         '''List client APIs to which this configuration can render.'''
         return self._attr(Attribs.RENDERABLE_TYPE)._flags_set
 
     @property
+    def stencil_buffer_size(self):
+        '''Get the size in bits of the stencil buffer.'''
+        return self._attr(Attribs.STENCIL_SIZE)
+
+    @property
     def surface_types(self):
         '''List surface types to which this configuration can render.'''
         return self._attr(Attribs.SURFACE_TYPE)._flags_set
+
+    @property
+    def swap_intervals(self):
+        '''Get the limits on swap intervals between buffer swaps.'''
+        return (self._attr(Attribs.MIN_SWAP_INTERVAL),
+                # Upper limit given as max + 1, as normal for ranges in Python.
+                self._attr(Attribs.MAX_SWAP_INTERVAL) + 1)
 
     @property
     def transparent_pixels(self):

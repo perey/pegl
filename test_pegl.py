@@ -70,32 +70,28 @@ print('There are', len(c), 'configurations available.')
 
 # 2a. Paring down the configurations by selecting desired attributes.
 reqs = {Attribs.RENDERABLE_TYPE: ClientAPIs(opengl=1)}
-print('**', str(reqs[Attribs.RENDERABLE_TYPE]))
 c_gl = get_configs(d, reqs)
-print(len(c_gl), 'configurations support OpenGL.')
+print(len(c_gl), 'configurations support OpenGL. (I wonder what the other',
+      len(c) - len(c_gl), 'do?)')
 
 reqs[Attribs.RENDERABLE_TYPE].opengl = 0
 reqs[Attribs.RENDERABLE_TYPE].opengl_es = 1
-print('**', str(reqs[Attribs.RENDERABLE_TYPE]))
 c_es = get_configs(d, reqs)
 print(len(c_es), 'configurations support OpenGL ES 1.x.')
 
 reqs[Attribs.RENDERABLE_TYPE].opengl_es = 0
 reqs[Attribs.RENDERABLE_TYPE].opengl_es2 = 1
-print('**', str(reqs[Attribs.RENDERABLE_TYPE]))
 c_es2 = get_configs(d, reqs)
 print(len(c_es2), 'configurations support OpenGL ES 2.x.')
 
 reqs[Attribs.RENDERABLE_TYPE].opengl_es2 = 0
 reqs[Attribs.RENDERABLE_TYPE].openvg = 1
-print('**', str(reqs[Attribs.RENDERABLE_TYPE]))
 c_vg = get_configs(d, reqs)
 print(len(c_vg), 'configurations support OpenVG.')
 
 reqs[Attribs.RENDERABLE_TYPE].opengl = 1
 reqs[Attribs.RENDERABLE_TYPE].opengl_es = 1
 reqs[Attribs.RENDERABLE_TYPE].opengl_es2 = 1
-print('**', str(reqs[Attribs.RENDERABLE_TYPE]))
 c_all = get_configs(d, reqs)
 print(len(c_all), 'configurations support all four APIs.')
 
@@ -110,26 +106,34 @@ print(len(c_lum), 'configurations support a luminance colour buffer.')
 print()
 
 # 3. Attribute access on a configuration.
-conf = c_vg[0]
-cbuf = conf.color_buffer
-print('The first OpenVG configuration (ID #{0}) has a {1[size]}-bit '
-      '{1[type]} colour buffer.'.format(conf.config_id, cbuf))
-bit_alloc = {'RGB': 'Red/green/blue/alpha bits are allocated '
-                    '{r}/{g}/{b}/{alpha_size}.',
-             'luminance': 'The buffer has {luminance} luminance and '
-                          '{alpha_size} alpha bits.'}
-print(bit_alloc[cbuf['type']].format(**cbuf))
-print('The transparency type is {0!s}, with RGB values '
-      '({1[r]},{1[g]},{1[b]}).'.format(*conf.transparent_pixels))
-print('The configuration comes with',
-      'no caveats.' if conf.caveat is None else
-      'the caveat that it is {}{}'.format(conf.caveat,
-                                          '.' if type(conf.caveat) is str else
-                                          ', whatever that means!'))
-print('It supports {}, and can render to {} '
-      'contexts.'.format(*(and_list(clientAPIs(apis))
-                           for apis in (conf.conformant_apis,
-                                        conf.renderable_contexts))))
-print('It can render to surfaces with {} '
-      'properties.'.format(and_list(conf.surface_types)))
-print()
+def show_config_details(conf, label):
+    cbuf = conf.color_buffer
+    print('The {0} configuration (ID #{1}) has a {2[size]}-bit '
+          '{2[type]} colour buffer.'.format(label, conf.config_id, cbuf))
+    bit_alloc = {'RGB': 'Red/green/blue/alpha bits are allocated '
+                        '{r}/{g}/{b}/{alpha_size}.',
+                 'luminance': 'The buffer has {luminance} luminance and '
+                              '{alpha_size} alpha bits.'}
+    print(bit_alloc[cbuf['type']].format(**cbuf))
+    print('The transparency type is {0!s}, with RGB values '
+          '({1[r]},{1[g]},{1[b]}).'.format(*conf.transparent_pixels))
+    print('The mask buffer has {} alpha mask bits, the depth '
+          'buffer has {} bits of depth, and the stencil buffer '
+          'has {} bits of depth.'.format(conf.alpha_mask_size,
+                                         conf.depth_buffer_size,
+                                         conf.stencil_buffer_size))
+    print('The configuration comes with',
+          'no caveats.' if conf.caveat is None else
+          'the caveat that it is ' +
+          ('{}.' if type(conf.caveat) is str else
+           '"{}", whatever that means!').format(conf.caveat))
+    print('It supports {}, and can render to {} '
+          'contexts.'.format(*(and_list(clientAPIs(apis))
+                               for apis in (conf.conformant_apis,
+                                            conf.renderable_contexts))))
+    print('It can render to surfaces with {} '
+          'properties.'.format(and_list(conf.surface_types)))
+    print()
+
+show_config_details(c_vg[0], 'first OpenVG')
+show_config_details(c_all_32[0], 'first all-API, 32-bit colour')
