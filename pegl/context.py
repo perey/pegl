@@ -19,21 +19,16 @@
 # You should have received a copy of the GNU General Public License
 # along with PEGL. If not, see <http://www.gnu.org/licenses/>.
 
-# Standard library imports.
-from ctypes import c_void_p
-
 # Local imports.
 from . import egl, EGLError, error_check, make_int_p, NONE
 from .attribs import Attribs, AttribList
 from .config import get_configs
-from .display import current_display
-from .surface import NO_SURFACE
+from .display import current_display, NO_CONTEXT, NO_SURFACE
 
 # Various symbolic constants.
 VALID_APIS = OPENGL, OPENGL_ES, OPENVG = 0x30A2, 0x30A0, 0x30A1
 RENDER_BUFFER, BACK_BUFFER, SINGLE_BUFFER = 0x3086, 0x3084, 0x3085
 CONTEXT_CLIENT_TYPE, CONTEXT_CLIENT_VERSION = 0x3097, 0x3098
-NO_CONTEXT = c_void_p(0)
 
 _api_lookup = lambda api: {OPENGL: 'OpenGL', OPENGL_ES: 'OpenGL ES',
                            OPENVG: 'OpenVG', NONE: None}.get(api, 'unknown')
@@ -154,10 +149,10 @@ class Context:
             attribs[CONTEXT_CLIENT_VERSION] = opengl_es_version
 
         # Finally, create the context and save its handle.
-        self.ctxhandle = error_check(egl.eglCreateContext(self.display,
-                                                          self.config,
-                                                          share_ctxhandle
-                                                          attribs))
+        self.ctxhandle = error_check(egl.eglCreateContext)(self.display,
+                                                           self.config,
+                                                           share_ctxhandle,
+                                                           attribs)
         # Error checking -- theoretically, error_check would have flagged
         # some specific failure by now, but if not, we can catch it.
         if self.ctxhandle == NO_CONTEXT:

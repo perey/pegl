@@ -24,17 +24,15 @@ from ctypes import c_void_p
 
 # Local imports.
 from . import egl, error_check, make_int_p, sync
-from .context import NO_CONTEXT
-from .surface import NO_SURFACE
 
 # EGL constants.
 CLIENT_APIS, EXTENSIONS, VENDOR, VERSION = 0x308D, 0x3055, 0x3053, 0x3054
-DEFAULT_DISPLAY, NO_DISPLAY = c_void_p(0), c_void_p(0)
+DEFAULT_DISPLAY = c_void_p(0)
+NO_DISPLAY, NO_CONTEXT, NO_SURFACE = c_void_p(0), c_void_p(0), c_void_p(0)
 
-@error_check
 def current_display():
     '''Get the current EGL display.'''
-    return Display(dhandle=egl.eglGetCurrentDisplay())
+    return Display(dhandle=error_check(egl.eglGetCurrentDisplay)())
 
 class Display:
     '''An EGL display.
@@ -86,7 +84,7 @@ class Display:
         from all other threads in which this display has been used.
 
         '''
-        self.release_thread()
+        self.release()
         error_check(egl.eglTerminate)(self)
 
     def __eq__(self, other):
