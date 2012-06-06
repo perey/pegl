@@ -23,7 +23,9 @@
 from ctypes import c_void_p
 
 # Local imports.
-from . import egl, error_check, make_int_p
+from . import egl, error_check, make_int_p, sync
+from .context import NO_CONTEXT
+from .surface import NO_SURFACE
 
 # EGL constants.
 CLIENT_APIS, EXTENSIONS, VENDOR, VERSION = 0x308D, 0x3055, 0x3053, 0x3054
@@ -60,21 +62,32 @@ class Display:
 
         Keyword arguments:
             dhandle -- As the instance attribute. If omitted, the
-                native_id is used instead.
+                native_id is used, if supplied, or else the EGL default
+                display is requested.
             native_id -- An identifier for a platform-native display.
                 This is ignored if dhandle is supplied. If both are
                 omitted, the EGL default display is requested.
             delay_init -- If True, the display's initialize() method
-                will not be called automatically. This should be done
-                by the application before doing any EGL operations.
+                will not be called automatically. This should then be
+                done by the application before doing any EGL operations.
 
         '''
         self.dhandle = (dhandle if dhandle is not None else
-                        egl.eglGetDisplay(DEFAULT_DISPLAY
-                                          if native_id is None else
-                                          native_id))
+                        error_check(egl.eglGetDisplay)(DEFAULT_DISPLAY
+                                                       if native_id is None
+                                                       else native_id))
         if not delay_init:
             self.initialize()
+
+    def __del__(self):
+        '''Delete this display and all EGL resources in this thread.
+
+        Multithreaded applications should also call release_thread()
+        from all other threads in which this display has been used.
+
+        '''
+        self.release_thread()
+        error_check(egl.eglTerminate)(self)
 
     def __eq__(self, other):
         '''Compare two displays for equivalence.
@@ -143,3 +156,16 @@ class Display:
 
         egl.eglInitialize(self, major, minor)
         return (major[0], minor[0])
+
+    def release(self):
+        '''Release EGL resources used in this thread.
+
+        This cleanup is performed automatically for the current thread
+        when the display is deleted. Multithreaded applications that
+        share one display across several threads must call this function
+        in each to ensure all resources are deallocated.
+
+        '''
+        error_check(egl.eglMakeCurrent)(self, NO_SURFACE, NO_SURFACE,
+                                        NO_CONTEXT)
+        error_check(egl.eglReleaseThread)()

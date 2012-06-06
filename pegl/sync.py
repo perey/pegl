@@ -25,11 +25,6 @@ from . import egl, error_check
 CORE_NATIVE_ENGINE = 0x305B
 
 @error_check
-def release_thread():
-    '''Release any implicit EGL resources attached to this thread.'''
-    return bool(egl.eglReleaseThread())
-
-@error_check
 def wait_client():
     '''Instruct native rendering to wait on any client API rendering.
 

@@ -21,6 +21,7 @@ import pegl
 from pegl.display import Display
 from pegl.config import get_configs
 from pegl.attribs import Attribs, ClientAPIs, CBufferTypes
+import pegl.context as context
 
 # TODO: Obsolete this file by writing real unit tests!
 
@@ -137,3 +138,13 @@ def show_config_details(conf, label):
 
 show_config_details(c_vg[0], 'first OpenVG')
 show_config_details(c_all_32[0], 'first all-API, 32-bit colour')
+
+# 4. API binding and context creation.
+print('Initially, the bound API is {} '
+      '(ID {}).'.format(context.bound_api(), context.bound_api(raw=True)))
+print('Trying to bind OpenGL by ID...')
+context.bind_api(context.OPENGL)
+print('Now', context.bound_api(), 'is bound.')
+print('Trying to bind OpenVG by name...')
+context.bind_api('OpenVG')
+print('And now', context.bound_api(), 'is bound.')

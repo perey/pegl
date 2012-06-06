@@ -23,13 +23,13 @@
 from ctypes import c_void_p
 
 # Local imports.
-from . import egl, error_check, make_int_p
+from . import egl, error_check, make_int_p, NONE
 from .attribs import (Attribs, AttribList, BitMask, Caveats, CBufferTypes,
                       DONT_CARE)
 
-MAX_CONFIGS = 256 # Arbitrary! But it's sufficient for MY computer...
+MAX_CONFIGS = 256 # Arbitrary!
 
-def get_configs(display, attribs=None):
+def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
     '''Get supported configurations for a given display.
 
     Keyword arguments:
@@ -39,26 +39,31 @@ def get_configs(display, attribs=None):
             specifies which attributes must match exactly, which must be
             the given value or greater, and which match at least the
             given flags in a bit mask.
+        max_configs -- The maximum number of configurations to return.
+            If omitted, the default is {}.
+            
 
-    '''
-    configs = (c_void_p * MAX_CONFIGS)()
+    '''.format(MAX_CONFIGS)
+    configs = (c_void_p * max_configs)()
     actual_count = make_int_p()
 
     if attribs is None:
         # Get all configurations.
-        error_check(egl.eglGetConfigs(display, configs, MAX_CONFIGS,
-                                      actual_count))
+        error_check(egl.eglGetConfigs)(display, configs, max_configs,
+                                       actual_count)
     else:
         # Get configurations that match the required attributes.
         if type(attribs) is not AttribList:
             # FIXME: Why do I need to get this _as_parameter_?
             # Isn't ctypes supposed to do that for itself? But
-            # when I leave it off, it complains that I gave it
+            # when I leave it off, it complains that it wanted
             # "LP_c_int instance instead of c_int_Array_3", so
             # there's clearly a difference when I do it myself.
             attribs = AttribList(attribs)._as_parameter_
-        error_check(egl.eglChooseConfig(display, attribs, configs, MAX_CONFIGS,
-                                        actual_count))
+        else:
+            attribs = attribs._as_parameter_
+        error_check(egl.eglChooseConfig)(display, attribs, configs,
+                                         max_configs, actual_count)
 
     return tuple(Config(cfg, display) for cfg in configs[:actual_count[0]])
 
@@ -131,14 +136,14 @@ class Config:
 
         Returns:
             An integer, boolean, or bit mask value, as appropriate to
-            the attribute in question, or None if value indicates the
-            EGL symbolic constant NONE, or DONT_CARE if that value is
+            the attribute in question, or None if the value indicates
+            the symbolic constant NONE, or DONT_CARE if that value is
             allowed and indicated.
 
         '''
         # Call the foreign function, which stores its result in a pointer.
         result = make_int_p()
-        error_check(egl.eglGetConfigAttrib(self.display, self, attr, result))
+        error_check(egl.eglGetConfigAttrib)(self.display, self, attr, result)
 
         # Dereference the pointer.
         result = result[0]
@@ -149,9 +154,9 @@ class Config:
             return DONT_CARE
         elif details.values is bool:
             return bool(result)
-        elif (result == Attribs.NONE and
+        elif (result == NONE and
               issubclass(type(details.values), tuple) and
-              Attribs.NONE in details.values):
+              NONE in details.values):
             # The value is the EGL symbolic constant for NONE, in an
             # enumeration (named tuple) that supports it.
             return None
@@ -270,7 +275,7 @@ class Config:
                                      Attribs.NATIVE_VISUAL_TYPE))
         return {'id': nvid,
                 'type': (None if (nvid == 0 and
-                                  nvtype == Attribs.NONE) # Which it should.
+                                  nvtype == NONE) # Which it should.
                          else nvtype)}
 
     @property

@@ -20,7 +20,7 @@
 __author__ = 'Tim Pederick'
 __version__ = '0.0+1.4' # The +N.n part is the EGL API version wrapped.
 __all__ = ['attribs', 'config', 'display', 'sync',
-           'egl', 'error_check', 'make_int_p',
+           'egl', 'error_check', 'make_int_p', 'NONE',
            'EGLError', 'NotInitializedError', 'BadAccessError',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',
            'BadContextError', 'BadCurrentSurfaceError', 'BadDisplayError',
@@ -29,6 +29,9 @@ __all__ = ['attribs', 'config', 'display', 'sync',
 
 # Standard library imports.
 from ctypes import CDLL, POINTER, c_char_p, c_int, c_uint, c_void_p
+
+# The constant EGL_NONE is used for a few different purposes.
+NONE = 0x3038
 
 # Foreign library imports and type definitions.
 egl = CDLL('libEGL.so') # TODO: Cross-platform loading.

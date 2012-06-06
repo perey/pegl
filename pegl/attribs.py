@@ -24,11 +24,11 @@ from collections import namedtuple
 from ctypes import c_int
 from itertools import compress
 
+# Local imports.
+from . import NONE
+
 # Named tuple for storing the details of an attribute field.
 Details = namedtuple('Details', ('desc', 'values', 'dontcare', 'default'))
-
-# The constant EGL_NONE is used for a few different purposes.
-NONE = 0x3038
 
 # Bit mask attribute types.
 class BitMask:
