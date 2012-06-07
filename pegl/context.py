@@ -19,19 +19,20 @@
 # You should have received a copy of the GNU General Public License
 # along with PEGL. If not, see <http://www.gnu.org/licenses/>.
 
+# Standard library imports.
+from collections import namedtuple
+from ctypes import c_int
+
 # Local imports.
 from . import egl, EGLError, error_check, make_int_p, NONE
-from .attribs import Attribs, AttribList
+from .attribs import AttribList, ContextAttribs, ContextAPIs
 from .config import get_configs
 from .display import current_display, NO_CONTEXT, NO_SURFACE
 
-# Various symbolic constants.
-VALID_APIS = OPENGL, OPENGL_ES, OPENVG = 0x30A2, 0x30A0, 0x30A1
-RENDER_BUFFER, BACK_BUFFER, SINGLE_BUFFER = 0x3086, 0x3084, 0x3085
-CONTEXT_CLIENT_TYPE, CONTEXT_CLIENT_VERSION = 0x3097, 0x3098
-
-_api_lookup = lambda api: {OPENGL: 'OpenGL', OPENGL_ES: 'OpenGL ES',
-                           OPENVG: 'OpenVG', NONE: None}.get(api, 'unknown')
+_api_lookup = lambda api: {ContextAPIs.opengl: 'OpenGL',
+                           ContextAPIs.opengl_es: 'OpenGL ES',
+                           ContextAPIs.openvg: 'OpenVG',
+                           NONE: None}.get(api, 'unknown')
 
 def bind_api(api):
     '''Bind a client API to EGL in this thread.
@@ -42,11 +43,12 @@ def bind_api(api):
             naming one of those three APIs.
 
     '''
-    if api not in VALID_APIS:
+    if api not in ContextAPIs:
         # Try looking it up as a string label instead of a symbolic constant.
-        guess_api = {'OPENGL': OPENGL,
-                     'OPENGL_ES': OPENGL_ES,
-                     'OPENVG': OPENVG}.get(str(api).upper().replace(' ', '_'))
+        guess_api = {'OPENGL': ContextAPIs.opengl,
+                     'OPENGL_ES': ContextAPIs.opengl_es,
+                     'OPENVG': ContextAPIs.openvg,
+                     }.get(str(api).upper().replace(' ', '_'))
         if guess_api is None:
             raise ValueError('not a valid API: {!r}'.format(api))
         else:
@@ -95,8 +97,8 @@ class Context:
         api_version -- The client API version specified when this
             context was created. This is only relevant for OpenGL ES
             contexts.
-        render_buffer -- The buffer used by client API rendering, one of
-            'back', 'single', or None.
+        render_buffer -- The buffer used by client API rendering, a
+            value from RenderBufferTypes.
 
     '''
     def __init__(self, *args, **kwargs):
@@ -144,9 +146,9 @@ class Context:
 
         share_ctxhandle = (NO_CONTEXT if share_context is None else
                            share_context.ctxhandle)
-        attribs = {}
+        attribs = AttribList(attribs=ContextAttribs)
         if opengl_es_version is not None:
-            attribs[CONTEXT_CLIENT_VERSION] = opengl_es_version
+            attribs[ContextAttribs.CONTEXT_CLIENT_VERSION] = opengl_es_version
 
         # Finally, create the context and save its handle.
         self.ctxhandle = error_check(egl.eglCreateContext)(self.display,
@@ -172,13 +174,14 @@ class Context:
         self.ctxhandle = ctxhandle
         # Since this call method is intended only for use by current_context(),
         # the display is going to be the current_display(). Or so one assumes.
-        # FIXME: Race condition?
+        # FIXME: Race condition? The "current" display might have changed
+        # between calls to current_context() and current_display()!
         self.display = current_display()
 
         # Safe to call _attr now that display and ctxhandle are set.
-        config_id = self._attr(Attribs.CONFIG_ID)
+        config_id = self._attr(ContextAttribs.CONFIG_ID)
         self.config = get_configs(self.display,
-                                  {Attribs.CONFIG_ID: config_id})[0]
+                                  {ContextAttribs.CONFIG_ID: config_id})[0]
 
     @error_check
     def __del__(self):
@@ -220,7 +223,7 @@ class Context:
     @property
     def api(self):
         '''Get the client API that this context supports.'''
-        return _api_lookup(self._attr(CONTEXT_CLIENT_TYPE))
+        return _api_lookup(self._attr(ContextAttribs.CONTEXT_CLIENT_TYPE))
 
     @property
     def api_version(self):
@@ -229,14 +232,12 @@ class Context:
         This value is presently only relevant for OpenGL ES contexts.
 
         '''
-        return _api_lookup(self._attr(CONTEXT_CLIENT_VERSION))
+        return _api_lookup(self._attr(ContextAttribs.CONTEXT_CLIENT_VERSION))
 
     @property
     def render_buffer(self):
         '''Get the buffer used when rendering via this context.'''
-        return {SINGLE_BUFFER: 'single',
-                BACK_BUFFER: 'back',
-                NONE: None}.get(self._attr(RENDER_BUFFER), 'unknown')
+        return self._attr(ContextAttribs.RENDER_BUFFER)
 
     def make_current(self, draw_surface, read_surface=None):
         '''Make this context the current one in this thread.

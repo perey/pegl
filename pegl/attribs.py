@@ -28,6 +28,9 @@ from itertools import compress
 from . import NONE
 
 # Named tuple for storing the details of an attribute field.
+# TODO: Get rid of dontcare. It's only used for querying config attributes,
+# never for setting them or for dealing with anything else. So only configs
+# should have to know when and how to handle it.
 Details = namedtuple('Details', ('desc', 'values', 'dontcare', 'default'))
 
 # Bit mask attribute types.
@@ -140,6 +143,48 @@ class BitMask:
             pos += 1
 
 
+# A symbolic don't-care value that can't be confused with anything else.
+class DONT_CARE:
+    '''A don't-care value for an attribute.'''
+    _as_parameter_ = -1
+
+class Attribs:
+    '''A set of EGL attributes.
+
+    Subclasses of this class define attributes for different EGL objects
+    such as configurations and surfaces. All useful information is
+    available in class attributes and class methods, so these classes do
+    not need to be instantiated.
+
+    Class attributes:
+        details -- A mapping with the attribute's integer value as the
+            key, and a Details named-tuple instance (with a text
+            description, the attribute type, whether it can be
+            DONT_CARE, and the default) as the value.
+        Additionally, symbolic constants for all the known attributes
+        are available as class attributes. Their names are the same as
+        in the EGL standard, except without the EGL_ prefix.
+
+    '''
+    @classmethod
+    def desc(cls, value):
+        '''Get a textual description of a given attribute.
+
+        This may also be used to test for the validity of a given
+        attribute. If the return value is None, the value supplied does
+        not map to any known attribute.
+
+        Keyword arguments:
+            value -- The value representing the desired attribute.
+
+        '''
+        details = cls.details.get(value)
+        return (None if details is None else details.desc)
+
+# TODO: Split everything from here to AttribList into submodules, turning this
+# into a subpackage.
+
+# Objects for config attribute values.
 class SurfaceTypes(BitMask):
     '''A bit mask representing types of EGL surfaces.'''
     bit_names = ('pbuffer', 'pixmap', 'window', None, None,
@@ -152,12 +197,6 @@ class ClientAPIs(BitMask):
     bit_names = ('opengl_es', 'openvg', 'opengl_es2', 'opengl')
 
 
-# A symbolic don't-care value that can't be confused with anything else.
-class DONT_CARE:
-    '''A don't-care value for an attribute.'''
-    _as_parameter_ = -1
-
-# Enumerations of EGL values.
 CBufferTypes = namedtuple('CBufferTypes',
                           ('rgb', 'luminance')
                           )(0x308E, 0x308F)
@@ -168,22 +207,9 @@ TransparentTypes = namedtuple('TransparentTypes',
                               ('none', 'rgb')
                               )(NONE, 0x3052)
 
-class Attribs:
-    '''The set of available EGL attributes.
 
-    All useful information is available in class attributes and class
-    methods, so this class does not need to be instantiated.
-
-    Class attributes:
-        details -- A mapping with the attribute's integer value as the
-            key, and a Details named-tuple instance (with a text
-            description, the attribute type, whether it can be
-            DONT_CARE, and the default) as the value.
-        Additionally, symbolic constants for all the known attributes
-        are available as class attributes. Their names are the same as
-        in the EGL standard, except without the EGL_ prefix.
-
-    '''
+class ConfigAttribs(Attribs):
+    '''The set of EGL attributes relevant to configuration objects.'''
     (BUFFER_SIZE, ALPHA_SIZE, BLUE_SIZE, GREEN_SIZE, RED_SIZE, DEPTH_SIZE,
      STENCIL_SIZE, CONFIG_CAVEAT, CONFIG_ID, LEVEL, MAX_PBUFFER_HEIGHT,
      MAX_PBUFFER_PIXELS, MAX_PBUFFER_WIDTH, NATIVE_RENDERABLE,
@@ -267,8 +293,8 @@ class Attribs:
                RENDERABLE_TYPE: Details('Bitmask of available client '
                                         'rendering APIs', ClientAPIs, False,
                                         ClientAPIs(opengl_es=1)),
-               CONFORMANT: Details('Bitmask of specs to which contexts conform',
-                                   ClientAPIs, False, ClientAPIs()),
+               CONFORMANT: Details('Bitmask of specs to which contexts '
+                                   'conform', ClientAPIs, False, ClientAPIs()),
 
                NATIVE_RENDERABLE: Details('Whether or not native APIs can '
                                           'render to the surface', bool,
@@ -280,20 +306,123 @@ class Attribs:
                MATCH_NATIVE_PIXMAP: Details('Handle of a valid native pixmap',
                                             c_int, False, NONE)}
 
-    @classmethod
-    def desc(cls, value):
-        '''Get a textual description of a given attribute.
 
-        This may also be used to test for the validity of a given
-        attribute. If the return value is None, the value supplied does
-        not map to any known attribute.
+# Objects for context attributes.
+RenderBufferTypes = namedtuple('RenderBufferTypes',
+                               ('none', 'back', 'single')
+                               )(NONE, 0x3084, 0x3085)
+ContextAPIs = namedtuple('ContextAPIs',
+                         ('opengl', 'opengl_es', 'openvg')
+                         )(0x30A2, 0x30A0, 0x30A1)
 
-        Keyword arguments:
-            value -- The value representing the desired attribute.
+class ContextAttribs(Attribs):
+    '''The set of EGL attributes relevant to context objects.'''
+    CONFIG_ID = ConfigAttribs.CONFIG_ID
+    RENDER_BUFFER = 0x3086
+    CONTEXT_CLIENT_TYPE, CONTEXT_CLIENT_VERSION = 0x3097, 0x3098
+    details = {CONFIG_ID: Details('The unique identifier of the configuration '
+                                  'used to create this context', c_int, False,
+                                  0),
+               RENDER_BUFFER: Details('Which buffer type this context renders '
+                                      'into', RenderBufferTypes, False,
+                                      RenderBufferTypes.back),
+               CONTEXT_CLIENT_TYPE: Details('The client API for which this '
+                                            'context was created', ContextAPIs,
+                                            False, NONE),
+               CONTEXT_CLIENT_VERSION: Details('The client API version for '
+                                               'which this context was '
+                                               'created', c_int, False, 0)}
 
-        '''
-        details = cls.details.get(value)
-        return (None if details is None else details.desc)
+
+# Objects for surface attributes.
+VGColorSpaces = namedtuple('VGColorSpaces',
+                           ('srgb', 'linear')
+                           )(0x3089, 0x308A)
+VGAlphaFormats = namedtuple('VGAlphaFormats',
+                            ('nonpre', 'pre')
+                            )(0x308B, 0x308C)
+NO_TEXTURE = 0x305C
+TextureFormats = namedtuple('TextureFormats',
+                            ('none', 'rgb', 'rgba')
+                            )(NO_TEXTURE, 0x305D, 0x305E)
+TextureTargets = namedtuple('TextureTargets',
+                            ('none', 'two_d')
+                            )(NO_TEXTURE, 0x305F)
+MultisampleResolve = namedtuple('MultisampleResolve',
+                                ('default', 'box')
+                                )(0x309A, 0x309B)
+SwapBehaviors = namedtuple('SwapBehaviours',
+                           ('preserved', 'destroyed')
+                           )(0x3094, 0x3095)
+UNKNOWN_DISPLAY_VALUE = -1
+
+class SurfaceAttribs(Attribs):
+    # For creating window surfaces.
+    RENDER_BUFFER = ContextAttribs.RENDER_BUFFER
+    # For creating Pbuffer surfaces.
+    WIDTH, HEIGHT, LARGEST_PBUFFER = 0x3057, 0x3056, 0x3058
+    TEXTURE_FORMAT, TEXTURE_TARGET, MIPMAP_TEXTURE = 0x3080, 0x3081, 0x3082
+    # For creating all surfaces.
+    VG_COLORSPACE, VG_ALPHA_FORMAT = 0x3087, 0x3088
+    # For setting attributes of a surface.
+    MIPMAP_LEVEL, MULTISAMPLE_RESOLVE, SWAP_BEHAVIOR = 0x3083, 0x3099, 0x3093
+    # For querying attributes of a surface.
+    CONFIG_ID = ConfigAttribs.CONFIG_ID
+    HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION, PIXEL_ASPECT_RATIO = (0x3090,
+                                                                      0x3091,
+                                                                      0x3092)
+    details = {RENDER_BUFFER: Details('Which buffer type this surface renders '
+                                      'into', RenderBufferTypes, False,
+                                      RenderBufferTypes.back),
+               WIDTH: Details('Width in pixels of the pbuffer', c_int, False,
+                              0),
+               HEIGHT: Details('Height in pixels of the pbuffer', c_int, False,
+                               0),
+               LARGEST_PBUFFER: Details('Maximum pixel size of the pbuffer',
+                                        c_int, False, False),
+               TEXTURE_FORMAT: Details('Format of the texture that the pbuffer '
+                                       'is bound to', TextureFormats, False,
+                                       TextureFormats.none),
+               TEXTURE_TARGET: Details('Target of the texture that the pbuffer '
+                                       'is bound to', TextureTargets, False,
+                                       TextureTargets.none),
+               MIPMAP_TEXTURE: Details('Whether or not mipmap space should be '
+                                       'allocated', bool, False, False),
+               VG_COLORSPACE: Details('The color space to be used by OpenVG',
+                                      VGColorSpaces, False,
+                                      VGColorSpaces.srgb),
+               VG_ALPHA_FORMAT: Details('Whether or not alpha values are '
+                                        'premultiplied by OpenVG',
+                                        VGAlphaFormats, False,
+                                        VGAlphaFormats.nonpre),
+               MIPMAP_LEVEL: Details('The level of the mipmap texture to '
+                                     'render', c_int, False, 0),
+               MULTISAMPLE_RESOLVE: Details('The filter to use when resolving '
+                                            'the multisample buffer',
+                                            MultisampleResolve, False,
+                                            MultisampleResolve.default),
+               SWAP_BEHAVIOR: Details('Effect on color buffer upon a buffer '
+                                      'swap', SwapBehaviors, False,
+                                      SwapBehaviors.preserved # Actually, this
+                                      ),                      # is dependent on
+                                                              # implementation.
+               CONFIG_ID: Details('The unique identifier of the configuration '
+                                  'used to create this surface', c_int, False,
+                                  0),
+               HORIZONTAL_RESOLUTION: Details('Horizontal resolution of the '
+                                              'display, in pixels per metre '
+                                              'scaled up by 10000', c_int,
+                                              False, UNKNOWN_DISPLAY_VALUE),
+                                              # TODO: Make an Attribs scaled-
+                                              # float type that handles scaling
+                                              # automatically.
+               VERTICAL_RESOLUTION: Details('Vertical resolution of the '
+                                            'display, in pixels per metre '
+                                            'scaled up by 10000', c_int,
+                                            False, UNKNOWN_DISPLAY_VALUE),
+               PIXEL_ASPECT_RATIO: Details('Ratio of physical pixel width to '
+                                           'height, scaled up by 10000', c_int,
+                                           False, UNKNOWN_DISPLAY_VALUE)}
 
 
 class AttribList:
@@ -304,16 +433,26 @@ class AttribList:
 
     Instance attributes:
         _items -- Direct access to the attributes set in this list.
+        attribs -- The subclass of Attribs defining the attributes
+            available in this list.
 
     '''
-    def __init__(self, mapping=None):
+    def __init__(self, mapping=None, attribs=ConfigAttribs):
         '''Initialise the attribute list.
 
         Keyword arguments:
             mapping -- An optional dictionary from which to initialise
                 this attribute list.
+            attribs -- As the instance attribute. If omitted, it will
+                default to ConfigAttribs.
 
         '''
+        # TODO: Since we know the namespace of attributes in this list, make it
+        # possible to get/set them by name as well as by value. So rather than:
+        # >>> attr_list[ConfigAttribs.BUFFER_SIZE]
+        # ...it would be possible to use:
+        # >>> attr_list['BUFFER_SIZE']
+        self.attribs = attribs
         self._items = {}
 
         if mapping is not None:
@@ -330,7 +469,7 @@ class AttribList:
             index -- The attribute requested.
 
         '''
-        if Attribs.desc(index) is None:
+        if self.attribs.desc(index) is None:
             raise ValueError('not a valid attribute type')
         return self._items.get(index)
 
@@ -344,7 +483,7 @@ class AttribList:
 
         '''
         # Check that the given value is valid.
-        details = Attribs.details.get(index)
+        details = self.attribs.details.get(index)
         if details is None:
             raise ValueError('not a valid attribute type')
         elif val is DONT_CARE and not details.dontcare:
@@ -382,14 +521,14 @@ class AttribList:
         arr = []
         for kv_pair in self.items():
             arr.extend(kv_pair)
-        arr.append(Attribs.NONE)
+        arr.append(self.attribs.NONE)
 
         return arr_type(*arr)
 
     def get(self, index):
         '''Get the value of an attribute, or its default if it is unset.
 
-        See also __getitem__(), which returns the None if it is unset.
+        See also __getitem__(), which returns None if it is unset.
 
         Keyword arguments:
             index -- The attribute requested.
@@ -397,7 +536,7 @@ class AttribList:
         '''
         val = self[index]
         if val is None:
-            return Attribs.details[value].default
+            return self.attribs.details[value].default
         else:
             return val
 

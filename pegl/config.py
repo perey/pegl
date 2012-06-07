@@ -20,14 +20,15 @@
 # along with PEGL. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
+from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
 from . import egl, error_check, make_int_p, NONE
-from .attribs import (Attribs, AttribList, BitMask, Caveats, CBufferTypes,
-                      DONT_CARE)
+from .attribs import (AttribList, BitMask, Caveats, CBufferTypes,
+                      ConfigAttribs, DONT_CARE)
 
-MAX_CONFIGS = 256 # Arbitrary!
+MAX_CONFIGS = 256 # Arbitrary! "256 configs should be enough for anybody..."
 
 def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
     '''Get supported configurations for a given display.
@@ -132,7 +133,7 @@ class Config:
 
         Keyword arguments:
             attr -- The value identifying the desired attribute. Best
-                supplied as a symbolic constant from Attribs.
+                supplied as a symbolic constant from ConfigAttribs.
 
         Returns:
             An integer, boolean, or bit mask value, as appropriate to
@@ -149,7 +150,7 @@ class Config:
         result = result[0]
 
         # Convert to an appropriate type.
-        details = Attribs.details[attr]
+        details = ConfigAttribs.details[attr]
         if details.dontcare and result == DONT_CARE._as_parameter_:
             return DONT_CARE
         elif details.values is bool:
@@ -174,15 +175,15 @@ class Config:
     @property
     def alpha_mask_size(self):
         '''Get the size in bits of the alpha mask buffer.'''
-        return self._attr(Attribs.ALPHA_MASK_SIZE)
+        return self._attr(ConfigAttribs.ALPHA_MASK_SIZE)
 
     @property
     def bind_textures(self):
         '''Get texture types that this configuration allows binding to.'''
         texs = []
-        if self._attr(Attribs.BIND_TO_TEXTURE_RGB):
+        if self._attr(ConfigAttribs.BIND_TO_TEXTURE_RGB):
             texs.append('RGB')
-        if self._attr(Attribs.BIND_TO_TEXTURE_RGBA):
+        if self._attr(ConfigAttribs.BIND_TO_TEXTURE_RGBA):
             texs.append('RGBA')
         return tuple(texs)
 
@@ -195,7 +196,7 @@ class Config:
         be relied upon instead.
 
         '''
-        cav = self._attr(Attribs.CONFIG_CAVEAT)
+        cav = self._attr(ConfigAttribs.CONFIG_CAVEAT)
 
         if cav == Caveats.slow:
             return 'slow'
@@ -213,28 +214,28 @@ class Config:
         itself, and should be trusted or not trusted accordingly.
 
         '''
-        return self._attr(Attribs.CONFORMANT)._flags_set
+        return self._attr(ConfigAttribs.CONFORMANT)._flags_set
 
     @property
     def config_id(self):
         '''Get the unique identifier for this configuration.'''
-        return self._attr(Attribs.CONFIG_ID)
+        return self._attr(ConfigAttribs.CONFIG_ID)
 
     @property
     def color_buffer(self):
         '''Get the color buffer attributes of this configuration.'''
-        btype = self._attr(Attribs.COLOR_BUFFER_TYPE)
-        buffer_info = {'size': self._attr(Attribs.BUFFER_SIZE),
-                       'alpha_size': self._attr(Attribs.ALPHA_SIZE)}
+        btype = self._attr(ConfigAttribs.COLOR_BUFFER_TYPE)
+        buffer_info = {'size': self._attr(ConfigAttribs.BUFFER_SIZE),
+                       'alpha_size': self._attr(ConfigAttribs.ALPHA_SIZE)}
         if btype == CBufferTypes.rgb:
             buffer_info['type'] = 'RGB'
-            for key, attr in (('r', Attribs.RED_SIZE),
-                              ('g', Attribs.GREEN_SIZE),
-                              ('b', Attribs.BLUE_SIZE)):
+            for key, attr in (('r', ConfigAttribs.RED_SIZE),
+                              ('g', ConfigAttribs.GREEN_SIZE),
+                              ('b', ConfigAttribs.BLUE_SIZE)):
                 buffer_info[key] = self._attr(attr)
         elif btype == CBufferTypes.luminance:
             buffer_info['type'] = 'luminance'
-            buffer_info['luminance'] = self._attr(Attribs.LUMINANCE_SIZE)
+            buffer_info['luminance'] = self._attr(ConfigAttribs.LUMINANCE_SIZE)
         else:
             buffer_info['type'] = 'unknown'
 
@@ -243,7 +244,7 @@ class Config:
     @property
     def depth_buffer_size(self):
         '''Get the size in bits of the depth buffer.'''
-        return self._attr(Attribs.DEPTH_SIZE)
+        return self._attr(ConfigAttribs.DEPTH_SIZE)
 
     @property
     def frame_buffer_level(self):
@@ -254,25 +255,25 @@ class Config:
         windowing system.
 
         '''
-        return self._attr(Attribs.LEVEL)
+        return self._attr(ConfigAttribs.LEVEL)
 
     @property
     def multisample(self):
         '''Get details of the multisample buffer in this configuration.'''
-        return {'buffers': self._attr(Attribs.SAMPLE_BUFFERS),
-                'samples': self._attr(Attribs.SAMPLES)}
+        return {'buffers': self._attr(ConfigAttribs.SAMPLE_BUFFERS),
+                'samples': self._attr(ConfigAttribs.SAMPLES)}
 
     @property
     def native_renderable(self):
         '''Determine whether native calls can render to EGL surfaces.'''
-        return self._attr(Attribs.NATIVE_RENDERABLE)
+        return self._attr(ConfigAttribs.NATIVE_RENDERABLE)
 
     @property
     def native_visual(self):
         '''Get the native visual associated with this configuration.'''
         nvid, nvtype = (self._attr(attr)
-                        for attr in (Attribs.NATIVE_VISUAL_ID,
-                                     Attribs.NATIVE_VISUAL_TYPE))
+                        for attr in (ConfigAttribs.NATIVE_VISUAL_ID,
+                                     ConfigAttribs.NATIVE_VISUAL_TYPE))
         return {'id': nvid,
                 'type': (None if (nvid == 0 and
                                   nvtype == NONE) # Which it should.
@@ -281,38 +282,39 @@ class Config:
     @property
     def pbuffer_limits(self):
         '''Get the maximum dimensions of the pbuffer (pixel buffer).'''
-        return {'width': self._attr(ATTRIBS.MAX_PBUFFER_WIDTH),
-                'height': self._attr(ATTRIBS.MAX_PBUFFER_HEIGHT),
-                'pixels': self._attr(ATTRIBS.MAX_PBUFFER_PIXELS)}
+        return {'width': self._attr(ConfigAttribs.MAX_PBUFFER_WIDTH),
+                'height': self._attr(ConfigAttribs.MAX_PBUFFER_HEIGHT),
+                'pixels': self._attr(ConfigAttribs.MAX_PBUFFER_PIXELS)}
 
     @property
     def renderable_contexts(self):
         '''List client APIs to which this configuration can render.'''
-        return self._attr(Attribs.RENDERABLE_TYPE)._flags_set
+        return self._attr(ConfigAttribs.RENDERABLE_TYPE)._flags_set
 
     @property
     def stencil_buffer_size(self):
         '''Get the size in bits of the stencil buffer.'''
-        return self._attr(Attribs.STENCIL_SIZE)
+        return self._attr(ConfigAttribs.STENCIL_SIZE)
 
     @property
     def surface_types(self):
         '''List surface types to which this configuration can render.'''
-        return self._attr(Attribs.SURFACE_TYPE)._flags_set
+        return self._attr(ConfigAttribs.SURFACE_TYPE)._flags_set
 
     @property
     def swap_intervals(self):
         '''Get the limits on swap intervals between buffer swaps.'''
-        return (self._attr(Attribs.MIN_SWAP_INTERVAL),
+        return (self._attr(ConfigAttribs.MIN_SWAP_INTERVAL),
                 # Upper limit given as max + 1, as normal for ranges in Python.
-                self._attr(Attribs.MAX_SWAP_INTERVAL) + 1)
+                self._attr(ConfigAttribs.MAX_SWAP_INTERVAL) + 1)
 
     @property
     def transparent_pixels(self):
         '''Get the transparent pixel support of this configuration.'''
-        ttype = self._attr(Attribs.TRANSPARENT_TYPE)
+        ttype = self._attr(ConfigAttribs.TRANSPARENT_TYPE)
         return (None if (ttype is None or ttype == TransparentTypes.none) else
                 'RGB' if ttype == TransparentTypes.rgb else
-                'unknown', {'r': self._attr(Attribs.TRANSPARENT_RED_VALUE),
-                            'g': self._attr(Attribs.TRANSPARENT_GREEN_VALUE),
-                            'b': self._attr(Attribs.TRANSPARENT_BLUE_VALUE)})
+                'unknown',
+                {'r': self._attr(ConfigAttribs.TRANSPARENT_RED_VALUE),
+                 'g': self._attr(ConfigAttribs.TRANSPARENT_GREEN_VALUE),
+                 'b': self._attr(ConfigAttribs.TRANSPARENT_BLUE_VALUE)})

@@ -20,6 +20,7 @@
 # along with PEGL. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
+from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
@@ -29,6 +30,10 @@ from . import egl, error_check, make_int_p, sync
 CLIENT_APIS, EXTENSIONS, VENDOR, VERSION = 0x308D, 0x3055, 0x3053, 0x3054
 DEFAULT_DISPLAY = c_void_p(0)
 NO_DISPLAY, NO_CONTEXT, NO_SURFACE = c_void_p(0), c_void_p(0), c_void_p(0)
+
+# Version info structure.
+Version = namedtuple('Version', ('major', 'minor', 'vendor'))
+Version.__str__ = lambda self: '{0.major}.{0.minor} {0.vendor}'.format(self)
 
 def current_display():
     '''Get the current EGL display.'''
@@ -45,14 +50,15 @@ class Display:
 
     Instance attributes:
         dhandle -- The foreign object handle for this display.
-        client_apis -- A string describing the client APIs supported
-            (such as OpenGL, OpenGL_ES, and OpenVG). Although the value
-            is implementation-defined, it will likely be a list of API
-            names delimited by spaces.
-        extensions -- A string describing the EGL extensions supported.
-            Again, this is likely to be a space-delimited list.
+        client_apis -- A string listing the client APIs supported (such
+            as OpenGL, OpenGL_ES, and OpenVG), separated by spaces.
+            Although I can't find it specified in the EGL standard, it
+            seems likely that these will be limited to ASCII.
+        extensions -- A string listing the EGL extensions supported,
+            again separated by spaces and probably ASCII.
         vendor -- The vendor string for this EGL implementation.
-        version -- A string describing the implementation version.
+        version -- A 3-tuple describing the implementation version, in
+            the format (major, minor, vendor_info).
 
     '''
     def __init__(self, dhandle=None, native_id=None, delay_init=False):
@@ -106,7 +112,7 @@ class Display:
         return self.dhandle
 
     @error_check
-    def _query(self, target):
+    def _attr(self, target):
         '''Query an EGL instance parameter.
 
         Keyword arguments:
@@ -124,36 +130,40 @@ class Display:
     @property
     def client_apis(self):
         '''Get the client APIs available on this EGL instance.'''
-        return self._query(CLIENT_APIS)
+        return tuple(self._attr(CLIENT_APIS).split())
 
     @property
     def extensions(self):
         '''Get the extensions available on this EGL instance.'''
-        return self._query(EXTENSIONS)
+        return tuple(self._attr(EXTENSIONS).split())
 
     @property
     def vendor(self):
         '''Get the vendor string for this EGL instance.'''
-        return self._query(VENDOR)
+        return self._attr(VENDOR)
 
     @property
     def version(self):
         '''Get the EGL version of this EGL instance.'''
-        return self._query(VERSION)
+        major_minor, vendor = self._attr(VERSION).split(None, 1)
+        major, minor = major_minor.split('.')
+        return Version(int(major), int(minor), vendor)
 
     @error_check
     def initialize(self):
         '''Initialize EGL for this display.
 
         Returns:
-            An EGL version number, in (major, minor) format.
+            An EGL version number, in (major, minor, vendor) format.
+            The vendor part is an empty string; after initialization
+            it can be obtained from the version attribute.
 
         '''
         # Create and initialize the return pointers.
         major, minor = make_int_p(), make_int_p()
 
         egl.eglInitialize(self, major, minor)
-        return (major[0], minor[0])
+        return (major[0], minor[0], '')
 
     def release(self):
         '''Release EGL resources used in this thread.

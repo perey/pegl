@@ -19,7 +19,7 @@
 
 __author__ = 'Tim Pederick'
 __version__ = '0.0+1.4' # The +N.n part is the EGL API version wrapped.
-__all__ = ['attribs', 'config', 'display', 'sync',
+__all__ = ['attribs', 'config', 'context', 'display', 'surface', 'sync',
            'egl', 'error_check', 'make_int_p', 'NONE',
            'EGLError', 'NotInitializedError', 'BadAccessError',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',

@@ -20,7 +20,7 @@
 import pegl
 from pegl.display import Display
 from pegl.config import get_configs
-from pegl.attribs import Attribs, ClientAPIs, CBufferTypes
+from pegl.attribs import ConfigAttribs, ContextAPIs, ClientAPIs, CBufferTypes
 import pegl.context as context
 
 # TODO: Obsolete this file by writing real unit tests!
@@ -56,13 +56,12 @@ def clientAPIs(seq):
 
 # 1. Initialising the EGL display.
 d = Display(delay_init=True)
-print('Initialised EGL version {0[0]}.{0[1]} ({1} {2}).'.format(d.initialize(),
-                                                                d.vendor,
-                                                                d.version))
+print('Initialised EGL version {0[0]}.{0[1]} ({1} '
+      '{2!s}).'.format(d.initialize(), d.vendor, d.version))
 print('This implementation supports these APIs:')
-print('  *', '\n  * '.join(d.client_apis.split()))
+print('  *', '\n  * '.join(d.client_apis))
 print('...and these extensions:')
-print('  *', '\n  * '.join(d.extensions.split()))
+print('  *', '\n  * '.join(d.extensions))
 print()
 
 # 2. Getting available configurations.
@@ -70,38 +69,39 @@ c = get_configs(d)
 print('There are', len(c), 'configurations available.')
 
 # 2a. Paring down the configurations by selecting desired attributes.
-reqs = {Attribs.RENDERABLE_TYPE: ClientAPIs(opengl=1)}
+reqs = {ConfigAttribs.RENDERABLE_TYPE: ClientAPIs(opengl=1)}
 c_gl = get_configs(d, reqs)
 print(len(c_gl), 'configurations support OpenGL. (I wonder what the other',
       len(c) - len(c_gl), 'do?)')
 
-reqs[Attribs.RENDERABLE_TYPE].opengl = 0
-reqs[Attribs.RENDERABLE_TYPE].opengl_es = 1
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl = 0
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl_es = 1
 c_es = get_configs(d, reqs)
 print(len(c_es), 'configurations support OpenGL ES 1.x.')
 
-reqs[Attribs.RENDERABLE_TYPE].opengl_es = 0
-reqs[Attribs.RENDERABLE_TYPE].opengl_es2 = 1
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl_es = 0
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl_es2 = 1
 c_es2 = get_configs(d, reqs)
 print(len(c_es2), 'configurations support OpenGL ES 2.x.')
 
-reqs[Attribs.RENDERABLE_TYPE].opengl_es2 = 0
-reqs[Attribs.RENDERABLE_TYPE].openvg = 1
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl_es2 = 0
+reqs[ConfigAttribs.RENDERABLE_TYPE].openvg = 1
 c_vg = get_configs(d, reqs)
 print(len(c_vg), 'configurations support OpenVG.')
 
-reqs[Attribs.RENDERABLE_TYPE].opengl = 1
-reqs[Attribs.RENDERABLE_TYPE].opengl_es = 1
-reqs[Attribs.RENDERABLE_TYPE].opengl_es2 = 1
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl = 1
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl_es = 1
+reqs[ConfigAttribs.RENDERABLE_TYPE].opengl_es2 = 1
 c_all = get_configs(d, reqs)
 print(len(c_all), 'configurations support all four APIs.')
 
-reqs[Attribs.BUFFER_SIZE] = 32
+reqs[ConfigAttribs.BUFFER_SIZE] = 32
 c_all_32 = get_configs(d, reqs)
 print(len(c_all_32),
       'configurations support all four APIs and 32-bit colour.')
 
-c_lum = get_configs(d, {Attribs.COLOR_BUFFER_TYPE: CBufferTypes.luminance})
+c_lum = get_configs(d,
+                    {ConfigAttribs.COLOR_BUFFER_TYPE: CBufferTypes.luminance})
 print(len(c_lum), 'configurations support a luminance colour buffer.')
 
 print()
@@ -143,7 +143,7 @@ show_config_details(c_all_32[0], 'first all-API, 32-bit colour')
 print('Initially, the bound API is {} '
       '(ID {}).'.format(context.bound_api(), context.bound_api(raw=True)))
 print('Trying to bind OpenGL by ID...')
-context.bind_api(context.OPENGL)
+context.bind_api(ContextAPIs.opengl)
 print('Now', context.bound_api(), 'is bound.')
 print('Trying to bind OpenVG by name...')
 context.bind_api('OpenVG')
