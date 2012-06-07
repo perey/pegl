@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''PEGL: A Python wrapper for the EGL 1.4 API.'''
+'''Pegl: A Python wrapper for the EGL 1.4 API.'''
 
 # Copyright © 2012 Tim Pederick.
 #
