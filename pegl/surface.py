@@ -24,11 +24,12 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from . import egl, error_check, make_int_p, NONE
-from .attribs import (attr_convert, Attribs, AttribList, SurfaceAttribs,
-                      UNKNOWN_DISPLAY_VALUE, VGAlphaFormats)
+from . import egl, error_check, make_int_p
+from .attribs import attr_convert, Attribs, AttribList
+from .attribs.surface import SurfaceAttribs, RenderBufferTypes, VGAlphaFormats
 
-# Symbolic constant for creating a PbufferSurface from a client buffer.
+# Symbolic constants--okay, just one constant. This is the sole buffer type
+# accepted by EGL when creating a PbufferSurface from a client buffer.
 OPENVG_IMAGE = 0x3096
 
 class Surface:
@@ -61,8 +62,8 @@ class Surface:
         self.shandle = None
         self.display = display
         self.config = config
-        self.attribs = (attribs if type(attribs) is AttribsList else
-                        AttribsList(attribs, SurfaceAttribs))
+        self.attribs = (attribs if type(attribs) is AttribList else
+                        AttribList(SurfaceAttribs, attribs))
 
     def __del__(self):
         '''Delete this surface.'''
@@ -82,7 +83,7 @@ class Surface:
             return False
 
     @property
-    def _as_parameter(self):
+    def _as_parameter_(self):
         '''Get the surface handle for use by foreign functions.'''
         return self.shandle
 
@@ -98,7 +99,7 @@ class Surface:
         error_check(egl.eglQuerySurface)(self.display, self, attr, result)
 
         # Dereference the pointer and convert to an appropriate type.
-        return attr_convert(attr, result[0], ConfigAttribs)
+        return attr_convert(attr, result[0], SurfaceAttribs)
 
     def _setattr(self, attr, value):
         '''Set the value of a surface attribute.
@@ -119,7 +120,8 @@ class Surface:
 
         '''
         return self._attr(SurfaceAttribs.MULTISAMPLE_RESOLVE)
-    @multisample_resolve.setter(self, val):
+    @multisample_resolve.setter
+    def multisample_resolve(self, val):
         '''Set the filter used when resolving the multisample buffer.
 
         Keyword arguments:
@@ -147,7 +149,7 @@ class Surface:
         '''Get the type of render buffer which client APIs should use.
 
         Returns:
-            RenderBufferTypes.back or RenderBufferTypes.single.
+            RenderBufferTypes.BACK or RenderBufferTypes.SINGLE.
 
         '''
         return self._attr(SurfaceAttribs.RENDER_BUFFER)
@@ -285,6 +287,32 @@ class PbufferSurface(Surface):
         '''Query whether the largest possible pbuffer was requested.'''
         return self._attr(SurfaceAttribs.LARGEST_PBUFFER)
 
+    def bind_texture(self, buffer=RenderBufferTypes.BACK):
+        '''Bind this surface to an OpenGL ES texture.
+
+        Keyword arguments:
+            buffer -- Which rendering buffer to bind. The EGL standard
+                currently only supports the back buffer in this role
+                and hence the argument may be omitted.
+
+        '''
+        # The return value is a boolean but will generally be ignored,
+        # as error_check will handle any errors.
+        return error_check(egl.eglBindTexImage)(self.display, self, buffer)
+
+    def release_texture(self, buffer=RenderBufferTypes.BACK):
+        '''Release the surface from a binding to an OpenGL ES texture.
+
+        Keyword arguments:
+            buffer -- Which rendering buffer to release. The EGL
+                standard currently only supports the back buffer in this
+                role and hence the argument may be omitted.
+
+        '''
+        # The return value is a boolean but will generally be ignored,
+        # as error_check will handle any errors.
+        return error_check(egl.eglReleaseTexImage)(self.display, self, buffer)
+
 
 class PixmapSurface(Surface):
     '''Represents a surface that renders to a native pixmap.
@@ -349,14 +377,9 @@ class WindowSurface(Surface):
             returned in its place.
 
         '''
-        # TODO: Handle scaling in the attribs module.
-        SCALE_FACTOR = 10000.0
-
-        raw = (self._attr(attr)
-               for attr in (SurfaceAttribs.HORIZONTAL_RESOLUTION,
-                            SurfaceAttribs.VERTICAL_RESOLUTION,
-                            SurfaceAttribs.PIXEL_ASPECT_RATIO))
-
-        # TODO: Handle UNKNOWN_DISPLAY_VALUE => None in attribs too.
-        return tuple((None if val == UNKNOWN_DISPLAY_VALUE else
-                      val / SCALE_FACTOR) for val in raw)
+        # Scaling and mapping the "unknown" symbol to None is handled by
+        # attr_convert in the attribs module, which self._attr() calls.
+        return tuple(self._attr(attr)
+                     for attr in (SurfaceAttribs.HORIZONTAL_RESOLUTION,
+                                  SurfaceAttribs.VERTICAL_RESOLUTION,
+                                  SurfaceAttribs.PIXEL_ASPECT_RATIO))

@@ -24,14 +24,15 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from . import egl, EGLError, error_check, make_int_p, NONE
-from .attribs import AttribList, ContextAttribs, ContextAPIs
+from . import egl, EGLError, error_check, make_int_p
+from .attribs import AttribList, NONE
+from .attribs.context import ContextAttribs, ContextAPIs
 from .config import get_configs
 from .display import current_display, NO_CONTEXT, NO_SURFACE
 
-_api_lookup = lambda api: {ContextAPIs.opengl: 'OpenGL',
-                           ContextAPIs.opengl_es: 'OpenGL ES',
-                           ContextAPIs.openvg: 'OpenVG',
+_api_lookup = lambda api: {ContextAPIs.OPENGL: 'OpenGL',
+                           ContextAPIs.OPENGL_ES: 'OpenGL ES',
+                           ContextAPIs.OPENVG: 'OpenVG',
                            NONE: None}.get(api, 'unknown')
 
 def bind_api(api):
@@ -45,9 +46,9 @@ def bind_api(api):
     '''
     if api not in ContextAPIs:
         # Try looking it up as a string label instead of a symbolic constant.
-        guess_api = {'OPENGL': ContextAPIs.opengl,
-                     'OPENGL_ES': ContextAPIs.opengl_es,
-                     'OPENVG': ContextAPIs.openvg,
+        guess_api = {'OPENGL': ContextAPIs.OPENGL,
+                     'OPENGL_ES': ContextAPIs.OPENGL_ES,
+                     'OPENVG': ContextAPIs.OPENVG,
                      }.get(str(api).upper().replace(' ', '_'))
         if guess_api is None:
             raise ValueError('not a valid API: {!r}'.format(api))
@@ -148,7 +149,7 @@ class Context:
                            share_context.ctxhandle)
         attribs = AttribList(attribs=ContextAttribs)
         if opengl_es_version is not None:
-            attribs[ContextAttribs.CONTEXT_CLIENT_VERSION] = opengl_es_version
+            attribs['CONTEXT_CLIENT_VERSION'] = opengl_es_version
 
         # Finally, create the context and save its handle.
         self.ctxhandle = error_check(egl.eglCreateContext)(self.display,
@@ -157,6 +158,8 @@ class Context:
                                                            attribs)
         # Error checking -- theoretically, error_check would have flagged
         # some specific failure by now, but if not, we can catch it.
+        # TODO: Give error_check a "fail_on" argument that will check this??
+        # That would also mean removing ContextCreationError from this module.
         if self.ctxhandle == NO_CONTEXT:
             raise ContextCreationError
 
@@ -239,7 +242,7 @@ class Context:
         '''Get the buffer used when rendering via this context.'''
         return self._attr(ContextAttribs.RENDER_BUFFER)
 
-    def make_current(self, draw_surface, read_surface=None):
+    def make_current(self, draw_surface=None, read_surface=None):
         '''Make this context the current one in this thread.
 
         Keyword arguments:

@@ -24,9 +24,10 @@ from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
-from . import egl, error_check, make_int_p, sync
+from . import egl, error_check, make_int_p
 
 # EGL constants.
+# TODO: Put these four in a namedtuple instance, like in all the other modules?
 CLIENT_APIS, EXTENSIONS, VENDOR, VERSION = 0x308D, 0x3055, 0x3053, 0x3054
 DEFAULT_DISPLAY = c_void_p(0)
 NO_DISPLAY, NO_CONTEXT, NO_SURFACE = c_void_p(0), c_void_p(0), c_void_p(0)
@@ -112,11 +113,11 @@ class Display:
         return self.dhandle
 
     @error_check
-    def _attr(self, target):
+    def _attr(self, attr):
         '''Query an EGL instance parameter.
 
         Keyword arguments:
-            target -- A value identifying the parameter sought. This
+            attr -- A value identifying the parameter sought. This
                 should be a symbolic constant from those defined in this
                 module (CLIENT_APIS, EXTENSIONS, VENDOR, or VERSION).
         Returns:
@@ -125,7 +126,7 @@ class Display:
         '''
         # TODO: The codec chosen is a bit arbitrary and might be best left off.
         # Client applications can just use the bytes or decode them themselves.
-        return egl.eglQueryString(self, target).decode('ISO-8859-1')
+        return egl.eglQueryString(self, attr).decode('ISO-8859-1')
 
     @property
     def client_apis(self):

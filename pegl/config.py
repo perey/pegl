@@ -24,9 +24,9 @@ from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
-from . import egl, error_check, make_int_p, NONE
-from .attribs import (attr_convert, AttribList, Caveats, CBufferTypes,
-                      ConfigAttribs, DONT_CARE)
+from . import egl, error_check, make_int_p
+from .attribs import attr_convert, AttribList, DONT_CARE
+from .attribs.config import Caveats, CBufferTypes, ConfigAttribs
 
 MAX_CONFIGS = 256 # Arbitrary! "256 configs should be enough for anybody..."
 
@@ -60,7 +60,7 @@ def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
             # when I leave it off, it complains that it wanted
             # "LP_c_int instance instead of c_int_Array_3", so
             # there's clearly a difference when I do it myself.
-            attribs = AttribList(attribs)._as_parameter_
+            attribs = AttribList(ConfigAttribs, attribs)._as_parameter_
         else:
             attribs = attribs._as_parameter_
         error_check(egl.eglChooseConfig)(display, attribs, configs,
@@ -175,9 +175,9 @@ class Config:
         '''
         cav = self._attr(ConfigAttribs.CONFIG_CAVEAT)
 
-        if cav == Caveats.slow:
+        if cav == Caveats.SLOW:
             return 'slow'
-        elif cav == Caveats.nonconformant:
+        elif cav == Caveats.NONCONFORMANT:
             return 'non-conformant'
         else:
             # Could be None, DONT_CARE, or unrecognised.
@@ -204,13 +204,13 @@ class Config:
         btype = self._attr(ConfigAttribs.COLOR_BUFFER_TYPE)
         buffer_info = {'size': self._attr(ConfigAttribs.BUFFER_SIZE),
                        'alpha_size': self._attr(ConfigAttribs.ALPHA_SIZE)}
-        if btype == CBufferTypes.rgb:
+        if btype == CBufferTypes.RGB:
             buffer_info['type'] = 'RGB'
             for key, attr in (('r', ConfigAttribs.RED_SIZE),
                               ('g', ConfigAttribs.GREEN_SIZE),
                               ('b', ConfigAttribs.BLUE_SIZE)):
                 buffer_info[key] = self._attr(attr)
-        elif btype == CBufferTypes.luminance:
+        elif btype == CBufferTypes.LUMINANCE:
             buffer_info['type'] = 'luminance'
             buffer_info['luminance'] = self._attr(ConfigAttribs.LUMINANCE_SIZE)
         else:
@@ -253,7 +253,8 @@ class Config:
                                      ConfigAttribs.NATIVE_VISUAL_TYPE))
         return {'id': nvid,
                 'type': (None if (nvid == 0 and
-                                  nvtype == NONE) # Which it should.
+                                  nvtype == ConfigAttribs.NONE)
+                                  # Which it should, if nvid == 0.
                          else nvtype)}
 
     @property
@@ -289,8 +290,8 @@ class Config:
     def transparent_pixels(self):
         '''Get the transparent pixel support of this configuration.'''
         ttype = self._attr(ConfigAttribs.TRANSPARENT_TYPE)
-        return (None if (ttype is None or ttype == TransparentTypes.none) else
-                'RGB' if ttype == TransparentTypes.rgb else
+        return (None if (ttype is None or ttype == TransparentTypes.NONE) else
+                'RGB' if ttype == TransparentTypes.RGB else
                 'unknown',
                 {'r': self._attr(ConfigAttribs.TRANSPARENT_RED_VALUE),
                  'g': self._attr(ConfigAttribs.TRANSPARENT_GREEN_VALUE),

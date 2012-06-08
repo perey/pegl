@@ -20,7 +20,7 @@
 __author__ = 'Tim Pederick'
 __version__ = '0.0+1.4' # The +N.n part is the EGL API version wrapped.
 __all__ = ['attribs', 'config', 'context', 'display', 'surface', 'sync',
-           'egl', 'error_check', 'make_int_p', 'NONE',
+           'egl', 'error_check', 'make_int_p',
            'EGLError', 'NotInitializedError', 'BadAccessError',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',
            'BadContextError', 'BadCurrentSurfaceError', 'BadDisplayError',
@@ -29,9 +29,6 @@ __all__ = ['attribs', 'config', 'context', 'display', 'surface', 'sync',
 
 # Standard library imports.
 from ctypes import CDLL, POINTER, c_char_p, c_int, c_uint, c_void_p
-
-# The constant EGL_NONE is used for a few different purposes.
-NONE = 0x3038
 
 # Foreign library imports and type definitions.
 egl = CDLL('libEGL.so') # TODO: Cross-platform loading.
@@ -156,6 +153,7 @@ egl.eglReleaseTexImage.argtypes = (display, surface, c_int)
 egl.eglReleaseTexImage.restype = ebool
 
 # Exceptions for handling EGL errors.
+# TODO: Exception messages.
 class EGLError(Exception):
     '''Base class for all EGL errors.'''
     pass
@@ -201,6 +199,7 @@ class BadSurfaceError(EGLError):
 class ContextLostError(EGLError):
     '''Context has been lost due to a power management event.'''
     pass
+
 error_codes = {0x3000: None, # Success code.
                0x3001: NotInitializedError, 0x3002: BadAccessError,
                0x3003: BadAllocError, 0x3004: BadAttributeError,
@@ -209,6 +208,13 @@ error_codes = {0x3000: None, # Success code.
                0x3009: BadMatchError, 0x300A: BadNativePixmapError,
                0x300B: BadNativeWindowError, 0x300C: BadParameterError,
                0x300D: BadSurfaceError, 0x300E: ContextLostError}
+
+# TODO: Add a parameter to hint that a function returns a boolean to denote
+# success or failure. Trap such a result as an error.
+# TODO: Pre-wrap all EGL functions in an object called native, replacing egl
+# in all modules. If it's big enough, it could be turned into a module instead.
+# TODO: Move error handling into its own module?? Probably not if I make a
+# native module, because then this file will be significantly smaller.
 def error_check(fn):
     '''Check the EGL error trap after a function is called.
 

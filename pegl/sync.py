@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''EGL 1.4 thread controls.'''
+'''EGL thread controls.'''
 
 # Copyright © 2012 Tim Pederick.
 #
