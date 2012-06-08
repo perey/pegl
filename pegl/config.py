@@ -25,7 +25,7 @@ from ctypes import c_void_p
 
 # Local imports.
 from . import egl, error_check, make_int_p, NONE
-from .attribs import (AttribList, BitMask, Caveats, CBufferTypes,
+from .attribs import (attr_convert, AttribList, Caveats, CBufferTypes,
                       ConfigAttribs, DONT_CARE)
 
 MAX_CONFIGS = 256 # Arbitrary! "256 configs should be enough for anybody..."
@@ -146,31 +146,8 @@ class Config:
         result = make_int_p()
         error_check(egl.eglGetConfigAttrib)(self.display, self, attr, result)
 
-        # Dereference the pointer.
-        result = result[0]
-
-        # Convert to an appropriate type.
-        details = ConfigAttribs.details[attr]
-        if details.dontcare and result == DONT_CARE._as_parameter_:
-            return DONT_CARE
-        elif details.values is bool:
-            return bool(result)
-        elif (result == NONE and
-              issubclass(type(details.values), tuple) and
-              NONE in details.values):
-            # The value is the EGL symbolic constant for NONE, in an
-            # enumeration (named tuple) that supports it.
-            return None
-        else:
-            try:
-                if issubclass(details.values, BitMask):
-                    return details.values(result)
-            except TypeError:
-                # details.values is not a class.
-                pass
-
-        # Finally...
-        return result
+        # Dereference the pointer and convert to an appropriate type.
+        return attr_convert(attr, result[0], ConfigAttribs)
 
     @property
     def alpha_mask_size(self):

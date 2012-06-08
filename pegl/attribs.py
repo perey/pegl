@@ -184,6 +184,8 @@ class Attribs:
 # TODO: Split everything from here to AttribList into submodules, turning this
 # into a subpackage.
 
+# TODO: ALL_CAPS for enumeration (and bit mask) values??
+
 # Objects for config attribute values.
 class SurfaceTypes(BitMask):
     '''A bit mask representing types of EGL surfaces.'''
@@ -197,13 +199,13 @@ class ClientAPIs(BitMask):
     bit_names = ('opengl_es', 'openvg', 'opengl_es2', 'opengl')
 
 
-CBufferTypes = namedtuple('CBufferTypes',
+CBufferTypes = namedtuple('CBufferTypes_tuple',
                           ('rgb', 'luminance')
                           )(0x308E, 0x308F)
-Caveats = namedtuple('Caveats',
+Caveats = namedtuple('Caveats_tuple',
                      ('none', 'slow', 'nonconformant')
                      )(NONE, 0x3050, 0x3051)
-TransparentTypes = namedtuple('TransparentTypes',
+TransparentTypes = namedtuple('TransparentTypes_tuple',
                               ('none', 'rgb')
                               )(NONE, 0x3052)
 
@@ -308,10 +310,10 @@ class ConfigAttribs(Attribs):
 
 
 # Objects for context attributes.
-RenderBufferTypes = namedtuple('RenderBufferTypes',
+RenderBufferTypes = namedtuple('RenderBufferTypes_tuple',
                                ('none', 'back', 'single')
                                )(NONE, 0x3084, 0x3085)
-ContextAPIs = namedtuple('ContextAPIs',
+ContextAPIs = namedtuple('ContextAPIs_tuple',
                          ('opengl', 'opengl_es', 'openvg')
                          )(0x30A2, 0x30A0, 0x30A1)
 
@@ -335,23 +337,23 @@ class ContextAttribs(Attribs):
 
 
 # Objects for surface attributes.
-VGColorSpaces = namedtuple('VGColorSpaces',
+VGColorSpaces = namedtuple('VGColorSpaces_tuple',
                            ('srgb', 'linear')
                            )(0x3089, 0x308A)
-VGAlphaFormats = namedtuple('VGAlphaFormats',
+VGAlphaFormats = namedtuple('VGAlphaFormats_tuple',
                             ('nonpre', 'pre')
                             )(0x308B, 0x308C)
 NO_TEXTURE = 0x305C
-TextureFormats = namedtuple('TextureFormats',
+TextureFormats = namedtuple('TextureFormats_tuple',
                             ('none', 'rgb', 'rgba')
                             )(NO_TEXTURE, 0x305D, 0x305E)
-TextureTargets = namedtuple('TextureTargets',
+TextureTargets = namedtuple('TextureTargets_tuple',
                             ('none', 'two_d')
                             )(NO_TEXTURE, 0x305F)
-MultisampleResolve = namedtuple('MultisampleResolve',
+MultisampleResolve = namedtuple('MultisampleResolve_tuple',
                                 ('default', 'box')
                                 )(0x309A, 0x309B)
-SwapBehaviors = namedtuple('SwapBehaviours',
+SwapBehaviors = namedtuple('SwapBehaviours_tuple',
                            ('preserved', 'destroyed')
                            )(0x3094, 0x3095)
 UNKNOWN_DISPLAY_VALUE = -1
@@ -378,15 +380,17 @@ class SurfaceAttribs(Attribs):
                               0),
                HEIGHT: Details('Height in pixels of the pbuffer', c_int, False,
                                0),
-               LARGEST_PBUFFER: Details('Maximum pixel size of the pbuffer',
-                                        c_int, False, False),
+               LARGEST_PBUFFER: Details('Whether or not to get the largest '
+                                        'available pbuffer if the requested '
+                                        'size is unavailable', bool, False,
+                                        False),
                TEXTURE_FORMAT: Details('Format of the texture that the pbuffer '
                                        'is bound to', TextureFormats, False,
                                        TextureFormats.none),
                TEXTURE_TARGET: Details('Target of the texture that the pbuffer '
                                        'is bound to', TextureTargets, False,
                                        TextureTargets.none),
-               MIPMAP_TEXTURE: Details('Whether or not mipmap space should be '
+               MIPMAP_TEXTURE: Details('Whether or not mipmap space is '
                                        'allocated', bool, False, False),
                VG_COLORSPACE: Details('The color space to be used by OpenVG',
                                       VGColorSpaces, False,
@@ -543,3 +547,34 @@ class AttribList:
     def items(self):
         '''Iterate over key-value pairs of attributes.'''
         return self._items.items()
+
+
+def attr_convert(attr, value, attribs):
+    '''Convert a retrieved attribute value to something meaningful.
+
+    Keyword arguments:
+        attr -- The identifier of the attribute in question.
+        value -- The raw value retrieved for the attribute.
+        attribs -- The Attribs subclass to which this attribute belongs.
+
+    '''
+    details = attribs.details[attr]
+    if details.dontcare and value == DONT_CARE._as_parameter_:
+        return DONT_CARE
+    elif details.values is bool:
+        return bool(value)
+    elif any((value == none_val and issubclass(type(details.values), tuple) and
+             none_val in details.values) for none_val in (NONE, NO_TEXTURE)):
+        # The value is an EGL symbolic constant analogous to None, in an
+        # enumeration (named tuple) that supports it.
+        return None
+    else:
+        try:
+            if issubclass(details.values, BitMask):
+                return details.values(value)
+        except TypeError:
+            # details.values is not a class.
+            pass
+
+    # Finally...
+    return value

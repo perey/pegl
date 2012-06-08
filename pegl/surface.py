@@ -25,7 +25,11 @@ from ctypes import c_int
 
 # Local imports.
 from . import egl, error_check, make_int_p, NONE
-from .attribs import (Attribs, AttribList, SurfaceAttribs)
+from .attribs import (attr_convert, Attribs, AttribList, SurfaceAttribs,
+                      UNKNOWN_DISPLAY_VALUE, VGAlphaFormats)
+
+# Symbolic constant for creating a PbufferSurface from a client buffer.
+OPENVG_IMAGE = 0x3096
 
 class Surface:
     '''Abstract base class for the available surface types.
@@ -57,25 +61,302 @@ class Surface:
         self.shandle = None
         self.display = display
         self.config = config
-        self.attribs = attribs
+        self.attribs = (attribs if type(attribs) is AttribsList else
+                        AttribsList(attribs, SurfaceAttribs))
 
     def __del__(self):
         '''Delete this surface.'''
         error_check(egl.eglDestroySurface)(self.display, self)
+
+    def __eq__(self, other):
+        '''Compare two surfaces for equivalence.
+
+        Two surfaces are considered equal if they have the same foreign
+        function reference (i.e. the shandle attribute).
+
+        '''
+        try:
+            return self.shandle == other.shandle
+        except AttributeError:
+            # The other object doesn't have a shandle.
+            return False
 
     @property
     def _as_parameter(self):
         '''Get the surface handle for use by foreign functions.'''
         return self.shandle
 
+    def _attr(self, attr):
+        '''Get the value of a surface attribute.
 
-class PbufferSurface:
-    pass
+        Keyword arguments:
+            attr -- The identifier of the attribute requested.
+
+        '''
+        # Query the attribute, storing the result in a pointer.
+        result = make_int_p()
+        error_check(egl.eglQuerySurface)(self.display, self, attr, result)
+
+        # Dereference the pointer and convert to an appropriate type.
+        return attr_convert(attr, result[0], ConfigAttribs)
+
+    def _setattr(self, attr, value):
+        '''Set the value of a surface attribute.
+
+        Keyword arguments:
+            attr -- The identifier of the attribute requested.
+            value -- The value to set for this attribute.
+
+        '''
+        error_check(egl.eglSurfaceAttrib)(self.display, self, attr, value)
+
+    @property
+    def multisample_resolve(self):
+        '''Get the filter used when resolving the multisample buffer.
+
+        Returns:
+            Either MultisampleResolve.default or MultisampleResolve.box.
+
+        '''
+        return self._attr(SurfaceAttribs.MULTISAMPLE_RESOLVE)
+    @multisample_resolve.setter(self, val):
+        '''Set the filter used when resolving the multisample buffer.
+
+        Keyword arguments:
+            val -- Either MultisampleResolve.default or
+                MultisampleResolve.box.
+
+        '''
+        self._setattr(SurfaceAttribs.MULTISAMPLE_RESOLVE, val)
+
+    @property
+    def openvg_alpha_premultiplied(self):
+        '''Determine whether OpenVG alpha values are premultiplied.'''
+        alpha_format = self._attr(SurfaceAttribs.VG_ALPHA_FORMAT)
+        # Will be None if the format is neither "pre" nor "nonpre".
+        return {VGAlphaFormats.pre: True,
+                VGAlphaFormats.nonpre: False}.get(alpha_format)
+
+    @property
+    def openvg_colorspace(self):
+        '''Get the OpenVG colorspace in use on this surface.'''
+        return self._attr(SurfaceAttribs.VG_COLORSPACE)
+
+    @property
+    def render_buffer(self):
+        '''Get the type of render buffer which client APIs should use.
+
+        Returns:
+            RenderBufferTypes.back or RenderBufferTypes.single.
+
+        '''
+        return self._attr(SurfaceAttribs.RENDER_BUFFER)
+
+    @property
+    def size(self):
+        '''Get the size of this surface.
+
+        Returns:
+            A 2-tuple giving the width and height, in pixels.
+
+        '''
+        return tuple(self._attr(attr) for attr in (SurfaceAttribs.WIDTH,
+                                                   SurfaceAttribs.HEIGHT))
+
+    @property
+    def swap_behavior(self):
+        '''Get the effect of a buffer swap on the color buffer.
+
+        Returns:
+            Either SwapBehaviors.preserved or SwapBehaviors.destroyed.
+
+        '''
+        return self._attr(SurfaceAttrib.SWAP_BEHAVIOR)
+    @swap_behavior.setter
+    def swap_behavior(self, val):
+        '''Set the effect a buffer swap will have on the color buffer.
+
+        Keyword arguments:
+            val -- Either SwapBehaviors.preserved or
+                SwapBehaviors.destroyed.
+
+        '''
+        return self._setattr(SurfaceAttrib.SWAP_BEHAVIOR, val)
 
 
-class PixmapSurface:
-    pass
+class PbufferSurface(Surface):
+    '''Represents an off-screen surface in a pbuffer (pixel buffer).
+
+    Instance attributes:
+        shandle, display, config, attribs -- Inherited from Surface.
+
+    '''
+    def __init__(self, display, config, attribs, buffer=None,
+                 buffer_type=OPENVG_IMAGE):
+        '''Create the pbuffer surface.
+
+        The following attributes from SurfaceAttribs are accepted when
+        creating a pbuffer surface:
+            * WIDTH and HEIGHT
+            * LARGEST_PBUFFER
+            * TEXTURE_FORMAT and TEXTURE_TARGET (only used by OpenGL ES)
+            * MIPMAP_TEXTURE (only used by OpenGL ES)
+            * VG_COLORSPACE and VG_ALPHA_FORMAT (only used by OpenVG)
+
+        When creating a surface bound to a client buffer (i.e. buffer is
+        not None), only the TEXTURE_FORMAT, TEXTURE_TARGET and
+        MIPMAP_TEXTURE attributes are accepted.
+
+        Keyword arguments:
+            display, config, attribs -- As the instance attributes.
+            buffer -- An optional client buffer to bind this surface to.
+            buffer_type -- The type of the client buffer, if provided.
+                The default type (and the only one allowed by the EGL
+                specification) is OPENVG_IMAGE.
+
+        '''
+        super().__init__(display, config, attribs)
+        if buffer is None:
+            create_fn = error_check(egl.eglCreatePbufferSurface)
+            self.shandle = create_fn(self.display, self.config, self.attribs)
+        else:
+            create_fn = error_check(egl.eglCreatePbufferFromClientBuffer)
+            self.shandle = create_fn(self.display, buffer_type, buffer,
+                                     self.config, self.attribs)
+
+    @property
+    def mipmap_level(self):
+        '''Get the mipmap level in use.
+
+        This attribute is only available when the surface supports
+        OpenGL ES.
+
+        '''
+        return self._attr(SurfaceAttribs.MIPMAP_LEVEL)
+    @mipmap_level.setter
+    def mipmap_level(self, val):
+        '''Set the mipmap level to be used.
+
+        This attribute is only available when the surface supports
+        OpenGL ES.
+
+        Keyword arguments:
+            level -- The integer level number to use. If this is outside
+                the available range, the closest valid level is used.
+
+        '''
+        return self._setattr(SurfaceAttribs.MIPMAP_LEVEL, val)
+
+    @property
+    def has_mipmap_textures(self):
+        '''Query whether or not this surface has mipmap textures.'''
+        return self._attr(SurfaceAttribs.MIPMAP_TEXTURE)
+
+    @property
+    def texture(self):
+        '''Get the type of OpenGL ES texture that this surface maps to.
+
+        Returns:
+            A 2-tuple containing the texture format (None,
+            TextureFormats.rgb, or TextureFormats.rgba) and target (None
+            or TextureTargets.two_d).
+
+        '''
+        return tuple(self._attr(attr)
+                     for attr in (SurfaceAttribs.TEXTURE_FORMAT,
+                                  SurfaceAttribs.TEXTURE_TARGET))
+
+    @property
+    def texture(self):
+        '''Get the type of OpenGL ES texture that this surface maps to.
+
+        Returns:
+            A 2-tuple containing the texture format (None,
+            TextureFormats.rgb, or TextureFormats.rgba) and target (None
+            or TextureTargets.two_d).
+
+        '''
+        return tuple(self._attr(attr)
+                     for attr in (SurfaceAttribs.TEXTURE_FORMAT,
+                                  SurfaceAttribs.TEXTURE_TARGET))
+
+    @property
+    def use_largest_pbuffer(self):
+        '''Query whether the largest possible pbuffer was requested.'''
+        return self._attr(SurfaceAttribs.LARGEST_PBUFFER)
 
 
-class WindowSurface:
-    pass
+class PixmapSurface(Surface):
+    '''Represents a surface that renders to a native pixmap.
+
+    Instance attributes:
+        shandle, display, config, attribs -- Inherited from Surface.
+
+    '''
+    def __init__(self, display, config, attribs, pixmap):
+        '''Create the pixmap surface.
+
+        Only the following attributes from SurfaceAttribs are accepted
+        when creating a pixmap surface:
+            * VG_COLORSPACE and VG_ALPHA_FORMAT (only used by OpenVG)
+
+        Keyword arguments:
+            display, config, attribs -- As the instance attributes.
+            pixmap -- The native pixmap to render to.
+
+        '''
+        super().__init__(self, display, config, attribs)
+        self.shandle = error_check(egl.eglCreatePixmapSurface)(self.display,
+                                                               self.config,
+                                                               pixmap,
+                                                               self.attribs)
+
+
+class WindowSurface(Surface):
+    '''Represents an on-screen surface bound to a native window.
+
+    Instance attributes:
+        shandle, display, config, attribs -- Inherited from Surface.
+
+    '''
+    def __init__(self, display, config, attribs, window):
+        '''Create the window surface.
+
+        The following attributes from SurfaceAttribs are accepted when
+        creating a window surface:
+            * RENDER_BUFFER
+            * VG_COLORSPACE and VG_ALPHA_FORMAT (only used by OpenVG)
+
+        Keyword arguments:
+            display, config, attribs -- As the instance attributes.
+            window -- The native window to which this surface belongs.
+
+        '''
+        super().__init__(self, display, config, attribs)
+        self.shandle = error_check(egl.eglCreateWindowSurface)(self.display,
+                                                               self.config,
+                                                               window,
+                                                               self.attribs)
+
+    @property
+    def physical_resolution(self):
+        '''Get the resolution of the physical display.
+
+        Returns:
+            A 3-tuple giving the horizontal and vertical resolution, in
+            pixels per metre, and the width:height aspect ratio of each
+            physical pixel. If any of these values is unknown, None is
+            returned in its place.
+
+        '''
+        # TODO: Handle scaling in the attribs module.
+        SCALE_FACTOR = 10000.0
+
+        raw = (self._attr(attr)
+               for attr in (SurfaceAttribs.HORIZONTAL_RESOLUTION,
+                            SurfaceAttribs.VERTICAL_RESOLUTION,
+                            SurfaceAttribs.PIXEL_ASPECT_RATIO))
+
+        # TODO: Handle UNKNOWN_DISPLAY_VALUE => None in attribs too.
+        return tuple((None if val == UNKNOWN_DISPLAY_VALUE else
+                      val / SCALE_FACTOR) for val in raw)
