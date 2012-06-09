@@ -24,11 +24,26 @@ from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
-from . import egl, error_check, make_int_p
+from . import make_int_p, native
 from .attribs import attr_convert, AttribList, DONT_CARE
 from .attribs.config import Caveats, CBufferTypes, ConfigAttribs
 
 MAX_CONFIGS = 256 # Arbitrary! "256 configs should be enough for anybody..."
+
+def count_configs(display):
+    '''Get the number of configurations supported for a given display.
+
+    Keyword arguments:
+        display -- The EGL display for which to check configurations.
+
+    '''
+    count = make_int_p()
+    # Calling eglGetConfigs with a null pointer (i.e. None) gets the
+    # total number of available configurations, without retrieving any.
+    native.eglGetConfigs(display, None, 0, count)
+
+    # Dereference the pointer holding the result.
+    return count[0]
 
 def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
     '''Get supported configurations for a given display.
@@ -41,17 +56,21 @@ def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
             the given value or greater, and which match at least the
             given flags in a bit mask.
         max_configs -- The maximum number of configurations to return.
-            If omitted, the default is {}.
+            If omitted, the default is {}. If None, count_configs() will
+            be called first to ensure that all available configurations
+            are retrieved.
             
 
     '''.format(MAX_CONFIGS)
+    if max_configs is None:
+        max_configs = count_configs(display)
+
     configs = (c_void_p * max_configs)()
     actual_count = make_int_p()
 
     if attribs is None:
         # Get all configurations.
-        error_check(egl.eglGetConfigs)(display, configs, max_configs,
-                                       actual_count)
+        native.eglGetConfigs(display, configs, max_configs, actual_count)
     else:
         # Get configurations that match the required attributes.
         if type(attribs) is not AttribList:
@@ -63,8 +82,8 @@ def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
             attribs = AttribList(ConfigAttribs, attribs)._as_parameter_
         else:
             attribs = attribs._as_parameter_
-        error_check(egl.eglChooseConfig)(display, attribs, configs,
-                                         max_configs, actual_count)
+        native.eglChooseConfig(display, attribs, configs, max_configs,
+                               actual_count)
 
     return tuple(Config(cfg, display) for cfg in configs[:actual_count[0]])
 
@@ -144,7 +163,7 @@ class Config:
         '''
         # Call the foreign function, which stores its result in a pointer.
         result = make_int_p()
-        error_check(egl.eglGetConfigAttrib)(self.display, self, attr, result)
+        native.eglGetConfigAttrib(self.display, self, attr, result)
 
         # Dereference the pointer and convert to an appropriate type.
         return attr_convert(attr, result[0], ConfigAttribs)

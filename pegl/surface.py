@@ -24,7 +24,7 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from . import egl, error_check, make_int_p
+from . import make_int_p, native
 from .attribs import attr_convert, Attribs, AttribList
 from .attribs.surface import SurfaceAttribs, RenderBufferTypes, VGAlphaFormats
 
@@ -67,7 +67,7 @@ class Surface:
 
     def __del__(self):
         '''Delete this surface.'''
-        error_check(egl.eglDestroySurface)(self.display, self)
+        native.eglDestroySurface(self.display, self)
 
     def __eq__(self, other):
         '''Compare two surfaces for equivalence.
@@ -96,7 +96,7 @@ class Surface:
         '''
         # Query the attribute, storing the result in a pointer.
         result = make_int_p()
-        error_check(egl.eglQuerySurface)(self.display, self, attr, result)
+        native.eglQuerySurface(self.display, self, attr, result)
 
         # Dereference the pointer and convert to an appropriate type.
         return attr_convert(attr, result[0], SurfaceAttribs)
@@ -109,7 +109,7 @@ class Surface:
             value -- The value to set for this attribute.
 
         '''
-        error_check(egl.eglSurfaceAttrib)(self.display, self, attr, value)
+        native.eglSurfaceAttrib(self.display, self, attr, value)
 
     @property
     def multisample_resolve(self):
@@ -219,12 +219,15 @@ class PbufferSurface(Surface):
         '''
         super().__init__(display, config, attribs)
         if buffer is None:
-            create_fn = error_check(egl.eglCreatePbufferSurface)
-            self.shandle = create_fn(self.display, self.config, self.attribs)
+            self.shandle = native.eglCreatePbufferSurface(self.display,
+                                                          self.config,
+                                                          self.attribs)
         else:
-            create_fn = error_check(egl.eglCreatePbufferFromClientBuffer)
-            self.shandle = create_fn(self.display, buffer_type, buffer,
-                                     self.config, self.attribs)
+            self.shandle =\
+                native.eglCreatePbufferFromClientBuffer(self.display,
+                                                        buffer_type, buffer,
+                                                        self.config,
+                                                        self.attribs)
 
     @property
     def mipmap_level(self):
@@ -296,9 +299,7 @@ class PbufferSurface(Surface):
                 and hence the argument may be omitted.
 
         '''
-        # The return value is a boolean but will generally be ignored,
-        # as error_check will handle any errors.
-        return error_check(egl.eglBindTexImage)(self.display, self, buffer)
+        native.eglBindTexImage(self.display, self, buffer)
 
     def release_texture(self, buffer=RenderBufferTypes.BACK):
         '''Release the surface from a binding to an OpenGL ES texture.
@@ -309,9 +310,7 @@ class PbufferSurface(Surface):
                 role and hence the argument may be omitted.
 
         '''
-        # The return value is a boolean but will generally be ignored,
-        # as error_check will handle any errors.
-        return error_check(egl.eglReleaseTexImage)(self.display, self, buffer)
+        native.eglReleaseTexImage(self.display, self, buffer)
 
 
 class PixmapSurface(Surface):
@@ -334,10 +333,8 @@ class PixmapSurface(Surface):
 
         '''
         super().__init__(self, display, config, attribs)
-        self.shandle = error_check(egl.eglCreatePixmapSurface)(self.display,
-                                                               self.config,
-                                                               pixmap,
-                                                               self.attribs)
+        self.shandle = native.eglCreatePixmapSurface(self.display, self.config,
+                                                     pixmap, self.attribs)
 
 
 class WindowSurface(Surface):
@@ -361,10 +358,8 @@ class WindowSurface(Surface):
 
         '''
         super().__init__(self, display, config, attribs)
-        self.shandle = error_check(egl.eglCreateWindowSurface)(self.display,
-                                                               self.config,
-                                                               window,
-                                                               self.attribs)
+        self.shandle = native.eglCreateWindowSurface(self.display, self.config,
+                                                     window, self.attribs)
 
     @property
     def physical_resolution(self):

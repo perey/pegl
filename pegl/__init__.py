@@ -19,8 +19,9 @@
 
 __author__ = 'Tim Pederick'
 __version__ = '0.0+1.4' # The +N.n part is the EGL API version wrapped.
-__all__ = ['attribs', 'config', 'context', 'display', 'surface', 'sync',
-           'egl', 'error_check', 'make_int_p',
+__all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
+           'sync', 'int_p', 'make_int_p',
+           'NO_DISPLAY', 'NO_CONTEXT', 'NO_SURFACE',
            'EGLError', 'NotInitializedError', 'BadAccessError',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',
            'BadContextError', 'BadCurrentSurfaceError', 'BadDisplayError',
@@ -28,17 +29,10 @@ __all__ = ['attribs', 'config', 'context', 'display', 'surface', 'sync',
            'BadParameterError', 'BadSurfaceError', 'ContextLostError']
 
 # Standard library imports.
-from ctypes import CDLL, POINTER, c_char_p, c_int, c_uint, c_void_p
+from ctypes import POINTER, c_int, c_void_p
 
-# Foreign library imports and type definitions.
-egl = CDLL('libEGL.so') # TODO: Cross-platform loading.
-
-ebool = enum = c_uint
-config = context = surface = display = c_void_p
-n_display = n_pixmap = n_window = c_void_p
-client_buffer = c_void_p
-attr_list = int_p = POINTER(c_int)
-configs = POINTER(config)
+# Types and symbolic constants.
+int_p = POINTER(c_int)
 
 def make_int_p(ival=0):
     '''Create and initialise a pointer to an integer.
@@ -52,153 +46,89 @@ def make_int_p(ival=0):
     p.contents = c_int(ival)
     return p
 
-# Set argument and return types for all foreign functions.
-egl.eglGetError.argtypes = ()
-
-egl.eglGetDisplay.argtypes = (n_display,)
-egl.eglGetDisplay.restype = display
-
-egl.eglGetCurrentDisplay.argtypes = ()
-egl.eglGetCurrentDisplay.restype = display
-
-egl.eglInitialize.argtypes = (display, int_p, int_p)
-egl.eglInitialize.restype = ebool
-
-egl.eglTerminate.argtypes = (display,)
-egl.eglTerminate.restype = ebool
-
-egl.eglQueryString.argtypes = (display, c_int)
-egl.eglQueryString.restype = c_char_p
-
-egl.eglReleaseThread.argtypes = ()
-egl.eglReleaseThread.restype = ebool
-
-egl.eglGetConfigs.argtypes = (display, configs, c_int, int_p)
-egl.eglGetConfigs.restype = ebool
-
-egl.eglGetConfigAttrib.argtypes = (display, config, c_int, int_p)
-egl.eglGetConfigAttrib.restype = ebool
-
-egl.eglChooseConfig.argtypes = (display, attr_list, configs, c_int, int_p)
-egl.eglChooseConfig.restype = ebool
-
-egl.eglCreateWindowSurface.argtypes = (display, config, n_window, attr_list)
-egl.eglCreateWindowSurface.restype = surface
-
-egl.eglCreatePbufferSurface.argtypes = (display, config, attr_list)
-egl.eglCreatePbufferSurface.restype = surface
-
-egl.eglCreatePbufferFromClientBuffer.argtypes = (display, enum, client_buffer,
-                                                 config, attr_list)
-egl.eglCreatePbufferFromClientBuffer.restype = surface
-
-egl.eglCreatePixmapSurface.argtypes = (display, config, n_pixmap, attr_list)
-egl.eglCreatePixmapSurface.restype = surface
-
-egl.eglGetCurrentSurface.argtypes = (c_int,)
-egl.eglGetCurrentSurface.restype = surface
-
-egl.eglSurfaceAttrib.argtypes = (display, surface, c_int, c_int)
-egl.eglSurfaceAttrib.restype = ebool
-
-egl.eglQuerySurface.argtypes = (display, surface, c_int, int_p)
-egl.eglQuerySurface.restype = ebool
-
-egl.eglDestroySurface.argtypes = (display, surface)
-egl.eglDestroySurface.restype = ebool
-
-egl.eglBindAPI.argtypes = (c_int,)
-egl.eglBindAPI.restype = ebool
-
-egl.eglQueryAPI.argtypes = ()
-egl.eglQueryAPI.restype = c_int
-
-egl.eglCreateContext.argtypes = (display, config, context, attr_list)
-egl.eglCreateContext.restype = context
-
-egl.eglMakeCurrent.argtypes = (display, surface, surface, context)
-egl.eglMakeCurrent.restype = ebool
-
-egl.eglQueryContext.argtypes = (display, context, c_int, int_p)
-egl.eglQueryContext.restype = ebool
-
-egl.eglGetCurrentContext.argtypes = ()
-egl.eglGetCurrentContext.restype = context
-
-egl.eglDestroyContext.argtypes = (display, context)
-egl.eglDestroyContext.restype = ebool
-
-egl.eglWaitClient.argtypes = ()
-egl.eglWaitClient.restype = ebool
-
-egl.eglWaitGL.argtypes = ()
-egl.eglWaitGL.restype = ebool
-
-egl.eglWaitNative.argtypes = (c_int,)
-egl.eglWaitNative.restype = ebool
-
-egl.eglSwapBuffers.argtypes = (display, surface)
-egl.eglSwapBuffers.restype = ebool
-
-egl.eglCopyBuffers.argtypes = (display, surface, n_pixmap)
-egl.eglCopyBuffers.restype = ebool
-
-egl.eglSwapInterval.argtypes = (display, c_int)
-egl.eglSwapInterval.restype = ebool
-
-egl.eglBindTexImage.argtypes = (display, surface, c_int)
-egl.eglBindTexImage.restype = ebool
-
-egl.eglReleaseTexImage.argtypes = (display, surface, c_int)
-egl.eglReleaseTexImage.restype = ebool
+NO_DISPLAY, NO_CONTEXT, NO_SURFACE = c_void_p(0), c_void_p(0), c_void_p(0)
 
 # Exceptions for handling EGL errors.
-# TODO: Exception messages.
 class EGLError(Exception):
     '''Base class for all EGL errors.'''
-    pass
+    default_msg = 'encountered an unspecified error'
+
+    def __init__(self, msg=None):
+        '''Create the exception, with a given message or the default.'''
+        if msg is None:
+            msg = self.default_msg
+        super().__init__(msg)
+
+
 class NotInitializedError(EGLError):
     '''The EGL system was not, or could not be initialized.'''
-    pass
+    default_msg = 'EGL not initialized or initialization failed'
+
+
 class BadAccessError(EGLError):
     '''A requested resource could not be accessed.'''
-    pass
+    default_msg = 'requested resource could not be accessed'
+
+
 class BadAllocError(EGLError):
     '''Necessary memory allocation failed.'''
-    pass
+    default_msg = 'memory allocation failed'
+
+
 class BadAttributeError(EGLError):
     '''An invalid attribute key or value was supplied.'''
-    pass
+    default_msg = 'invalid attribute key or value'
+
+
 class BadConfigError(EGLError):
     '''The configuration supplied was not valid.'''
-    pass
+    default_msg = 'invalid configuration given'
+
+
 class BadContextError(EGLError):
     '''The context supplied was not valid.'''
-    pass
+    default_msg = 'invalid context given'
+
+
 class BadCurrentSurfaceError(EGLError):
     '''The current surface is no longer valid.'''
-    pass
+    default_msg = 'current surface is no longer valid'
+
+
 class BadDisplayError(EGLError):
     '''The display supplied was not valid.'''
-    pass
+    default_msg = 'invalid display given'
+
+
 class BadMatchError(EGLError):
     '''Supplied arguments were inconsistent with each other.'''
-    pass
+    default_msg = 'inconsistent arguments given'
+
+
 class BadNativePixmapError(EGLError):
     '''The native pixmap supplied was not valid.'''
-    pass
+    default_msg = 'invalid native pixmap given'
+
+
 class BadNativeWindowError(EGLError):
     '''The native window supplied was not valid.'''
-    pass
+    default_msg = 'invalid native window given'
+
+
 class BadParameterError(EGLError):
     '''An invalid argument was supplied.'''
-    pass
+    default_msg = 'invalid argument given'
+
+
 class BadSurfaceError(EGLError):
     '''The surface supplied was not valid.'''
-    pass
+    default_msg = 'invalid surface given'
+
+
 class ContextLostError(EGLError):
     '''Context has been lost due to a power management event.'''
-    pass
+    default_msg = 'context lost due to power management event'
+
 
 error_codes = {0x3000: None, # Success code.
                0x3001: NotInitializedError, 0x3002: BadAccessError,
@@ -209,29 +139,3 @@ error_codes = {0x3000: None, # Success code.
                0x300B: BadNativeWindowError, 0x300C: BadParameterError,
                0x300D: BadSurfaceError, 0x300E: ContextLostError}
 
-# TODO: Add a parameter to hint that a function returns a boolean to denote
-# success or failure. Trap such a result as an error.
-# TODO: Pre-wrap all EGL functions in an object called native, replacing egl
-# in all modules. If it's big enough, it could be turned into a module instead.
-# TODO: Move error handling into its own module?? Probably not if I make a
-# native module, because then this file will be significantly smaller.
-def error_check(fn):
-    '''Check the EGL error trap after a function is called.
-
-    This can be used directly on a foreign function to be called, or as
-    a decorator on a Python function that calls a foreign function.
-
-    Keyword arguments:
-        fn -- The function to wrap with EGL error checking.
-
-    Returns:
-        A function object with error checking included.
-
-    '''
-    def wrapped_fn(*args, **kwargs):
-        result = fn(*args, **kwargs)
-        errcode = error_codes.get(egl.eglGetError(), EGLError)
-        if errcode is not None:
-            raise errcode()
-        return result
-    return wrapped_fn

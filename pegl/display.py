@@ -24,13 +24,12 @@ from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
-from . import egl, error_check, make_int_p
+from . import make_int_p, native, NO_DISPLAY, NO_CONTEXT, NO_SURFACE
 
 # EGL constants.
 # TODO: Put these four in a namedtuple instance, like in all the other modules?
 CLIENT_APIS, EXTENSIONS, VENDOR, VERSION = 0x308D, 0x3055, 0x3053, 0x3054
 DEFAULT_DISPLAY = c_void_p(0)
-NO_DISPLAY, NO_CONTEXT, NO_SURFACE = c_void_p(0), c_void_p(0), c_void_p(0)
 
 # Version info structure.
 Version = namedtuple('Version', ('major', 'minor', 'vendor'))
@@ -38,7 +37,7 @@ Version.__str__ = lambda self: '{0.major}.{0.minor} {0.vendor}'.format(self)
 
 def current_display():
     '''Get the current EGL display.'''
-    return Display(dhandle=error_check(egl.eglGetCurrentDisplay)())
+    return Display(dhandle=native.eglGetCurrentDisplay())
 
 class Display:
     '''An EGL display.
@@ -78,21 +77,21 @@ class Display:
 
         '''
         self.dhandle = (dhandle if dhandle is not None else
-                        error_check(egl.eglGetDisplay)(DEFAULT_DISPLAY
-                                                       if native_id is None
-                                                       else native_id))
+                        native.eglGetDisplay(DEFAULT_DISPLAY
+                                             if native_id is None else
+                                             native_id))
         if not delay_init:
             self.initialize()
 
     def __del__(self):
         '''Delete this display and all EGL resources in this thread.
 
-        Multithreaded applications should also call release_thread()
-        from all other threads in which this display has been used.
+        Multithreaded applications should also call release() from all
+        all other threads in which this display has been used.
 
         '''
-        self.release()
-        error_check(egl.eglTerminate)(self)
+        release_thread()
+        self.terminate()
 
     def __eq__(self, other):
         '''Compare two displays for equivalence.
@@ -112,7 +111,6 @@ class Display:
         '''Get the display reference for use by foreign functions.'''
         return self.dhandle
 
-    @error_check
     def _attr(self, attr):
         '''Query an EGL instance parameter.
 
@@ -126,7 +124,7 @@ class Display:
         '''
         # TODO: The codec chosen is a bit arbitrary and might be best left off.
         # Client applications can just use the bytes or decode them themselves.
-        return egl.eglQueryString(self, attr).decode('ISO-8859-1')
+        return native.eglQueryString(self, attr).decode('ISO-8859-1')
 
     @property
     def client_apis(self):
@@ -150,7 +148,6 @@ class Display:
         major, minor = major_minor.split('.')
         return Version(int(major), int(minor), vendor)
 
-    @error_check
     def initialize(self):
         '''Initialize EGL for this display.
 
@@ -163,18 +160,31 @@ class Display:
         # Create and initialize the return pointers.
         major, minor = make_int_p(), make_int_p()
 
-        egl.eglInitialize(self, major, minor)
+        native.eglInitialize(self, major, minor)
         return (major[0], minor[0], '')
 
-    def release(self):
-        '''Release EGL resources used in this thread.
+    def terminate(self):
+        '''Invalidate all resources associated with this display.
 
-        This cleanup is performed automatically for the current thread
-        when the display is deleted. Multithreaded applications that
-        share one display across several threads must call this function
-        in each to ensure all resources are deallocated.
+        The display handle itself remains valid, and so its release()
+        method can still be called in any threads that have used it. The
+        display can even be reinitialized (by calling initialize()),
+        though the terminated resources will not be made valid again.
+
+        It is not generally necessary to call this function directly, as
+        it is called by the display's destructor method. The only
+        difference is that the destructor also calls release().
 
         '''
-        error_check(egl.eglMakeCurrent)(self, NO_SURFACE, NO_SURFACE,
-                                        NO_CONTEXT)
-        error_check(egl.eglReleaseThread)()
+        native.eglTerminate(self)
+
+def release_thread():
+    '''Release EGL resources used in this thread.
+
+    This cleanup is performed automatically for the current thread when
+    a display is deleted. Multithreaded applications that share one
+    display across several threads must call this function in each
+    thread to ensure all resources are deallocated.
+
+    '''
+    native.eglReleaseThread()

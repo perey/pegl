@@ -20,11 +20,10 @@
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Local imports.
-from . import egl, error_check
+from . import native
 
 CORE_NATIVE_ENGINE = 0x305B
 
-@error_check
 def wait_client():
     '''Instruct native rendering to wait on any client API rendering.
 
@@ -32,19 +31,19 @@ def wait_client():
     such as glFinish().
 
     '''
-    return bool(egl.eglWaitClient())
+    native.eglWaitClient()
 
-@error_check
 def wait_GL():
     '''Instruct native rendering to wait on any OpenGL rendering.
 
-    This is provided for backwards compatibility. New code should use
-    wait_client() after binding the OpenGL API.
+    EGL provides this function for backwards compatibility; it is
+    defined to be equivalent to saving the bound API, binding the
+    OpenGL ES API, calling wait_client(), and then rebinding the
+    original API. New code should just use wait_client() instead.
 
     '''
-    return bool(egl.eglWaitGL())
+    native.eglWaitGL()
 
-@error_check
 def wait_native(engine=CORE_NATIVE_ENGINE):
     '''Instruct client API rendering to wait on any native rendering.
 
@@ -54,4 +53,4 @@ def wait_native(engine=CORE_NATIVE_ENGINE):
             EGL core native engine.
 
     '''
-    return bool(egl.eglWaitNative(engine))
+    native.eglWaitNative(engine)

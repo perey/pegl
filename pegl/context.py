@@ -24,11 +24,11 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from . import egl, EGLError, error_check, make_int_p
+from . import make_int_p, native, NO_CONTEXT, NO_SURFACE
 from .attribs import AttribList, NONE
 from .attribs.context import ContextAttribs, ContextAPIs
 from .config import get_configs
-from .display import current_display, NO_CONTEXT, NO_SURFACE
+from .display import current_display
 
 _api_lookup = lambda api: {ContextAPIs.OPENGL: 'OpenGL',
                            ContextAPIs.OPENGL_ES: 'OpenGL ES',
@@ -54,9 +54,7 @@ def bind_api(api):
             raise ValueError('not a valid API: {!r}'.format(api))
         else:
             api = guess_api
-    # Generally, the return value will be ignored. It is False if the bind
-    # operation failed, but in that case error_check() should raise an error.
-    return error_check(egl.eglBindAPI)(api)
+    native.eglBindAPI(api)
 
 def bound_api(raw=False):
     '''Get the client API currently bound to EGL in this thread.
@@ -69,7 +67,7 @@ def bound_api(raw=False):
         A string, or None if no API is bound.
 
     '''
-    api = error_check(egl.eglQueryAPI)()
+    api = native.eglQueryAPI()
     if raw:
         return hex(api)
     else:
@@ -77,7 +75,7 @@ def bound_api(raw=False):
 
 def current_context():
     '''Get the current EGL context.'''
-    ctxhandle = error_check(egl.eglGetCurrentContext)()
+    ctxhandle = native.eglGetCurrentContext()
     if ctxhandle == NO_CONTEXT:
         return None
     else:
@@ -152,16 +150,8 @@ class Context:
             attribs['CONTEXT_CLIENT_VERSION'] = opengl_es_version
 
         # Finally, create the context and save its handle.
-        self.ctxhandle = error_check(egl.eglCreateContext)(self.display,
-                                                           self.config,
-                                                           share_ctxhandle,
-                                                           attribs)
-        # Error checking -- theoretically, error_check would have flagged
-        # some specific failure by now, but if not, we can catch it.
-        # TODO: Give error_check a "fail_on" argument that will check this??
-        # That would also mean removing ContextCreationError from this module.
-        if self.ctxhandle == NO_CONTEXT:
-            raise ContextCreationError
+        self.ctxhandle = native.eglCreateContext(self.display, self.config,
+                                                 share_ctxhandle, attribs)
 
     def _from_handle(self, ctxhandle):
         '''Create the context from a foreign object handle.
@@ -186,10 +176,9 @@ class Context:
         self.config = get_configs(self.display,
                                   {ContextAttribs.CONFIG_ID: config_id})[0]
 
-    @error_check
     def __del__(self):
         '''Delete the context object.'''
-        egl.eglDestroyContext(self.display, self)
+        native.eglDestroyContext(self.display, self)
 
     def __eq__(self, other):
         '''Compare two contexts for equivalence.
@@ -218,7 +207,7 @@ class Context:
         '''
         # Query the attribute, storing the result in a pointer.
         result = make_int_p()
-        error_check(egl.eglQueryContext)(self.display, self, attr, result)
+        native.eglQueryContext(self.display, self, attr, result)
 
         # Dereference the pointer.
         return result[0]
@@ -258,10 +247,4 @@ class Context:
             draw_surface = NO_SURFACE
         if read_surface is None:
             read_surface = draw_surface
-        error_check(egl.eglMakeCurrent)(self.display, draw_surface,
-                                        read_surface, self)
-
-
-class ContextCreationError(EGLError):
-    '''Creation of a context object failed for reasons unknown.'''
-    pass
+        native.eglMakeCurrent(self.display, draw_surface, read_surface, self)
