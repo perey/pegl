@@ -74,14 +74,8 @@ def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
     else:
         # Get configurations that match the required attributes.
         if type(attribs) is not AttribList:
-            # FIXME: Why do I need to get this _as_parameter_?
-            # Isn't ctypes supposed to do that for itself? But
-            # when I leave it off, it complains that it wanted
-            # "LP_c_int instance instead of c_int_Array_3", so
-            # there's clearly a difference when I do it myself.
-            attribs = AttribList(ConfigAttribs, attribs)._as_parameter_
-        else:
-            attribs = attribs._as_parameter_
+            attribs = AttribList(ConfigAttribs, attribs)
+
         native.eglChooseConfig(display, attribs, configs, max_configs,
                                actual_count)
 
