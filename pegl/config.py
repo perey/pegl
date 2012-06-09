@@ -43,7 +43,7 @@ def count_configs(display):
     native.eglGetConfigs(display, None, 0, count)
 
     # Dereference the pointer holding the result.
-    return count[0]
+    return count.contents.value
 
 def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
     '''Get supported configurations for a given display.
@@ -79,7 +79,8 @@ def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
         native.eglChooseConfig(display, attribs, configs, max_configs,
                                actual_count)
 
-    return tuple(Config(cfg, display) for cfg in configs[:actual_count[0]])
+    return tuple(Config(cfg, display)
+                 for cfg in configs[:actual_count.contents.value])
 
 
 class Config:
@@ -160,7 +161,7 @@ class Config:
         native.eglGetConfigAttrib(self.display, self, attr, result)
 
         # Dereference the pointer and convert to an appropriate type.
-        return attr_convert(attr, result[0], ConfigAttribs)
+        return attr_convert(attr, result.contents.value, ConfigAttribs)
 
     @property
     def alpha_mask_size(self):

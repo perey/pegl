@@ -178,7 +178,7 @@ class Display:
         major, minor = make_int_p(), make_int_p()
 
         native.eglInitialize(self, major, minor)
-        return (major[0], minor[0], '')
+        return (major.contents.value, minor.contents.value, '')
 
     def terminate(self):
         '''Invalidate all resources associated with this display.

@@ -99,7 +99,7 @@ class Surface:
         native.eglQuerySurface(self.display, self, attr, result)
 
         # Dereference the pointer and convert to an appropriate type.
-        return attr_convert(attr, result[0], SurfaceAttribs)
+        return attr_convert(attr, result.contents.value, SurfaceAttribs)
 
     def _setattr(self, attr, value):
         '''Set the value of a surface attribute.

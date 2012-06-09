@@ -210,7 +210,7 @@ class Context:
         native.eglQueryContext(self.display, self, attr, result)
 
         # Dereference the pointer.
-        return result[0]
+        return result.contents.value
 
     @property
     def api(self):
