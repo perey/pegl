@@ -56,6 +56,10 @@ class Display:
             seems likely that these will be limited to ASCII.
         extensions -- A string listing the EGL extensions supported,
             again separated by spaces and probably ASCII.
+        swap_interval -- An integer number of video frames between
+            buffer swaps. This value is write-only and applies to the
+            current context. It will be clamped to the range permitted
+            by the context's configuration.
         vendor -- The vendor string for this EGL implementation.
         version -- A 3-tuple describing the implementation version, in
             the format (major, minor, vendor_info).
@@ -135,6 +139,19 @@ class Display:
     def extensions(self):
         '''Get the extensions available on this EGL instance.'''
         return tuple(self._attr(EXTENSIONS).split())
+
+    def set_swap_interval(self, val):
+        '''Set the number of video frames between buffer swaps.
+
+        This value applies to the current context, and will be silently
+        clamped to the range defined by the context's configuration.
+
+        Keyword arguments:
+            val -- The number of frames to set the interval to.
+
+        '''
+        native.eglSwapInterval(self, int(val))
+    set_swap_interval = property(fset=set_swap_interval)
 
     @property
     def vendor(self):

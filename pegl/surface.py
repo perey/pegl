@@ -185,6 +185,25 @@ class Surface:
         '''
         return self._setattr(SurfaceAttrib.SWAP_BEHAVIOR, val)
 
+    def copy_buffers(self, pixmap):
+        '''Copy the contents of the rendering buffer to a native pixmap.
+
+        Keyword arguments:
+            pixmap -- The handle of the native pixmap to which the
+                buffer will be copied.
+
+        '''
+        native.eglCopyBuffers(self.display, self, pixmap)
+
+    def swap_buffers(self):
+        '''Perform a buffer swap.
+
+        The state of the color buffer after the swap is defined by the
+        swap_behavior attribute.
+
+        '''
+        native.eglSwapBuffers(self.display, self)
+
 
 class PbufferSurface(Surface):
     '''Represents an off-screen surface in a pbuffer (pixel buffer).
