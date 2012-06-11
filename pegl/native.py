@@ -29,10 +29,10 @@ __all__ = ('eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglMakeCurrent', 'eglGetCurrentContext', 'eglGetCurrentSurface',
            'eglGetCurrentDisplay', 'eglQueryContext', 'eglWaitClient',
            'eglWaitGL', 'eglWaitNative', 'eglSwapBuffers', 'eglCopyBuffers',
-           'eglSwapInterval', 'eglReleaseThread')
+           'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread')
 
 # Standard library imports.
-from ctypes import CDLL, POINTER, c_char_p, c_int, c_uint, c_void_p
+from ctypes import CDLL, CFUNCTYPE, POINTER, c_char_p, c_int, c_uint, c_void_p
 
 # Local imports.
 from . import EGLError, error_codes, int_p, NO_CONTEXT, NO_SURFACE
@@ -47,6 +47,7 @@ native_display = native_pixmap = native_window = c_void_p
 client_buffer = c_void_p
 attr_list = int_p
 configs = POINTER(config)
+void_func = CFUNCTYPE(None)
 
 # Trap EGL errors. We set the argument type for "EGLint eglGetError(void)"
 # here, since we use it for error_check. We don't set a return type, because
@@ -115,7 +116,7 @@ def error_check(fn, fail_on=None, always_check=False, fallback_error=EGLError,
 # EGLDisplay eglGetDisplay(EGLNativeDisplayType display_id);
 egl.eglGetDisplay.argtypes = (native_display,)
 egl.eglGetDisplay.restype = display
-# TODO: Remove this? The EGL spec indicates no errors for this function.
+# TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglGetDisplay = error_check(egl.eglGetDisplay)
 
 # EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor);
@@ -252,7 +253,7 @@ eglBindAPI = error_check(egl.eglBindAPI, fail_on=False)
 # EGLenum eglQueryAPI(void);
 egl.eglQueryAPI.argtypes = ()
 egl.eglQueryAPI.restype = enum
-# TODO: Remove this? The EGL spec indicates no errors for this function.
+# TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglQueryAPI = error_check(egl.eglQueryAPI)
 
 # EGLContext eglCreateContext(EGLDisplay dpy, EGLConfig config,
@@ -282,7 +283,7 @@ eglMakeCurrent = error_check(egl.eglMakeCurrent, fail_on=False)
 # EGLContext eglGetCurrentContext(void);
 egl.eglGetCurrentContext.argtypes = ()
 egl.eglGetCurrentContext.restype = context
-# TODO: Remove this? The EGL spec indicates no errors for this function.
+# TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglGetCurrentContext = error_check(egl.eglGetCurrentContext)
 
 # EGLSurface eglGetCurrentSurface(EGLint readdraw);
@@ -294,7 +295,7 @@ eglGetCurrentSurface = error_check(egl.eglGetCurrentSurface)
 # EGLDisplay eglGetCurrentDisplay(void);
 egl.eglGetCurrentDisplay.argtypes = ()
 egl.eglGetCurrentDisplay.restype = display
-# TODO: Remove this? The EGL spec indicates no errors for this function.
+# TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglGetCurrentDisplay = error_check(egl.eglGetCurrentDisplay)
 
 # EGLBoolean eglQueryContext(EGLDisplay dpy, EGLContext ctx, EGLint attribute,
@@ -345,6 +346,14 @@ egl.eglSwapInterval.argtypes = (display, c_int)
 egl.eglSwapInterval.restype = ebool
 # Errors: BadContextError, BadSurfaceError
 eglSwapInterval = error_check(egl.eglSwapInterval, fail_on=False)
+
+################ 3.10 ###############
+
+# void (*eglGetProcAddress(const char *procname))(void);
+egl.eglGetProcAddress.argtypes = (c_char_p,)
+egl.eglGetProcAddress.restype = void_func
+# TODO: Remove error_check? The EGL spec indicates no errors for this function.
+eglGetProcAddress = error_check(egl.eglGetProcAddress)
 
 ################ 3.11 ###############
 

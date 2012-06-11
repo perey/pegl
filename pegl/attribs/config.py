@@ -29,14 +29,14 @@ from . import Attribs, BitMask, Details, DONT_CARE, NONE
 # Objects for config attribute values.
 class SurfaceTypes(BitMask):
     '''A bit mask representing types of EGL surfaces.'''
-    bit_names = ('PBUFFER', 'PIXMAP', 'WINDOW', None, None,
+    bit_names = ['PBUFFER', 'PIXMAP', 'WINDOW', None, None,
                  'VG_COLORSPACE_LINEAR', 'VG_ALPHA_FORMAT_PRE', None, None,
-                 'MULTISAMPLE_RESOLVE_BOX', 'SWAP_BEHAVIOR_PRESERVED')
+                 'MULTISAMPLE_RESOLVE_BOX', 'SWAP_BEHAVIOR_PRESERVED']
 
 
 class ClientAPIs(BitMask):
     '''A bit mask representing client APIs supported by EGL.'''
-    bit_names = ('OPENGL_ES', 'OPENVG', 'OPENGL_ES2', 'OPENGL')
+    bit_names = ['OPENGL_ES', 'OPENVG', 'OPENGL_ES2', 'OPENGL']
 
 
 CBufferTypes = namedtuple('CBufferTypes_tuple',

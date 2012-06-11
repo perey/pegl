@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''EGL 1.4 display management.'''
+'''EGL display management.'''
 
 # Copyright © 2012 Tim Pederick.
 #

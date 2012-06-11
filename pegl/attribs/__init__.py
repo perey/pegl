@@ -67,7 +67,8 @@ class BitMask:
         bits -- The raw bits of the mask (least significant first).
 
     '''
-    bit_names = ()
+    bit_names = []
+    extensions = []
 
     @classmethod
     def _make_property(cls, bit_number):
@@ -90,6 +91,35 @@ class BitMask:
             self.bits[bit_number] = bool(val)
 
         return property(getter, setter)
+
+    @classmethod
+    def extend(cls, bit_number, bit_name, override=False):
+        '''Extend the bit mask by assigning a new bit name.
+
+        Keyword arguments:
+            bit_number -- The bit number to assign the new name to,
+                counting from 0 (the least significant bit).
+            bit_name -- The name to assign to the new bit.
+            override -- Whether or not the new name can replace an
+                existing name (either a standard name or from an
+                extension). If False (the default), only bits with names
+                that are currently None, or bits that enlarge the bit
+                mask, may be given new names.
+
+        '''
+        off_end = bit_number - len(cls.bit_names)
+        if off_end < 0:
+            # The bit number falls within the current bit mask length.
+            if (override or cls.bit_names[bit_number] is None):
+                # Okay to assign new name.
+                cls.bit_names[bit_number] = bit_name
+            else:
+                raise TypeError('could not rename existing bit (use override '
+                                'argument to force change)')
+        else:
+            # The bit number is off the end of the bit mask.
+            cls.bit_names.extend([None] * off_end + [bit_name])
+        cls.extensions.append(bit_name)
 
     def __init__(self, *args, **kwargs):
         '''Set up the bit mask.
@@ -173,13 +203,17 @@ class Attribs:
     Class attributes:
         details -- A mapping with the attribute's integer value as the
             key, and a Details named-tuple instance (with a text
-            description, the attribute type, whether it can be
-            DONT_CARE, and the default) as the value.
+            description, the attribute type, and its default value) as
+            the value.
+        extensions -- A mapping of extension attributes loaded on this
+            class to their integer values. By default, this is empty.
         Additionally, symbolic constants for all the known attributes
         are available as class attributes. Their names are the same as
         in the EGL standard, except without the EGL_ prefix.
 
     '''
+    extensions = {}
+
     @classmethod
     def desc(cls, value):
         '''Get a textual description of a given attribute.
@@ -194,6 +228,25 @@ class Attribs:
         '''
         details = cls.details.get(value)
         return (None if details is None else details.desc)
+
+    @classmethod
+    def extend(cls, attr_name, value, attr_type, default, desc=None):
+        '''Load an extension attribute into this class.
+
+        Keyword arguments:
+            attr_name -- The name of the extension attribute.
+            attr_value -- The integer constant that represents the
+                extension attribute.
+            attr_type -- The type of the values that may be assigned to
+                this attribute.
+            default -- The default that this attribute takes.
+            desc -- An optional string describing the attribute.
+
+        '''
+        cls.extensions[attr_name] = value
+        cls.details[value] = Details('An extension attribute'
+                                     if desc is None else desc,
+                                     attr_type, default)
 
 
 class AttribList:
@@ -236,9 +289,9 @@ class AttribList:
                 giving the name of such a value.
 
         '''
-        # Look up an index by name.
+        # If given a string, look up the index by that name.
         if type(index) is str:
-            index = getattr(self.attribs, index)
+            index = self._by_name(index)
 
         if self.attribs.desc(index) is None:
             raise ValueError('not a valid attribute type')
@@ -255,9 +308,9 @@ class AttribList:
                 attribute will be set to its default value instead.
 
         '''
-        # Look up an index by name.
+        # If given a string, look up the index by that name.
         if type(index) is str:
-            index = getattr(self.attribs, index)
+            index = self._by_name(index)
 
         # Check that the given value is valid.
         try:
@@ -270,7 +323,7 @@ class AttribList:
             # Setting an attribute to None makes it take on its default value
             # (as defined by Pegl, not necessarily by the EGL implementation).
             # If you want to actually clear an attribute from the list, use:
-            # >>> del attr_list[i]
+            #     >>> del attr_list[i]
             val = details.default
         elif val is DONT_CARE:
             # Setting a value to DONT_CARE is only allowed for one attribute
@@ -314,6 +367,21 @@ class AttribList:
         '''
         del(self._items[index])
 
+    def _by_name(self, attr_name):
+        '''Look up an attribute index by its name.
+
+        Keyword arguments:
+            attr_name -- A string giving the name of the attribute.
+
+        '''
+        try:
+            # Try loading as an extension attribute first.
+            return self.attribs.extensions[index]
+        except KeyError:
+            # Not an extension. If this fails too, we'll let the
+            # AttributeError propagate upwards.
+            return getattr(self.attribs, index)
+
     @property
     def _as_parameter_(self):
         '''Convert to an array for use by foreign functions.'''
@@ -346,12 +414,10 @@ class AttribList:
                 giving the name of such a value.
 
         '''
-        # Look up an index by name.
-        if type(index) is str:
-            index = getattr(self.attribs, index)
-
+        # Look up the value by the conventional method.
         val = self[index]
         if val is None:
+            # Not set; use the default.
             return self.attribs.details[value].default
         else:
             return val
