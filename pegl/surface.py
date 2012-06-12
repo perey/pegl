@@ -173,7 +173,7 @@ class Surface:
             Either SwapBehaviors.preserved or SwapBehaviors.destroyed.
 
         '''
-        return self._attr(SurfaceAttrib.SWAP_BEHAVIOR)
+        return self._attr(SurfaceAttribs.SWAP_BEHAVIOR)
     @swap_behavior.setter
     def swap_behavior(self, val):
         '''Set the effect a buffer swap will have on the color buffer.
@@ -183,7 +183,7 @@ class Surface:
                 SwapBehaviors.destroyed.
 
         '''
-        return self._setattr(SurfaceAttrib.SWAP_BEHAVIOR, val)
+        return self._setattr(SurfaceAttribs.SWAP_BEHAVIOR, val)
 
     def copy_buffers(self, pixmap):
         '''Copy the contents of the rendering buffer to a native pixmap.
