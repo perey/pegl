@@ -376,11 +376,11 @@ class AttribList:
         '''
         try:
             # Try loading as an extension attribute first.
-            return self.attribs.extensions[index]
+            return self.attribs.extensions[attr_name]
         except KeyError:
             # Not an extension. If this fails too, we'll let the
             # AttributeError propagate upwards.
-            return getattr(self.attribs, index)
+            return getattr(self.attribs, attr_name)
 
     @property
     def _as_parameter_(self):
