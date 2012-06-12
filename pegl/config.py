@@ -291,6 +291,8 @@ class Config:
     @property
     def surface_types(self):
         '''List surface types to which this configuration can render.'''
+        # TODO: Separate properties to query some or all of these flags?
+        # (Including the new flags in ext.khr.locksurface)
         return self._attr(ConfigAttribs.SURFACE_TYPE)._flags_set
 
     @property

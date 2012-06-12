@@ -24,7 +24,7 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from . import Attribs, Details, NONE, NO_TEXTURE, scaled, UNKNOWN_DISPLAY_VALUE
+from . import Attribs, Details, NONE, NO_TEXTURE, scaled, UNKNOWN_VALUE
 from .config import ConfigAttribs
 from .context import ContextAttribs, RenderBufferTypes
 
@@ -102,10 +102,10 @@ class SurfaceAttribs(Attribs):
                                   'used to create this surface', c_int, 0),
                HORIZONTAL_RESOLUTION: Details('Horizontal resolution of the '
                                               'display, in pixels per metre',
-                                              scaled, UNKNOWN_DISPLAY_VALUE),
+                                              scaled, UNKNOWN_VALUE),
                VERTICAL_RESOLUTION: Details('Vertical resolution of the '
                                             'display, in pixels per metre',
-                                            scaled, UNKNOWN_DISPLAY_VALUE),
+                                            scaled, UNKNOWN_VALUE),
                PIXEL_ASPECT_RATIO: Details('Ratio of physical pixel width to '
                                            'height', scaled,
-                                           UNKNOWN_DISPLAY_VALUE)}
+                                           UNKNOWN_VALUE)}

@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ('NONE', 'NO_TEXTURE', 'UNKNOWN_DISPLAY_VALUE', 'SCALE_FACTOR',
+__all__ = ('NONE', 'NO_TEXTURE', 'UNKNOWN_VALUE', 'SCALE_FACTOR',
            'Attribs', 'AttribList', 'BitMask', 'Details',
            'attr_convert', 'scaled',
            'config', 'context', 'surface')
@@ -36,7 +36,7 @@ int_p = POINTER(c_int)
 # Symbolic constants used here and/or in more than one module in this package.
 NONE = 0x3038
 NO_TEXTURE = 0x305C
-UNKNOWN_DISPLAY_VALUE = -1
+UNKNOWN_VALUE = -1
 SCALE_FACTOR = 10000 # Used to store floats as ints by scaling them up.
 
 # A symbolic don't-care value that can't be confused with anything else. This
@@ -439,9 +439,9 @@ def attr_convert(attr, value, attribs):
     details = attribs.details[attr]
     if details.values is bool:
         return bool(value)
-    elif value == details.default == UNKNOWN_DISPLAY_VALUE:
-        # We recognise an attribute that allows UNKNOWN_DISPLAY_VALUE by seeing
-        # whether that is its default. If so, and that's what the value is...
+    elif value == details.default == UNKNOWN_VALUE:
+        # We recognise an attribute that allows UNKNOWN_VALUE by seeing whether
+        # that is its default. If so, and that's what the value is...
         return None
     elif details.values is scaled:
         # It's a scaled value, so undo the scaling.
