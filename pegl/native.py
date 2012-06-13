@@ -32,7 +32,7 @@ __all__ = ('eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread')
 
 # Standard library imports.
-from ctypes import CDLL, CFUNCTYPE, POINTER, c_char_p, c_int, c_uint, c_void_p
+from ctypes import CDLL, POINTER, c_char_p, c_int, c_uint, c_void_p
 
 # Local imports.
 from . import EGLError, error_codes, int_p, NO_CONTEXT, NO_SURFACE
@@ -47,7 +47,8 @@ native_display = native_pixmap = native_window = c_void_p
 client_buffer = c_void_p
 attr_list = int_p
 configs = POINTER(config)
-void_func = CFUNCTYPE(None)
+void_func = c_void_p # The function ext.load_ext() will cast this to a function
+                     # pointer with the correct argument and return types.
 
 # Trap EGL errors. We set the argument type for "EGLint eglGetError(void)"
 # here, since we use it for error_check. We don't set a return type, because
@@ -97,10 +98,11 @@ def error_check(fn, fail_on=None, always_check=False, fallback_error=EGLError,
             if errcode is not None:
                 # The error trap held something other than the success code.
                 raise errcode()
-            elif fail_on is not None and fail_on == result:
+            elif ((fail_on is not None and fail_on == result) or
+                  (fail_on_null and result is None)):
                 # The error trap held the success code, but the returned value
                 # still signals an error.
-                raise fallback(fallback_msg)
+                raise fallback_error(fallback_msg)
             # ...else fall through.
         return result
     return wrapped_fn
@@ -353,6 +355,8 @@ eglSwapInterval = error_check(egl.eglSwapInterval, fail_on=False)
 egl.eglGetProcAddress.argtypes = (c_char_p,)
 egl.eglGetProcAddress.restype = void_func
 # TODO: Remove error_check? The EGL spec indicates no errors for this function.
+# Alternatively, add fail_on_null=True and change the error handling in the
+# ext.load_ext() function that calls this.
 eglGetProcAddress = error_check(egl.eglGetProcAddress)
 
 ################ 3.11 ###############

@@ -56,7 +56,9 @@ def load_ext(fname, return_type, arg_types, check_errors=True, **kwargs):
     void_func = native.eglGetProcAddress(fname)
     if void_func is None:
         # Extension not available.
-        raise ImportError('extension {} not available'.format(fname.decode()))
+        raise ImportError("extension function '{}' not "
+                          "available".format(fname.decode()))
+    # Cast the pointer to a function pointer with the correct types.
     typed_func = CFUNCTYPE(return_type, *arg_types)(void_func)
     if check_errors:
         return native.error_check(typed_func, **kwargs)
