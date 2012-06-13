@@ -26,7 +26,7 @@ __all__ = (# Registered vendor extensions.
            # Unregistered extensions.
            'nok', 'wl',
            # Stuff defined here.
-           'load_ext')
+           'extensions', 'load_ext')
 
 # Standard library imports.
 from ctypes import CFUNCTYPE
@@ -34,20 +34,8 @@ from ctypes import CFUNCTYPE
 # Local imports.
 from .. import native
 
-# TODO: Have a way of checking for extension availability before importing an
-# extension module. This function is part of it, but it needs to have the name
-# string of the extension -- which I can't just put in the matching module,
-# because I don't want to import it!
-def is_available(display, extname):
-    '''Check the availability of an extension.
-
-    Keyword arguments:
-        display -- A Display instance running the EGL implementation for
-            which extension availability is being queried.
-        extname -- The name string of the extension.
-
-    '''
-    return (extname in display.extensions)
+# Extensions in the EXT namespace.
+extensions = {'EGL_EXT_create_context_robustness': 'robustness'}
 
 def load_ext(fname, return_type, arg_types, check_errors=True, **kwargs):
     '''Load an extension function at runtime.

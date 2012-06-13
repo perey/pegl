@@ -19,4 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ('locksurface', 'image')
+__all__ = ('locksurface', 'extensions')
+
+extensions = {'EGL_KHR_lock_surface': 'locksurface',
+              'EGL_KHR_lock_surface2': 'locksurface',
+              'EGL_KHR_image_base': 'locksurface'}

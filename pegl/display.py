@@ -50,12 +50,12 @@ class Display:
 
     Instance attributes:
         dhandle -- The foreign object handle for this display.
-        client_apis -- A string listing the client APIs supported (such
-            as OpenGL, OpenGL_ES, and OpenVG), separated by spaces.
-            Although I can't find it specified in the EGL standard, it
-            seems likely that these will be limited to ASCII.
-        extensions -- A string listing the EGL extensions supported,
-            again separated by spaces and probably ASCII.
+        client_apis -- A sequence listing the client APIs supported
+            (such as OpenGL, OpenGL_ES, and OpenVG). Although I can't
+            find it specified in the EGL standard, it seems likely that
+            these will be limited to ASCII.
+        extensions -- A sequence listing the EGL extensions supported;
+            again, probably limited to ASCII.
         swap_interval -- An integer number of video frames between
             buffer swaps. This value is write-only and applies to the
             current context. It will be clamped to the range permitted
@@ -179,6 +179,57 @@ class Display:
 
         native.eglInitialize(self, major, minor)
         return (major.contents.value, minor.contents.value, '')
+
+    def load_extension(self, extname):
+        '''Load an extension conditional on it being declared available.
+
+        The extensions attribute of this display is used to determine
+        whether the extension named is supported by the implementation
+        of EGL that the display represents. An ImportError will be
+        raised to signify that the extension is unavailable. Also, even
+        when it is declared to be available, if an ImportError occurs
+        anyway while the extension module is being loaded, it will be
+        raised.
+
+        Keyword arguments:
+            extname -- The name string of the extension. Name strings
+                are consistently of the form EGL_xxx_yyy, where xxx
+                represents the vendor proposing the extension (or EXT
+                for a cross-vendor proposal) and yyy is a descriptive
+                name for the extension.
+
+        '''
+        # Ensure the name is a string.
+        extname = str(extname)
+
+        if extname not in self.extensions:
+            raise ImportError('implementation does not declare support for ' +
+                              extname)
+
+        egl_prefix, vendor, name = extname.split('_', 2)
+        if egl_prefix != 'EGL':
+            # How on earth did we get this far?
+            raise ValueError("extension names must begin with 'EGL_'")
+        elif vendor == 'EXT':
+            # Cross-vendor extensions live in the ext package.
+            vendor_pkg = 'ext'
+            from . import ext as ext_pkg
+        else:
+            # Extensions from vendor xxx live in the ext.xxx subpackage.
+            vendor_pkg = 'ext.' + vendor.lower()
+            top_ext_pkg = __import__(vendor_pkg, globals(), locals(), [], 1)
+            ext_pkg = getattr(top_ext_pkg, vendor.lower())
+
+        # What module has this extension?
+        module_name = ext_pkg.extensions.get(extname)
+
+        if module_name is None:
+            raise ImportError("no module found for extension "
+                              "'{}'".format(extname))
+        else:
+            pkg_with_module = __import__(vendor_pkg, globals(), locals(),
+                                         [module_name], 1)
+            return getattr(pkg_with_module, module_name)
 
     def terminate(self):
         '''Invalidate all resources associated with this display.

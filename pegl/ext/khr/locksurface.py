@@ -32,12 +32,13 @@ from collections import namedtuple
 from ctypes import c_int, c_void_p
 
 # Local imports.
-from .. import is_available, load_ext
+from .. import load_ext
 from ...attribs import (Attribs, AttribList, BitMask, Details, DONT_CARE,
                         UNKNOWN_VALUE)
 from ...attribs.config import ConfigAttribs, SurfaceTypes
 from ...attribs.surface import SurfaceAttribs
 from ...native import ebool, display, surface, attr_list
+from ...config import Config
 from ...surface import Surface
 
 # Get handles of extension functions.
@@ -67,7 +68,7 @@ new_attribs = ('BITMAP_POINTER', 'BITMAP_PITCH', 'BITMAP_ORIGIN',
                'BITMAP_PIXEL_LUMINANCE_OFFSET')
 new_values = range(0x30C6, 0x30CE)
 new_types = (c_void_p, c_int, BitmapOrigins, c_int, c_int, c_int, c_int, c_int)
-new_defaults = (None, UNKNOWN_VALUE, BitmapOrigins(), UNKNOWN_VALUE,
+new_defaults = (None, UNKNOWN_VALUE, BitmapOrigins.LOWER_LEFT, UNKNOWN_VALUE,
                 UNKNOWN_VALUE, UNKNOWN_VALUE, UNKNOWN_VALUE, UNKNOWN_VALUE)
 for args in zip(new_attribs, new_values, new_types, new_defaults):
     SurfaceAttribs.extend(*args)
@@ -150,22 +151,16 @@ def bitmap_pixel_size(self):
     '''Get the bit size of pixels in the mapped buffer.
 
     The lock_surface2 extension provides a simple query attribute for
-    this. Support is also provided for the more involved method from
-    the original lock_surface extension, if only that is available.
+    this. If that is not available, the size of a pixel in the color
+    buffer is given (which may include some "unused" bits).
 
     '''
-    if is_available(self.display, 'EGL_KHR_lock_surface2'):
+    if 'EGL_KHR_lock_surface2' in self.display.extensions:
         # Easy!
         return self._attr(SurfaceAttribs.BITMAP_PIXEL_SIZE)
     else:
-        # Hard! "The size of a pixel in the mapped buffer, in bytes, can
-        # be determined by querying the EGL_BUFFER_SIZE attribute of the
-        # EGLConfig, rounding up to the nearest multiple of 8, and
-        # converting from bits to bytes."
-        BITS_PER_BYTE = 8
-        bufsize = self.config._attr(ConfigAttribs.BUFFER_SIZE)
-        bytesize = (bufsize // BITS_PER_BYTE) + 1
-        return bytesize * BITS_PER_BYTE
+        # We fall back on the buffer size.
+        return self.config._attr(ConfigAttribs.BUFFER_SIZE)
 Surface.bitmap_pixel_size = property(bitmap_pixel_size)
 
 # TODO: The other Surface properties.
