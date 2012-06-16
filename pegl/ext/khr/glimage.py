@@ -31,28 +31,21 @@ from ctypes import c_int
 # Local imports.
 from .image import Image, ImageAttribs
 
-# Name strings.
-namestrings = {'2D_image': 'EGL_KHR_gl_texture_2D_image',
-               'cubemap': 'EGL_KHR_gl_texture_cubemap_image',
-               '3D_image': 'EGL_KHR_gl_texture_3D_image',
-               'renderbuffer': 'EGL_KHR_gl_renderbuffer_image'}
-
 # 2D image attributes.
-Image.extend(namestrings['2D_image'], {'GL_TEXTURE_2D': 0x30B1})
+Image.extend('EGL_KHR_gl_texture_2D_image', {'GL_TEXTURE_2D': 0x30B1})
 ImageAttribs.extend('GL_TEXTURE_LEVEL', 0x30BC, c_int, 0,
                     'The mipmap level to use as the image source')
 
 # Cube map image attributes.
-Image.extend(namestrings['2D_image'], dict(zip((sign + axis
-                                                for axis in ('X', 'Y', 'Z')
-                                                for sign in ('POSITIVE_',
-                                                             'NEGATIVE_')),
-                                               range(0x30B3, 0x30B9))))
+Image.extend('EGL_KHR_gl_texture_cubemap_image',
+             dict(zip((sign + axis for axis in ('X', 'Y', 'Z')
+                       for sign in ('POSITIVE_', 'NEGATIVE_')),
+                      range(0x30B3, 0x30B9))))
 
 # 3D image attributes.
-Image.extend(namestrings['3D_image'], {'GL_TEXTURE_3D': 0x30B2})
+Image.extend('EGL_KHR_gl_texture_3D_image', {'GL_TEXTURE_3D': 0x30B2})
 ImageAttribs.extend('GL_TEXTURE_ZOFFSET', 0x30BD, c_int, 0,
                     'The depth offset of the image to use as the source')
 
 # Render buffer attributes.
-Image.extend(namestrings['renderbuffer'], {'GL_RENDERBUFFER': 0x30B9})
+Image.extend('EGL_KHR_gl_renderbuffer_image', {'GL_RENDERBUFFER': 0x30B9})
