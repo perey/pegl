@@ -50,131 +50,9 @@ native_create = load_ext(b'eglCreateImageKHR', image,
 native_destroy = load_ext(b'eglDestroyImageKHR', ebool,
                           (display, image), fail_on=False)
 
-# Define the targets that Image knows how to accept.
-# TODO: Have I grossly overengineered this? (Probably.) Does Image only need
-# to know values and extensions?
-class _Targets:
-    '''A three-way mapping of target names, values, and extension names.
-
-    When used as a sequence type, a Targets instance gives its values.
-    Its names can be used as instance attributes, and queried by passing
-    the value as an index (thus targets[val] == name). Extension names
-    are supplied only by the method extension_for().
-
-    '''
-    def __init__(self, mapping=None, extension=None):
-        '''Create the mapping of targets.
-
-        Keyword arguments:
-            mapping -- An optional mapping object containing the initial
-                names and values that the instance will contain.
-            extension -- The name of the extension providing the initial
-                contents of this instance. This is required if mapping
-                is supplied, and is not meaningful otherwise.
-
-        '''
-        self.names = {}
-        self.values = {}
-
-        if mapping is not None:
-            if extension is None:
-                raise TypeError('an extension name must be supplied if '
-                                'initial contents are specified')
-
-            for name, val in mapping.items():
-                self.names[name] = val
-                self.values[val] = (name, extension)
-
-    def __contains__(self, val):
-        '''Determine whether a given value is present in the mapping.'''
-        return val in self.values
-
-    def __iter__(self):
-        '''Iterate over the values in the mapping.'''
-        return iter(self.values)
-
-    def __getattr__(self, attr):
-        '''Get the value that matches a given name.'''
-        try:
-            return self.names[attr]
-        except KeyError:
-            # Hack! Avoid overcomplicating the backtrace.
-            pass
-        raise AttributeError("'{}' has no attribute "
-                             "'{}'".format(self.__class__.__name__, attr))
-
-    def __getitem__(self, val):
-        '''Get the name that matches a given value.'''
-        # The name is item #0 in the tuple.
-        return self.values[val][0]
-
-    # __setitem__() is not supported; use extend() instead.
-
-    def __delitem__(self, val_or_name):
-        '''Delete a name/value pair from the mapping.
-
-        Keyword arguments:
-            val_or_name -- The value or name to remove. If the argument
-                should happen to be valid as both a value and a name
-                (which shouldn't ever be the case), it will be used as
-                a value.
-
-        '''
-        if val_or_name in self.values:
-            # Given a value.
-            val = val_or_name
-            name = self[val]
-        else:
-            # Given a name (or nonsense, in which case let the error pass).
-            name = val_or_name
-            val = self.names[name]
-
-        del self.names[name]
-        del self.values[val]
-
-    def extend(self, name, val, extension, override=False):
-        '''Extend the mapping.
-
-        Keyword arguments:
-            name -- The new name to add.
-            val -- The new value for that name to take.
-            extension -- The name string of the extension specifying
-                this name-value pair.
-            override -- Whether or not the new name and value can
-                replace an existing name or value. The default is False.
-
-        '''
-        if not override and (name in self.names or val in self.values):
-            raise ValueError('could not replace existing name or value '
-                             '(use override argument to force change)')
-        self.names[name] = val
-        self.values[val] = (name, extension)
-
-    def extension_for(self, val_or_name):
-        '''Get the extension that specified a value or a name.
-
-        Keyword arguments:
-            val_or_name -- The value or name to look up. If the argument
-                should happen to be valid as both a value and a name
-                (which shouldn't ever be the case), it will be used as
-                a value.
-
-        '''
-        if val_or_name in self.values:
-            # Given a value.
-            val = val_or_name
-        else:
-            # Given a name (or nonsense, in which case let the error pass up).
-            val = self.names[val_or_name]
-
-        # The extension is item #1 in the tuple.
-        return self.values[val][1]
-
-
-ACCEPTABLE_TARGETS = _Targets({'NATIVE_PIXMAP': 0x30B0},
-                              'EGL_KHR_image_pixmap')
-
 # Define the new Image type and its attributes.
+NATIVE_PIXMAP = 0x30B0
+
 class ImageAttribs(Attribs):
     IMAGE_PRESERVED = 0x30D2 # This is only supported in the base extension,
                              # not in the original!
@@ -186,6 +64,9 @@ class Image:
     '''Represents a 2D image that can be shared between EGL client APIs.
 
     Class attributes:
+        acceptable_targets -- A mapping of target values that instances
+            can accept, to the name strings of the extensions that
+            define them.
         supportable -- A list of the name strings for EGL extensions
             that instances can support.
 
@@ -204,6 +85,7 @@ class Image:
 
     '''
     supportable = ['EGL_KHR_image_base', 'EGL_KHR_image_pixmap']
+    acceptable_targets = {NATIVE_PIXMAP: 'EGL_KHR_image_pixmap'}
 
     def __init__(self, buffer, target, attribs=None, context=None,
                  display=None, support=None):
@@ -246,7 +128,7 @@ class Image:
             self.support = support
 
         # If this raises a KeyError, let it pass upwards.
-        extension_needed = ACCEPTABLE_TARGETS[target]
+        extension_needed = self.acceptable_targets[target]
         if extension_needed not in self.support:
             ValueError("need extension '{}' for that "
                        "target".format(extension_needed))
