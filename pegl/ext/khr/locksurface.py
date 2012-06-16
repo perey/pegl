@@ -147,6 +147,52 @@ def match_format(self):
 Config.match_format = property(match_format)
 
 # New Surface properties, for querying the new attributes in SurfaceAttribs.
+def bitmap_pointer(self):
+    '''Get the native pointer to the mapped buffer.'''
+    return self._attr(SurfaceAttribs.BITMAP_POINTER)
+Surface.bitmap_pointer = property(bitmap_pointer)
+
+def bitmap_pitch(self):
+    '''Get the pitch (bytes between rows) of the mapped buffer.'''
+    return self._attr(SurfaceAttribs.BITMAP_PITCH)
+Surface.bitmap_pitch = property(bitmap_pitch)
+
+def bitmap_origin(self):
+    '''Get the mapped buffer corner that is the coordinate origin.
+
+    Returns:
+        A value from BitmapOrigins, either BitmapOrigins.LOWER_LEFT or
+        BitmapOrigins.UPPER_RIGHT.
+
+    '''
+    return self._attr(SurfaceAttribs.BITMAP_ORIGIN)
+Surface.bitmap_origin = property(bitmap_origin)
+
+def bitmap_component_offsets(self):
+    '''Get the offset of each color component in the mapped buffer.
+
+    Offsets are the first (least significant) bit position of the
+    contiguous range of bits within each pixel that holds the value of
+    each color component.
+
+    A color component that does not exist (e.g. luminance in an RGBA
+    buffer) has an offset of zero. If a component exists but is not in a
+    contiguous range of bits, the offset is None.
+
+    Returns:
+        A mapping object with 'red', 'green', 'blue', 'alpha' and
+        'luminance' as its keys, and None or an integer for the offset
+        values.
+
+    '''
+    components = ('red', 'green', 'blue', 'alpha', 'luminance')
+
+    return dict((comp.lower(),
+                 self._attr(getattr(SurfaceAttribs,
+                                    'BITMAP_PIXEL_{}_OFFSET'.format(comp))))
+                for comp in components)
+Surface.bitmap_component_offsets = property(bitmap_component_offsets
+
 def bitmap_pixel_size(self):
     '''Get the bit size of pixels in the mapped buffer.
 
@@ -162,5 +208,3 @@ def bitmap_pixel_size(self):
         # We fall back on the buffer size.
         return self.config._attr(ConfigAttribs.BUFFER_SIZE)
 Surface.bitmap_pixel_size = property(bitmap_pixel_size)
-
-# TODO: The other Surface properties.
