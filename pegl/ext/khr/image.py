@@ -64,11 +64,11 @@ class Image:
     '''Represents a 2D image that can be shared between EGL client APIs.
 
     Class attributes:
-        acceptable_targets -- A mapping of target values that instances
-            can accept, to the name strings of the extensions that
-            define them.
         supportable -- A list of the name strings for EGL extensions
             that instances can support.
+        acceptable_targets -- A dict mapping target values that can be
+            accepted by the constructor to the name strings of the
+            extensions that define them.
 
     Instance attributes:
         ihandle -- The foreign object handle for this image.
