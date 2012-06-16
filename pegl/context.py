@@ -68,7 +68,9 @@ def bound_api(raw=False):
 
     '''
     api = native.eglQueryAPI()
-    if raw:
+    if api == NONE:
+        return None
+    elif raw:
         return hex(api)
     else:
         return _api_lookup(api)
