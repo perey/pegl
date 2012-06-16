@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-'''EGL Khronos (KHR) extension support.'''
+'''Khronos OpenVG parent image binding for EGL.
 
+http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_vg_parent_image.txt
+
+'''
 # Copyright © 2012 Tim Pederick.
 #
 # This file is part of Pegl.
@@ -19,11 +22,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ('extensions', 'locksurface', 'vgparentimage')
+# Local imports.
+from .image import Image
 
-extensions = {'EGL_KHR_image': 'image',
-              'EGL_KHR_image_base': 'image',
-              'EGL_KHR_image_pixmap': 'image',
-              'EGL_KHR_lock_surface': 'locksurface',
-              'EGL_KHR_lock_surface2': 'locksurface',
-              'EGL_KHR_vg_parent_image': 'vgparentimage'}
+# Extension image target type.
+VG_PARENT_IMAGE = 0x30BA
+Image.acceptable_targets[VG_PARENT_IMAGE] = 'EGL_KHR_vg_parent_image'
