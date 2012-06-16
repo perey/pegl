@@ -26,6 +26,4 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_vg_parent_image.txt
 from .image import Image
 
 # Extension image target type.
-VG_PARENT_IMAGE = 0x30BA
-Image.supportable.append('EGL_KHR_vg_parent_image')
-Image.acceptable_targets[VG_PARENT_IMAGE] = 'EGL_KHR_vg_parent_image'
+Image.extend('EGL_KHR_vg_parent_image', {'VG_PARENT_IMAGE': 0x30BA})

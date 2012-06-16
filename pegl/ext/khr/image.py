@@ -69,6 +69,9 @@ class Image:
         acceptable_targets -- A dict mapping target values that can be
             accepted by the constructor to the name strings of the
             extensions that define them.
+        extensions -- A mapping of target names loaded onto this class
+            to their integer values. By default, this is empty (the
+            extensions that define the Image class are built into it).
 
     Instance attributes:
         ihandle -- The foreign object handle for this image.
@@ -86,7 +89,7 @@ class Image:
     '''
     supportable = ['EGL_KHR_image_base', 'EGL_KHR_image_pixmap']
     acceptable_targets = {NATIVE_PIXMAP: 'EGL_KHR_image_pixmap'}
-    # TODO: Add a class method extend() to update both of these together.
+    extensions = {}
 
     def __init__(self, buffer, target, attribs=None, context=None,
                  display=None, support=None):
@@ -182,3 +185,27 @@ class Image:
             # Look, I know it breaks duck typing, but we're dealing with a
             # native library here. Let's play it safe.
             raise TypeError('context must be an instance of Context')
+
+    @classmethod
+    def extend(cls, extension, targets, override=False):
+        '''Extend the image class with new target types.
+
+        Keyword arguments:
+            extension -- The name string of the extension for which
+                support is being added.
+            targets -- A mapping of names to values for the new target
+                types supported.
+            override -- Whether or not the new target types can replace
+                existing target types that are represented by the same
+                value. The default is False.
+
+        '''
+        for name, val in targets.items():
+            if not override and val in cls.acceptable_targets:
+                raise ValueError('cannot replace existing target type with {} '
+                                 '(use override argument to force '
+                                 'change)'.format(name))
+            cls.extensions[name] = val
+            cls.acceptable_targets[val] = extension
+
+        cls.supportable.append(extension)

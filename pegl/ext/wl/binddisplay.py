@@ -33,13 +33,16 @@ from .. import load_ext
 from ..khr import image
 from ...native import ebool, display
 
-# Extension types.
+# Extension type.
 wl_display = c_void_p
-WAYLAND_BUFFER = 0x31D5
-image.Image.acceptable_targets[WAYLAND_BUFFER] = 'EGL_WL_bind_wayland_display'
 
 # Get handles of extension functions.
 native_bind = load_ext(b'eglBindWaylandDisplayWL', ebool,
                        (display, wl_display), fail_on=False)
 native_unbind = load_ext(b'eglUnbindWaylandDisplayWL', ebool,
                          (display, wl_display), fail_on=False)
+
+# TODO: Wrap these functions.
+
+# New image target.
+image.Image.extend('EGL_WL_bind_wayland_display', {'WAYLAND_BUFFER': 0x31D5})
