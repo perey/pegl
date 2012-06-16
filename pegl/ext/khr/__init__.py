@@ -23,4 +23,6 @@ __all__ = ('locksurface', 'extensions')
 
 extensions = {'EGL_KHR_lock_surface': 'locksurface',
               'EGL_KHR_lock_surface2': 'locksurface',
-              'EGL_KHR_image_base': 'locksurface'}
+              'EGL_KHR_image': 'image',
+              'EGL_KHR_image_base': 'image',
+              'EGL_KHR_image_pixmap': 'image'}

@@ -248,17 +248,18 @@ class Image:
         # If this raises a KeyError, let it pass upwards.
         extension_needed = ACCEPTABLE_TARGETS[target]
         if extension_needed not in self.support:
-            raise NotImplementedError("need extension '{}' for that "
-                                      "target".format(extension_needed))
+            ValueError("need extension '{}' for that "
+                       "target".format(extension_needed))
 
-        # FIXME: This isn't right. If the base extension is not supported, only
-        # IMAGE_PRESERVED is disallowed. Other extensions could add attributes.
-        self.attribs = (AttribList(ImageAttribs) # If the base extension is not
-                        if 'EGL_KHR_image_base'  # supported, nothing can be in
-                        not in self.support else # the list of attributes.
-                        attribs if isinstance(attribs, AttribList) else
+        self.attribs = (attribs if isinstance(attribs, AttribList) else
                         # The AttribList constructor can accept attribs=None.
                         AttribList(ImageAttribs, attribs))
+        if ('EGL_KHR_image_base' not in self.support and
+            self.attribs['IMAGE_PRESERVED'] is not None):
+            # IMAGE_PRESERVED is specifically excluded from the original
+            # specification; it needs the base extension.
+            raise ValueError("attribute 'IMAGE_PRESERVED' requires extension "
+                             "'EGL_KHR_image_base'")
 
         self.ihandle = native_create(self.display, self.context, target,
                                      buffer, self.attribs)

@@ -362,9 +362,13 @@ class AttribList:
         '''Remove the value set for an attribute.
 
         Keyword arguments:
-            index -- The attribute requested.
+            index -- The attribute to delete.
 
         '''
+        # If given a string, look up the index by that name.
+        if type(index) is str:
+            index = self._by_name(index)
+
         del(self._items[index])
 
     def _by_name(self, attr_name):
