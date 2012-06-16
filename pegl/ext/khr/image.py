@@ -103,7 +103,11 @@ class Image:
                 and only if a context is supplied.
             support -- As the instance attribute. If omitted, all
                 relevant extensions for which the display declares
-                support will be supported.
+                support will be supported. It is not an error if the
+                supplied list contains an extension name that the
+                display does not support, but it may cause errors later
+                on if an unsupported value is passed to a foreign
+                function.
 
         '''
         # The property setter will handle validation of the context.
