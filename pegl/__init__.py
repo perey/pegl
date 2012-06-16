@@ -28,6 +28,9 @@ __all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
            'BadMatchError', 'BadNativePixmapError', 'BadNativeWindowError',
            'BadParameterError', 'BadSurfaceError', 'ContextLostError']
 
+# TODO: Streamline the setup code. Take a look at README.rst -- see how many
+# imports are needed? Slim it down!
+
 # Standard library imports.
 from ctypes import POINTER, c_int, c_void_p
 

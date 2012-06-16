@@ -30,6 +30,7 @@ from .attribs.config import Caveats, CBufferTypes, ConfigAttribs
 
 MAX_CONFIGS = 256 # Arbitrary! "256 configs should be enough for anybody..."
 
+# TODO: Consider making these two functions methods of Display instead.
 def count_configs(display):
     '''Get the number of configurations supported for a given display.
 
