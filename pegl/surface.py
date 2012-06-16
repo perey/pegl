@@ -40,12 +40,12 @@ class Surface:
 
     Instance attributes:
         shandle -- The foreign object handle for this surface.
-        display -- The EGL display to which this surface belongs, an
+        display -- The EGL display to which this surface belongs. An
             instance of Display.
-        config -- The configuration with which this surface was created,
-            an instance of Config.
-        attribs -- The attributes with which this surface was created,
-            an instance of Attribs.
+        config -- The configuration with which this surface was created.
+            An instance of Config.
+        attribs -- The attributes with which this surface was created.
+            An instance of AttribList.
 
     '''
     def __init__(self, display, config, attribs):
