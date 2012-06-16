@@ -62,7 +62,7 @@ class Surface:
         self.shandle = None
         self.display = display
         self.config = config
-        self.attribs = (attribs if type(attribs) is AttribList else
+        self.attribs = (attribs if isinstance(attribs, AttribList) else
                         AttribList(SurfaceAttribs, attribs))
 
     def __del__(self):

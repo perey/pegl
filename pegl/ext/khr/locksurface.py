@@ -119,9 +119,9 @@ def _lock(self, attribs):
         attribs -- The locking attributes to set.
 
     '''
-    if type(attribs) is not AttribList:
-        attribs = AttribList(LockAttribs, attribs)
-    native_lock(self.display, self, attribs)
+    native_lock(self.display, self,
+                attribs if isinstance(attribs, AttribList) else
+                AttribList(LockAttribs, attribs))
 Surface.lock = _lock
 
 def _unlock(self):
@@ -138,12 +138,14 @@ def match_format(self):
 
     '''
     bitmap_format = self._attr(ConfigAttribs.MATCH_FORMAT)
+    # The two formats that are not "_EXACT" can be supplied when requesting a
+    # Config, but cannot be returned when querying its properties.
     if bitmap_format == MatchFormats.RGB_565_EXACT:
         return 'RGB 565'
     elif bitmap_format == MatchFormats.RGBA_8888_EXACT:
         return 'RGBA 8888'
     else:
-        raise ValueError('EGL supplied an unknown format')
+        raise ValueError('EGL returned an unknown format')
 Config.match_format = property(match_format)
 
 # New Surface properties, for querying the new attributes in SurfaceAttribs.

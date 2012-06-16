@@ -446,7 +446,7 @@ def attr_convert(attr, value, attribs):
     elif details.values is scaled:
         # It's a scaled value, so undo the scaling.
         return scaled(value, scale_down=True)
-    elif any((value == none_val and issubclass(type(details.values), tuple) and
+    elif any((value == none_val and isinstance(details.values, tuple) and
              none_val in details.values) for none_val in (NONE, NO_TEXTURE)):
         # The value is an EGL symbolic constant analogous to None, in an
         # enumeration (named tuple) that supports it.
