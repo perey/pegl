@@ -30,7 +30,8 @@ from ctypes import c_void_p
 
 # Local imports.
 from .. import load_ext
-from ..khr import image
+from ..khr.image import Image
+from ...display import Display
 from ...native import ebool, display
 
 # Extension type.
@@ -42,7 +43,30 @@ native_bind = load_ext(b'eglBindWaylandDisplayWL', ebool,
 native_unbind = load_ext(b'eglUnbindWaylandDisplayWL', ebool,
                          (display, wl_display), fail_on=False)
 
-# TODO: Wrap these functions.
+# Extend the Display class with methods to bind and unbind Wayland displays.
+def bind_wayland_display(self, wl_display):
+    '''Bind a Wayland display handle to this EGL display.
+
+    Keyword arguments:
+        wl_display -- The foreign handle of the Wayland display to bind.
+
+    '''
+    self.wl_display = wl_display
+    native_bind(self, wl_display)
+Display.bind_wayland_display = bind_wayland_display
+
+# TODO: Add a cleanup hook to Display to call unbind_... upon deletion.
+def unbind_wayland_display(self, wl_display=None):
+    '''Unbind a Wayland display handle from this EGL display.
+
+    Keyword arguments:
+        wl_display -- The foreign handle of the Wayland display to bind.
+            This can (and generally should) be omitted, in which case
+            the last display handle bound will be unbound.
+
+    '''
+    native_unbind(self, self.wl_display if wl_display is None else wl_display)
+Display.unbind_wayland_display = unbind_wayland_display
 
 # New image target.
-image.Image.extend('EGL_WL_bind_wayland_display', {'WAYLAND_BUFFER': 0x31D5})
+Image.extend('EGL_WL_bind_wayland_display', {'WAYLAND_BUFFER': 0x31D5})
