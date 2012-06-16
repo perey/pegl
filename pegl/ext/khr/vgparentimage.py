@@ -27,4 +27,5 @@ from .image import Image
 
 # Extension image target type.
 VG_PARENT_IMAGE = 0x30BA
+Image.supportable.append('EGL_KHR_vg_parent_image')
 Image.acceptable_targets[VG_PARENT_IMAGE] = 'EGL_KHR_vg_parent_image'

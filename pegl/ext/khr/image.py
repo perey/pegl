@@ -86,6 +86,7 @@ class Image:
     '''
     supportable = ['EGL_KHR_image_base', 'EGL_KHR_image_pixmap']
     acceptable_targets = {NATIVE_PIXMAP: 'EGL_KHR_image_pixmap'}
+    # TODO: Add a class method extend() to update both of these together.
 
     def __init__(self, buffer, target, attribs=None, context=None,
                  display=None, support=None):

@@ -243,6 +243,11 @@ class Attribs:
             desc -- An optional string describing the attribute.
 
         '''
+        # TODO: Track loaded extensions and filter by name string, in a similar
+        # manner to the ext.khr.image.Image class. This is useful because some
+        # extension modules (including that one and ext.khr.glimage) define
+        # more than one extension, not all of which need be supported for the
+        # module to be loaded.
         cls.extensions[attr_name] = value
         cls.details[value] = Details('An extension attribute'
                                      if desc is None else desc,
