@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Nvidia sub-buffer post extension for EGL.
+'''NVIDIA sub-buffer post extension for EGL.
 
 This extension provides a mechanism for posting a region of a window
 surface while preserving the back buffer.

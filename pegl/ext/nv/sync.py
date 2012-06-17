@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Nvidia sync extension for EGL.
+'''NVIDIA sync extension for EGL.
 
 This module defines a "fence sync object" that is very similar to the
 one defined by the pegl.ext.khr.sync module. A fence sync object is a
@@ -102,7 +102,7 @@ class SyncAttr(Attribs):
 
 
 class Sync:
-    '''Represents the fence sync object from the Nvidia EGL extension.
+    '''Represents the fence sync object from the NVIDIA EGL extension.
 
     Instance attributes:
         synchandle -- The foreign object handle for this sync object.

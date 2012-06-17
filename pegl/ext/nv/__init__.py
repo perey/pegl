@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''EGL Nvidia (NV) extension support.'''
+'''EGL NVIDIA (NV) extension support.'''
 
 # Copyright © 2012 Tim Pederick.
 #
