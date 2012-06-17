@@ -40,9 +40,9 @@ from ...context import Context
 from ...native import ebool, enum, client_buffer, display, surface, attr_list
 
 # Extension types.
-image = c_void_p
-NO_IMAGE = c_void_p(0)
-
+image = c_void_p       # TODO: Rename to something less collision-prone, like
+NO_IMAGE = c_void_p(0) # c_image or image_type. This would imply an overhaul of
+                       # type naming across the whole library. Whee...
 # Get handles of extension functions.
 native_create = load_ext(b'eglCreateImageKHR', image,
                          (display, context, enum, client_buffer, attr_list),
@@ -75,8 +75,8 @@ class Image:
 
     Instance attributes:
         ihandle -- The foreign object handle for this image.
-        attribs -- The attributes with which this surface was created.
-            An instance of AttribList.
+        attribs -- The attributes with which this image was created. An
+            instance of AttribList.
         context -- The client API context to which this image belongs.
             An instance of Context, or None if no client context is
             required for this image to be created.
