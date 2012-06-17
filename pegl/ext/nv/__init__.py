@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ('extensions', 'sync')
+__all__ = ('extensions', 'postsubbuffer', 'sync')
 
-extensions = {'EGL_NV_sync': 'sync'}
+extensions = {'EGL_NV_post_sub_buffer': 'postsubbuffer',
+              'EGL_NV_sync': 'sync'}
