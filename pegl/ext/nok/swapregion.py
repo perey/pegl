@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Khronos lock-surface extension for EGL.
+'''Nokia swap buffer region extension for EGL.
 
 I can't find any official specification for this extension; it appears
 to have gone offline when http://developer.symbian.org/ was closed.
