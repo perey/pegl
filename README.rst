@@ -2,15 +2,18 @@
 Pegl: Python 3 binding for EGL
 ==============================
 
-Pegl is a binding to EGL_ written in native Python 3 through the ctypes_
-library. It provides comprehensive access to EGL_ functions, while
-offering a very Pythonic API.
+Pegl is a binding to EGL_ 1.4, written in native Python 3 through the
+ctypes_ library. It provides comprehensive access to EGL_ functions,
+while offering a very Pythonic API.
 
 EGL_ is a specification from the Khronos Group that provides an
 intermediate layer between other Khronos specifications (OpenGL, OpenGL
 ES, OpenVG), called "client APIs", and the native graphics system. EGL_
 can supply an implicit rendering context for each of the client APIs,
 as well as features like surfaces and buffering.
+
+Pegl wraps EGL_ version 1.4. It is unlikely to be backwards compatible
+with previous versions of the specification.
 
 .. _EGL: http://www.khronos.org/egl
 .. _ctypes: http://docs.python.org/py3k/library/ctypes
@@ -26,18 +29,21 @@ Pegl is free software, released under the `GNU GPLv3`_. See the file
 Use
 ===
 A typical use case might feature these steps:
+
 1. Create a ``Display`` instance (`pegl.display`_).
 2. Import whatever attribute objects (`pegl.attribs`_) you need to
    express your requirements
 3. Get a ``Config`` instance (`pegl.config`_) to match your
    requirements.
 4. Bind the client API you want to use (`pegl.context`_).
-5. Do your work in the client API, possibly using a ``Context`` instance
-   (`pegl.context`_) and/or a ``Surface`` instance (`pegl.surface`_).
-6. Repeat from step 4 to mix different client APIs in the one
+5. Get a ``Context`` instance (`pegl.context`_) and/or a ``Surface``
+   instance (`pegl.surface`_), as necessary.
+6. Do your work in the client API.
+7. Repeat from step 4 to mix different client APIs in the one
    application.
 
-Sample code for steps 1 to 4 might look like this:
+Sample code for steps 1 to 5 might look like this:
+
 >>> import pegl
 >>> from pegl.attribs.config import ClientAPIs, CBufferTypes
 >>> from pegl.attribs.context import ContextAPIs
@@ -46,6 +52,10 @@ Sample code for steps 1 to 4 might look like this:
 ...                                {'RENDERABLE_TYPE': ClientAPIs(OPENVG=1),
 ...                                 'COLOR_BUFFER_TYPE': CBufferTypes.RGB})[0]
 >>> pegl.context.bind_api(ContextAPIs.OPENVG)
+>>> ctx = pegl.context.Context(dpy, conf)
+>>> surf = pegl.surface.PbufferSurface(dpy, conf, {'WIDTH': 640,
+...                                                'HEIGHT': 480})
+>>> ctx.make_current(draw_surface=surf)
 
 The Library
 ===========
@@ -75,10 +85,10 @@ will usually get the best match by choosing the first result.
 ------------
 pegl.context
 ------------
-The ``context`` module features the ``Context`` class and the functions
-``bind_api()`` and ``bound_api()``. Once you have a configuration, you
-will usually want to bind an API and then create a ``Context`` instance
-with your ``Display`` and ``Config``.
+The ``context`` module chiefly features the ``Context`` class and the
+functions ``bind_api()`` and ``bound_api()``. Once you have a
+configuration, you will usually want to bind an API and then create a
+``Context`` instance with your ``Display`` and ``Config``.
 
 ------------
 pegl.display
@@ -92,9 +102,29 @@ instance will usually be the first step when using EGL.
 --------
 pegl.ext
 --------
-All extensions in the EGL Registry as of June 2012 are given wrappers
-in the ``ext`` subpackage, sorted into further subpackages by vendor.
-Cross-vendor ("EXT") extensions live in the main ``ext`` subpackage.
+A large selection of EGL extensions are given wrappers in the ``ext``
+subpackage, sorted into further subpackages by vendor. Cross-vendor
+("EXT") extensions live in the main ``ext`` subpackage.
+
+All extensions in the EGL Registry as of June 2012 are supported,
+except for the following:
+
++------+----------------------------+----------------------------------+
+| Ext# |        Name string         |              Reason              |
++======+============================+==================================+
+| 1    | ``EGL_KHR_config_attribs`` | Now part of core EGL             |
++------+----------------------------+----------------------------------+
+| 17   | ``EGL_NV_coverage_sample`` | NVIDIA proprietary               |
++------+----------------------------+                                  |
+| 18   | ``EGL_NV_depth_nonlinear`` |                                  |
++------+----------------------------+----------------------------------+
+| 24   | ``EGL_HI_clientpixmap``    | ``EGL_CLIENT_PIXMAP_POINTER_HI`` |
+|      |                            | is undefined                     |
++------+----------------------------+----------------------------------+
+| 25   | ``EGL_HI_colorformats``    | Seems pointless without the      |
+|      |                            | above, and the enum values are   |
+|      |                            | not in ``eglenum.spec``          |
++------+----------------------------+----------------------------------+
 
 -----------
 pegl.native
@@ -115,6 +145,9 @@ surface that EGL supports: on-screen surfaces bound to native windows
 ---------
 pegl.sync
 ---------
-The ``sync`` module wraps the small number of EGL synchronization
+The ``sync`` module wraps the small number of core EGL synchronization
 functions that help ensure that native and client rendering calls do not
-interfere with one another.
+interfere with one another. More advanced synchronization features are
+available in extensions_ (``pegl.ext.khr.sync``, ``pegl.ext.nv.sync``).
+
+.. _extensions: `pegl.ext`_
