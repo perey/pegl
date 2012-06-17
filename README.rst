@@ -109,22 +109,24 @@ subpackage, sorted into further subpackages by vendor. Cross-vendor
 All extensions in the EGL Registry as of June 2012 are supported,
 except for the following:
 
-+------+----------------------------+----------------------------------+
-| Ext# |        Name string         |              Reason              |
-+======+============================+==================================+
-| 1    | ``EGL_KHR_config_attribs`` | Now part of core EGL             |
-+------+----------------------------+----------------------------------+
-| 17   | ``EGL_NV_coverage_sample`` | NVIDIA proprietary               |
-+------+----------------------------+                                  |
-| 18   | ``EGL_NV_depth_nonlinear`` |                                  |
-+------+----------------------------+----------------------------------+
-| 24   | ``EGL_HI_clientpixmap``    | ``EGL_CLIENT_PIXMAP_POINTER_HI`` |
-|      |                            | is undefined                     |
-+------+----------------------------+----------------------------------+
-| 25   | ``EGL_HI_colorformats``    | Seems pointless without the      |
-|      |                            | above, and the enum values are   |
-|      |                            | not in ``eglenum.spec``          |
-+------+----------------------------+----------------------------------+
++-----+----------------------------------+--------------------------------+
+|Ext #|           Name string            |             Reason             |
++=====+==================================+================================+
+|1    |``EGL_KHR_config_attribs``        |Now part of core EGL.           |
++-----+----------------------------------+--------------------------------+
+|17   |``EGL_NV_coverage_sample``        |NVIDIA proprietary.             |
++-----+----------------------------------+                                |
+|18   |``EGL_NV_depth_nonlinear``        |                                |
++-----+----------------------------------+--------------------------------+
+|24   |``EGL_HI_clientpixmap``           |``EGL_CLIENT_PIXMAP_POINTER_HI``|
+|     |                                  |is undefined.                   |
++-----+----------------------------------+--------------------------------+
+|25   |``EGL_HI_colorformats``           |Seems pointless without the     |
+|     |                                  |above, and the enum values are  |
+|     |                                  |not in ``eglenum.spec``.        |
++-----+----------------------------------+--------------------------------+
+|30   |``EGL_NV_coverage_sample_resolve``|NVIDIA proprietary.             |
++-----+----------------------------------+--------------------------------+
 
 -----------
 pegl.native
