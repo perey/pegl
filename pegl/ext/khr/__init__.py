@@ -19,15 +19,17 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ('extensions', 'glimage', 'locksurface', 'vgimage')
+__all__ = ('extensions', 'glimage', 'locksurface', 'sync', 'vgimage')
 
 extensions = {'EGL_KHR_gl_texture_2D_image': 'glimage',
               'EGL_KHR_gl_texture_cubemap_image': 'glimage',
               'EGL_KHR_gl_texture_3D_image': 'glimage',
               'EGL_KHR_gl_renderbuffer_image': 'glimage',
+              'EGL_KHR_fence_sync': 'sync',
               'EGL_KHR_image': 'image',
               'EGL_KHR_image_base': 'image',
               'EGL_KHR_image_pixmap': 'image',
               'EGL_KHR_lock_surface': 'locksurface',
               'EGL_KHR_lock_surface2': 'locksurface',
+              'EGL_KHR_reusable_sync': 'sync',
               'EGL_KHR_vg_parent_image': 'vgimage'}
