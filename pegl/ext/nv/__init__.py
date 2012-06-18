@@ -22,4 +22,5 @@
 __all__ = ('extensions', 'postsubbuffer', 'sync')
 
 extensions = {'EGL_NV_post_sub_buffer': 'postsubbuffer',
-              'EGL_NV_sync': 'sync'}
+              'EGL_NV_sync': 'sync',
+              'EGL_NV_system_time': 'systime'}
