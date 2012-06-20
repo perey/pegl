@@ -33,4 +33,5 @@ extensions = {'EGL_KHR_create_context': 'context',
               'EGL_KHR_lock_surface': 'locksurface',
               'EGL_KHR_lock_surface2': 'locksurface',
               'EGL_KHR_reusable_sync': 'sync',
+              'EGL_KHR_stream': 'stream',
               'EGL_KHR_vg_parent_image': 'vgimage'}
