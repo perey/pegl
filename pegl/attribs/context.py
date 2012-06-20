@@ -50,4 +50,4 @@ class ContextAttribs(Attribs):
                                             NONE),
                CONTEXT_CLIENT_VERSION: Details('The client API version for '
                                                'which this context was '
-                                               'created', c_int, 1}
+                                               'created', c_int, 1)}
