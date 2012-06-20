@@ -21,7 +21,8 @@
 
 __all__ = ('extensions', 'glimage', 'locksurface', 'sync', 'vgimage')
 
-extensions = {'EGL_KHR_gl_texture_2D_image': 'glimage',
+extensions = {'EGL_KHR_create_context': 'context',
+              'EGL_KHR_gl_texture_2D_image': 'glimage',
               'EGL_KHR_gl_texture_cubemap_image': 'glimage',
               'EGL_KHR_gl_texture_3D_image': 'glimage',
               'EGL_KHR_gl_renderbuffer_image': 'glimage',
