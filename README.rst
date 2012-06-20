@@ -118,12 +118,13 @@ except for the following:
 +-----+----------------------------------+                                |
 |18   |``EGL_NV_depth_nonlinear``        |                                |
 +-----+----------------------------------+--------------------------------+
-|24   |``EGL_HI_clientpixmap``           |``EGL_CLIENT_PIXMAP_POINTER_HI``|
+|24   |``EGL_HI_clientpixmap``           |Underspecified; specifically,   |
+|     |                                  |``EGL_CLIENT_PIXMAP_POINTER_HI``|
 |     |                                  |is undefined.                   |
 +-----+----------------------------------+--------------------------------+
 |25   |``EGL_HI_colorformats``           |Seems pointless without the     |
-|     |                                  |above, and the enum values are  |
-|     |                                  |not in ``eglenum.spec``.        |
+|     |                                  |above. Also, its enum values are|
+|     |                                  |missing from ``eglenum.spec``.  |
 +-----+----------------------------------+--------------------------------+
 |30   |``EGL_NV_coverage_sample_resolve``|NVIDIA proprietary.             |
 +-----+----------------------------------+--------------------------------+
