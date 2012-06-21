@@ -46,7 +46,7 @@ native_streamtime = load_ext(b'eglQueryStreamTimeKHR', ebool,
                              (display, stream, enum, time_ns_p), fail_on=False)
 
 # New attributes for stream objects.
-StreamAttribs.extend('STREAM_FIFO_LENGTH', c_int, 0)
+StreamAttribs.extend('STREAM_FIFO_LENGTH', 0x31FC, c_int, 0)
 
 StreamTimeReferences = namedtuple('StreamTimeReferences_tuple',
                                   ('NOW', 'CONSUMER', 'PRODUCER')
