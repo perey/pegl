@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
-'''Khronos stream extension for EGL.
+'''Khronos stream extensions for EGL.
 
-This extension adds objects to handle frame streams that can flow
-between EGL client APIs. Other extensions provide particular "producers"
-and "consumers" for these streams.
+This module supports two extensions. The first adds objects to handle
+streams of image frames that can flow between EGL client APIs. The
+second allows an OpenGL or OpenGL ES texture to act as a "consumer" of
+this image stream; availability of this consumer is conditional on
+whether the extension is supported. Other extension modules provide
+"producers" for these streams.
 
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream.txt
+http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_consumer_gltexture.txt
 
 '''
 # Copyright © 2012 Tim Pederick.
