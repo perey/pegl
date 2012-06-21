@@ -67,6 +67,19 @@ native_querystream = load_ext(b'eglQueryStreamKHR', ebool,
 native_querystream64 = load_ext(b'eglQueryStreamu64KHR', ebool,
                                 (display, stream, enum, ull_p), fail_on=False)
 
+# Get handles of extension functions that are conditional on the availability
+# of further extensions.
+try:
+    native_streamconsumegl = load_ext(b'eglStreamConsumerGLTextureExternalKHR',
+                                      ebool, (display, stream), fail_on=False)
+    native_streamacquire = load_ext(b'eglStreamConsumerAcquireKHR',
+                                    ebool, (display, stream), fail_on=False)
+    native_streamrelease = load_ext(b'eglStreamConsumerReleaseKHR',
+                                    ebool, (display, stream), fail_on=False)
+except ImportError:
+    # Extension EGL_KHR_stream_consumer_gltexture is not available.
+    native_streamconsumegl = native_streamacquire = native_streamrelease = None
+
 # Attributes for stream objects.
 StreamStates = namedtuple('StreamStates_tuple',
                           ('CREATED', 'CONNECTING', 'EMPTY',
@@ -78,6 +91,8 @@ class StreamAttribs(Attribs):
     '''The set of EGL attributes relevant to stream objects.'''
     # For creating streams, and setting and querying attributes.
     CONSUMER_LATENCY_μs = CONSUMER_LATENCY_USEC = 0x3210
+    # As above, but only when using the OpenGL texture consumer extension.
+    CONSUMER_ACQUIRE_TIMEOUT_μs = CONSUMER_ACQUIRE_TIMEOUT_USEC = 0x321E
     # For querying attributes only.
     STREAM_STATE = 0x3214
     # For querying attributes using the 64-bit function.
@@ -85,6 +100,10 @@ class StreamAttribs(Attribs):
     details = {CONSUMER_LATENCY_μs: Details('The average delay before an '
                                             'inserted frame is visible to the '
                                             'user, in microseconds', c_int, 0),
+               CONSUMER_ACQUIRE_TIMEOUT_μs: Details('How long a consumer will '
+                                                    'wait to acquire a frame, '
+                                                    'in microseconds',
+                                                    c_int, 0),
                STREAM_STATE: Details('The current state of the stream',
                                      StreamStates, StreamStates.CREATED),
                PRODUCER_FRAME: Details('The number of frames inserted into '
@@ -98,6 +117,20 @@ class StreamAttribs(Attribs):
 class Stream:
     '''Represents a stream of image frames.
 
+    Class attributes:
+        consumers, producers -- Mappings describing the types of stream
+            consumers and producers supported. The keys are string
+            descriptions of each consumer or producer type, and the
+            values are 2-tuples, comprising the name string of the
+            extension that defines the consumer or producer, and a
+            function to call to bind the consumer or producer type to
+            the stream. The function must take one argument, the stream.
+            If a function is None, the binding is handled entirely by
+            the consumer or producer, not by Pegl; however, the
+            connect_consumer or connect_producer method may still be
+            called and will validate whether the necessary extension
+            is supported on this implementation.
+
     Instance attributes:
         sthandle -- The foreign object handle for this stream.
         display -- The EGL display to which this stream belongs. An
@@ -106,6 +139,13 @@ class Stream:
             instance of AttribList.
 
     '''
+    consumers = {'OpenGL texture': # Also applies to OpenGL ES.
+                 ('EGL_KHR_stream_consumer_gltexture', consumegl)}
+    producers = {'OpenMAX AL MediaPlayer':
+                 ('EGL_KHR_stream_producer_aldatalocator', None),
+                 'EGL Surface':
+                 ('EGL_KHR_stream_producer_eglsurface', None)}
+                 
     def __init__(self, display, attribs=None):
         '''Create the stream.
 
@@ -187,3 +227,110 @@ class Stream:
     def latency(self):
         '''Get the consumer latency of the stream, in microseconds.'''
         return self._attr(StreamAttribs.CONSUMER_LATENCY_μs)
+
+    @property
+    def acquire_timeout(self):
+        '''Get the current value of the consumer acquisition timeout.
+
+        Returns:
+            A value in microseconds.
+
+        '''
+        # Check whether the required extension is supported.
+        if extension not in self.display.extensions:
+            raise ValueError("need extension '{}' for that {} "
+                             "type".format(extension, c_or_p))
+
+        return self._attr(StreamAttribs.CONSUMER_ACQUIRE_TIMEOUT_μs)
+    @acquire_timeout.setter
+    def acquire_timeout(self, val):
+        '''Set a new value for the consumer acquisition timeout.
+
+        Keyword arguments:
+            val -- The new value in microseconds. If zero, the consumer will
+            never wait for frames to become available. If negative, the
+            consumer will wait indefinitely.
+
+        '''
+        # Check whether the required extension is supported.
+        if extension not in self.display.extensions:
+            raise ValueError("need extension '{}' for that {} "
+                             "type".format(extension, c_or_p))
+
+        self._setattr(StreamAttribs.CONSUMER_ACQUIRE_TIMEOUT_μs, int(val))
+
+    def acquire(self):
+        '''Cause the stream consumer to acquire or "latch" a frame.
+
+        This function will block until the acquisition succeeds or times
+        out. The timeout value is set in the stream's acquire_timeout
+        attribute.
+
+        '''
+        if native_streamacquire is None:
+            raise ValueError("function 'eglStreamConsumerAcquireKHR' is not "
+                             "available")
+        native_streamacquire(self.display, self)
+
+    def release(self):
+        '''Cause the stream consumer to release a "latched" frame.'''
+        if native_streamrelease is None:
+            raise ValueError("function 'eglStreamConsumerReleaseKHR' is not "
+                             "available")
+        native_streamrelease(self.display, self)
+        
+    def _connect(self, c_p_type, producer=False):
+        '''Connect a consumer or producer type to this stream.
+
+        This function is provided because connecting producers and
+        consumers will follow almost identical processes. The user
+        doesn't care about that and will call connect_consumer() or
+        connect_producer() as appropriate.
+
+        Keyword arguments:
+            c_p_type -- The type of consumer or producer to connect.
+                This must be a string from the appropriate class
+                attribute, either consumers or producers.
+            producer -- Whether or not to connect a producer. The
+                default is False, i.e. connect a consumer.
+
+        '''
+        # Is it a consumer or a producer?
+        supported, c_or_p = ((self.producer, 'producer') if producer else
+                             (self.consumer, 'consumer'))
+
+        # What consumer/producer is that?
+        try:
+            extension, connect_fn = supported[c_p_type]
+        except KeyError:
+            raise ValueError("unknown {} type: '{}'".format(c_or_p,
+                                                            c_p_type))
+
+        # Check whether the required extension is supported.
+        if extension not in self.display.extensions:
+            raise ValueError("need extension '{}' for that {} "
+                             "type".format(extension, c_or_p))
+
+        # Call the connecting function.
+        if connect_fn is not None:
+            connect_fn(self)
+
+    def connect_consumer(self, consumer):
+        '''Connect the specified consumer type to this stream.
+
+        Keyword arguments:
+            consumer -- The type of consumer to connect. This must be a
+                string from the consumers class attribute.
+
+        '''
+        self._connect(consumer, producer=False)
+
+    def connect_producer(self, producer:
+        '''Connect the specified producer type to this stream.
+
+        Keyword arguments:
+            consumer -- The type of producer to connect. This must be a
+                string from the producers class attribute.
+
+        '''
+        self._connect(producer, producer=True)
