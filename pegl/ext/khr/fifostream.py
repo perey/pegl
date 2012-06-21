@@ -85,3 +85,4 @@ def time_of(self, reference=StreamTimeReferences.NOW):
 
     # Dereference the pointer.
     return result.contents.value
+Stream.time_of = time_of
