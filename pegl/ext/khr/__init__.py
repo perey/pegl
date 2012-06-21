@@ -34,5 +34,10 @@ extensions = {'EGL_KHR_create_context': 'context',
               'EGL_KHR_lock_surface2': 'locksurface',
               'EGL_KHR_reusable_sync': 'sync',
               'EGL_KHR_stream': 'stream',
+              # Wow, this next module name is really awkward. How bad are the
+              # producers going to be? I really should refactor this similar to
+              # the image extension, to have multiple extensions in the one
+              # module and be conditionally available.
+              'EGL_KHR_stream_consumer_gltexture': 'streamconsumegl',
               'EGL_KHR_stream_fifo': 'fifostream',
               'EGL_KHR_vg_parent_image': 'vgimage'}
