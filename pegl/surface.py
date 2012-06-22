@@ -351,7 +351,7 @@ class PixmapSurface(Surface):
             pixmap -- The native pixmap to render to.
 
         '''
-        super().__init__(self, display, config, attribs)
+        super().__init__(display, config, attribs)
         self.shandle = native.eglCreatePixmapSurface(self.display, self.config,
                                                      pixmap, self.attribs)
 
@@ -376,7 +376,7 @@ class WindowSurface(Surface):
             window -- The native window to which this surface belongs.
 
         '''
-        super().__init__(self, display, config, attribs)
+        super().__init__(display, config, attribs)
         self.shandle = native.eglCreateWindowSurface(self.display, self.config,
                                                      window, self.attribs)
 
