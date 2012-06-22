@@ -37,5 +37,6 @@ extensions = {'EGL_KHR_create_context': 'context',
               'EGL_KHR_stream_consumer_gltexture': 'stream',
               # This extension requires absolutely no new code on the EGL side.
               'EGL_KHR_stream_producer_aldatalocator': 'stream',
+              'EGL_KHR_stream_producer_eglsurface': 'streamsurface',
               'EGL_KHR_stream_fifo': 'fifostream',
               'EGL_KHR_vg_parent_image': 'vgimage'}
