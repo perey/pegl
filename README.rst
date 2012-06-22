@@ -25,18 +25,20 @@ Pegl is presently in a pre-release state. It wraps the complete EGL API
 and all intended extensions, but it is very much untested.
 
 Pegl version numbers are in this format:
-    w.x+y.z
-where w.x represents the major/minor Pegl release, and y.z represents
-the EGL version being wrapped.
+
+    ``w.x+y.z``
+
+where ``w.x`` represents the major/minor Pegl release, and ``y.z``
+represents the EGL version being wrapped.
 
 ----------
 0.x series
 ----------
 
 Releases in this series will provide a wrapper that is Pythonic, but
-still fairly low-level, and the API is not guaranteed to be stable. The
-only thing lacking for the code to reach a release in this series is
-thorough testing.
+still fairly low-level, and the API is not guaranteed to be stable. At
+present, the only thing lacking for the code to reach a release in this
+series is thorough testing.
 
 ----------
 1.x series
