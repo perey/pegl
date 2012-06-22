@@ -18,6 +18,36 @@ with previous versions of the specification.
 .. _EGL: http://www.khronos.org/egl
 .. _ctypes: http://docs.python.org/py3k/library/ctypes
 
+Roadmap
+=======
+
+Pegl is presently in a pre-release state. It wraps the complete EGL API
+and all intended extensions, but it is very much untested.
+
+Pegl version numbers are in this format:
+    w.x+y.z
+where w.x represents the major/minor Pegl release, and y.z represents
+the EGL version being wrapped.
+
+----------
+0.x series
+----------
+
+Releases in this series will provide a wrapper that is Pythonic, but
+still fairly low-level, and the API is not guaranteed to be stable. The
+only thing lacking for the code to reach a release in this series is
+thorough testing.
+
+----------
+1.x series
+----------
+
+Once the basic Pegl functionality is tested and considered usable, I
+will aim to improve the API, so that an EGL environment can be set up
+with a minimum of code. When I'm happy with the results, version
+numbers will be bumped up to 1.x, and some assurance of API stability
+will be given.
+
 License
 =======
 
@@ -128,6 +158,12 @@ except for the following:
 +-----+----------------------------------+--------------------------------+
 |30   |``EGL_NV_coverage_sample_resolve``|NVIDIA proprietary.             |
 +-----+----------------------------------+--------------------------------+
+
+In addition, some extensions that are not officially registered, but are
+widely available through the Mesa library, are supported by Pegl:
+
+* ``EGL_NOK_swap_region``
+* ``EGL_WL_bind_wayland_display``
 
 -----------
 pegl.native
