@@ -19,5 +19,5 @@ setup(
                  'Programming Language :: Python :: 3',
                  'Topic :: Multimedia :: Graphics',
                  'Topic :: Software Development :: Libraries'],
-    long_description=open('README.rst').read('rt'),
+    long_description=open('README.rst', 'rt').read(),
 )
