@@ -21,7 +21,8 @@ with previous versions of the specification.
 Roadmap
 =======
 
-Pegl is presently in a pre-release state. It wraps the complete EGL API
+The current Pegl version is 0.1a1+1.4. As an alpha version, care should
+be taken before making use of the library; it wraps the complete EGL API
 and all intended extensions, but it is very much untested.
 
 Pegl version numbers are in this format:
@@ -36,9 +37,7 @@ represents the EGL version being wrapped.
 ----------
 
 Releases in this series will provide a wrapper that is Pythonic, but
-still fairly low-level, and the API is not guaranteed to be stable. At
-present, the only thing lacking for the code to reach a release in this
-series is thorough testing.
+still fairly low-level, and the API is not guaranteed to be stable.
 
 ----------
 1.x series

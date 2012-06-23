@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+'''Perform a functional test of the Pegl package on this system.'''
+
 # Copyright © 2012 Tim Pederick.
 #
 # This file is part of Pegl.
@@ -25,7 +27,7 @@ from pegl.attribs.context import ContextAPIs
 import pegl.context as context
 from pegl.surface import PbufferSurface
 
-# TODO: Obsolete this file by writing real unit tests!
+# TODO: Obsolete this file by writing unit tests and real functional tests!
 
 # 0. Utility functions.
 def and_list(seq, serial_comma=True, comma_between_two=False, sort=True):
