@@ -21,7 +21,7 @@ with previous versions of the specification.
 Roadmap
 =======
 
-The current Pegl version is 0.1a1+1.4. As an alpha version, care should
+The current Pegl version is 0.1a2+1.4. As an alpha version, care should
 be taken before making use of the library; it wraps the complete EGL API
 and all intended extensions, but it is very much untested.
 
@@ -29,8 +29,9 @@ Pegl version numbers are in this format:
 
     ``w.x+y.z``
 
-where ``w.x`` represents the major/minor Pegl release, and ``y.z``
-represents the EGL version being wrapped.
+where ``w.x`` represents the major/minor Pegl release (including alpha,
+beta or release candidate status, if appropriate), and ``y.z`` represents
+the EGL version being wrapped.
 
 ----------
 0.x series
