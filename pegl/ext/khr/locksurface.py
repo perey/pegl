@@ -193,7 +193,7 @@ def bitmap_component_offsets(self):
                  self._attr(getattr(SurfaceAttribs,
                                     'BITMAP_PIXEL_{}_OFFSET'.format(comp))))
                 for comp in components)
-Surface.bitmap_component_offsets = property(bitmap_component_offsets
+Surface.bitmap_component_offsets = property(bitmap_component_offsets)
 
 def bitmap_pixel_size(self):
     '''Get the bit size of pixels in the mapped buffer.

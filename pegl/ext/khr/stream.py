@@ -329,7 +329,7 @@ class Stream:
         '''
         self._connect(consumer, producer=False)
 
-    def connect_producer(self, producer:
+    def connect_producer(self, producer):
         '''Connect the specified producer type to this stream.
 
         Keyword arguments:
