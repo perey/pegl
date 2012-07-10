@@ -1,2 +1,3 @@
 v0.1a1+1.4, 2012-06-23 -- Initial alpha release.
 v0.1a2+1.4, 2012-06-26 -- Fixed trivial syntax errors in extension modules.
+v0.1a3~1.4, 2012-07-11 -- Cross-platform loading of native library.
