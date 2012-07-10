@@ -29,7 +29,9 @@ __all__ = ('eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglMakeCurrent', 'eglGetCurrentContext', 'eglGetCurrentSurface',
            'eglGetCurrentDisplay', 'eglQueryContext', 'eglWaitClient',
            'eglWaitGL', 'eglWaitNative', 'eglSwapBuffers', 'eglCopyBuffers',
-           'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread')
+           'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread',
+           'ebool', 'enum', 'attr_list', 'display', 'surface', 'client_buffer',
+           'config')
 
 # Standard library imports.
 import ctypes
