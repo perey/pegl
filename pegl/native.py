@@ -32,13 +32,25 @@ __all__ = ('eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread')
 
 # Standard library imports.
-from ctypes import CDLL, POINTER, c_char_p, c_int, c_uint, c_void_p
+import ctypes
+from ctypes import POINTER, c_char_p, c_int, c_uint, c_void_p
+import sys
 
 # Local imports.
 from . import EGLError, error_codes, int_p, NO_CONTEXT, NO_SURFACE
 
 # Native library import.
-egl = CDLL('libEGL.so') # TODO: Cross-platform loading.
+libname = 'libEGL'
+if sys.platform == 'linux2':
+    libclass, libext = ctypes.CDLL, '.so'
+elif sys.platform == 'darwin':
+    libclass, libext = ctypes.CDLL, '.dylib'
+elif sys.platform == 'win32':
+    libclass, libext = ctypes.WinDLL, '.dll'
+else:
+    raise ImportError('Pegl not supported on {}'.format(sys.platform))
+       
+egl = libclass(libname + libext)
 
 # Type definitions.
 ebool = enum = c_uint
