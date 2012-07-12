@@ -36,13 +36,14 @@ from collections import namedtuple
 
 # Local imports.
 from .. import load_ext
-from ... import int_p, make_int_p, EGLError, error_codes
+from ... import EGLError, error_codes
 from ...attribs import attr_convert, Attribs, AttribList, BitMask, Details
-from ...native import ebool, enum, attr_list, display
+from ...native import (c_ibool, c_enum, c_attr_list, c_display, c_int_p,
+                       make_int_p)
 
 # Extension types and symbolic constants.
-ull_p = POINTER(c_ulonglong)
-stream = c_void_p
+c_ull_p = POINTER(c_ulonglong)
+c_stream = c_void_p
 NO_STREAM = c_void_p(0)
 
 # New errors.
@@ -60,26 +61,32 @@ error_codes[0x321B] = BadStreamError
 error_codes[0x321C] = BadStateError
 
 # Get handles of extension functions.
-native_createstream = load_ext(b'eglCreateStreamKHR', stream,
-                               (display, attr_list), fail_on=NO_STREAM)
-native_destroystream = load_ext(b'eglCreateStreamKHR', ebool,
-                                (display, stream), fail_on=False)
-native_streamattrib = load_ext(b'eglStreamAttribKHR', ebool,
-                               (display, stream, enum, c_int), fail_on=False)
-native_querystream = load_ext(b'eglQueryStreamKHR', ebool,
-                              (display, stream, enum, int_p), fail_on=False)
-native_querystream64 = load_ext(b'eglQueryStreamu64KHR', ebool,
-                                (display, stream, enum, ull_p), fail_on=False)
+native_createstream = load_ext(b'eglCreateStreamKHR', c_stream,
+                               (c_display, c_attr_list), fail_on=NO_STREAM)
+native_destroystream = load_ext(b'eglCreateStreamKHR', c_ibool,
+                                (c_display, c_stream), fail_on=False)
+native_streamattrib = load_ext(b'eglStreamAttribKHR', c_ibool,
+                               (c_display, c_stream, c_enum, c_int),
+                               fail_on=False)
+native_querystream = load_ext(b'eglQueryStreamKHR', c_ibool,
+                              (c_display, c_stream, c_enum, c_int_p),
+                              fail_on=False)
+native_querystream64 = load_ext(b'eglQueryStreamu64KHR', c_ibool,
+                                (c_display, c_stream, c_enum, c_ull_p),
+                                fail_on=False)
 
 # Get handles of extension functions that are conditional on the availability
 # of further extensions.
 try:
     native_streamconsumegl = load_ext(b'eglStreamConsumerGLTextureExternalKHR',
-                                      ebool, (display, stream), fail_on=False)
+                                      c_ibool, (c_display, c_stream),
+                                      fail_on=False)
     native_streamacquire = load_ext(b'eglStreamConsumerAcquireKHR',
-                                    ebool, (display, stream), fail_on=False)
+                                    c_ibool, (c_display, c_stream),
+                                    fail_on=False)
     native_streamrelease = load_ext(b'eglStreamConsumerReleaseKHR',
-                                    ebool, (display, stream), fail_on=False)
+                                    c_ibool, (c_display, c_stream),
+                                    fail_on=False)
 except ImportError:
     # Extension EGL_KHR_stream_consumer_gltexture is not available.
     native_streamconsumegl = native_streamacquire = native_streamrelease = None
@@ -195,7 +202,7 @@ class Stream:
 
         '''
         # Query the attribute, storing the result in a pointer.
-        result = ull_p()
+        result = c_ull_p()
         result.contents = c_ulonglong(0)
         native_querystream64(self.display, self, attr, result)
 

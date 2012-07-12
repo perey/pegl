@@ -45,12 +45,12 @@ from ctypes import c_int
 
 # Local imports.
 from .. import load_ext
-from ... import int_p
+from ...native import c_display, c_surface, c_int_p
 from ...surface import Surface
 
 # Get the handle for the extension function.
 native_swapregion = load_ext(b'eglSwapBuffersRegionNOK', ebool,
-                       (display, surface, c_int, int_p), fail_on=False)
+                       (c_display, c_surface, c_int, c_int_p), fail_on=False)
 
 # Wrap the extension function and place it on the Surface class.
 def swap_regions(self, rects):
@@ -82,7 +82,7 @@ def swap_regions(self, rects):
     # Construct the array of integers.
     arr_type = c_int * (RECT_LEN * num_rects)
     # Make it a pointer to int to keep ctypes happy.
-    rects_array = int_p(arr_type(*rect_points))
+    rects_array = c_int_p(arr_type(*rect_points))
 
     # Perform the swap.
     native_swapregion(self.display, self, num_rects, rects_array)

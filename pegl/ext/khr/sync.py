@@ -42,27 +42,28 @@ from collections import namedtuple
 
 # Local imports.
 from .. import load_ext
-from ... import int_p, make_int_p
 from ...attribs import attr_convert, Attribs, AttribList, BitMask, Details
-from ...native import ebool, enum, attr_list, display
+from ...native import (c_ibool, c_enum, c_attr_list, c_display, c_int_p,
+                       make_int_p)
 
 # Extension types and symbolic constants.
-sync = c_void_p
+c_sync = c_void_p
 time_ns = c_ulonglong
 NO_SYNC = c_void_p(0)
 FOREVER = 0xFFFFFFFFFFFFFFFF
 
 # Get handles of extension functions.
-native_createsync = load_ext(b'eglCreateSyncKHR', sync,
-                             (display, enum, attr_list), fail_on=NO_SYNC)
-native_destroysync = load_ext(b'eglDestroySyncKHR', ebool,
-                              (display, sync), fail_on=False)
+native_createsync = load_ext(b'eglCreateSyncKHR', c_sync,
+                             (c_display, c_enum, c_attr_list), fail_on=NO_SYNC)
+native_destroysync = load_ext(b'eglDestroySyncKHR', c_ibool,
+                              (c_display, c_sync), fail_on=False)
 native_clientwait = load_ext(b'eglClientWaitSyncKHR', c_int,
-                             (display, sync, c_int, time_ns), fail_on=False)
-native_signal = load_ext(b'eglSignalSyncKHR', ebool,
-                         (display, sync, enum), fail_on=False)
-native_getattrib = load_ext(b'eglGetSyncAttribKHR', ebool,
-                            (display, sync, c_int, int_p), fail_on=False)
+                             (c_display, c_sync, c_int, time_ns),
+                             fail_on=False)
+native_signal = load_ext(b'eglSignalSyncKHR', c_ibool,
+                         (c_display, c_sync, c_enum), fail_on=False)
+native_getattrib = load_ext(b'eglGetSyncAttribKHR', c_ibool,
+                            (c_display, c_sync, c_int, c_int_p), fail_on=False)
 
 # Attributes for sync objects.
 SyncStatus = namedtuple('SyncStatus_tuple',

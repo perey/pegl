@@ -24,7 +24,7 @@ from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
-from . import make_int_p, native
+from . import native
 from .attribs import attr_convert, AttribList, DONT_CARE
 from .attribs.config import Caveats, CBufferTypes, ConfigAttribs
 
@@ -38,7 +38,7 @@ def count_configs(display):
         display -- The EGL display for which to check configurations.
 
     '''
-    count = make_int_p()
+    count = native.make_int_p()
     # Calling eglGetConfigs with a null pointer (i.e. None) gets the
     # total number of available configurations, without retrieving any.
     native.eglGetConfigs(display, None, 0, count)
@@ -67,7 +67,7 @@ def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
         max_configs = count_configs(display)
 
     configs = (c_void_p * max_configs)()
-    actual_count = make_int_p()
+    actual_count = native.make_int_p()
 
     if attribs is None:
         # Get all configurations.
@@ -158,7 +158,7 @@ class Config:
 
         '''
         # Call the foreign function, which stores its result in a pointer.
-        result = make_int_p()
+        result = native.make_int_p()
         native.eglGetConfigAttrib(self.display, self, attr, result)
 
         # Dereference the pointer and convert to an appropriate type.

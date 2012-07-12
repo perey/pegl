@@ -37,18 +37,19 @@ from .. import load_ext
 from ... import NO_CONTEXT
 from ...attribs import (Attribs, AttribList, Details)
 from ...context import Context
-from ...native import ebool, enum, client_buffer, display, surface, attr_list
+from ...native import (c_ibool, c_enum, c_client_buffer, c_display, c_surface,
+                       c_attr_list)
 
 # Extension types.
-image = c_void_p       # TODO: Rename to something less collision-prone, like
-NO_IMAGE = c_void_p(0) # c_image or image_type. This would imply an overhaul of
-                       # type naming across the whole library. Whee...
+c_image = c_void_p
+NO_IMAGE = c_void_p(0)
+
 # Get handles of extension functions.
-native_create = load_ext(b'eglCreateImageKHR', image,
-                         (display, context, enum, client_buffer, attr_list),
+native_create = load_ext(b'eglCreateImageKHR', c_image,
+                         (c_display, c_context, c_enum, c_client_buffer, c_attr_list),
                          fail_on=NO_IMAGE)
-native_destroy = load_ext(b'eglDestroyImageKHR', ebool,
-                          (display, image), fail_on=False)
+native_destroy = load_ext(b'eglDestroyImageKHR', c_ibool,
+                          (c_display, c_image), fail_on=False)
 
 # Define the new Image type and its attributes.
 NATIVE_PIXMAP = 0x30B0

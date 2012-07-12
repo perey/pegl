@@ -24,7 +24,7 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from . import make_int_p, native
+from . import native
 from .attribs import attr_convert, Attribs, AttribList
 from .attribs.surface import SurfaceAttribs, RenderBufferTypes, VGAlphaFormats
 
@@ -95,7 +95,7 @@ class Surface:
 
         '''
         # Query the attribute, storing the result in a pointer.
-        result = make_int_p()
+        result = native.make_int_p()
         native.eglQuerySurface(self.display, self, attr, result)
 
         # Dereference the pointer and convert to an appropriate type.

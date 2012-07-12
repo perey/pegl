@@ -29,9 +29,9 @@ from collections import namedtuple
 from ctypes import c_int, POINTER
 from itertools import compress
 
-# ctypes doesn't allow passing an array of ints where we've told it to expect
+# ctypes doesn't allow passing an array of ints when we've told it to expect
 # a pointer to int, so we have to cast the former to the latter.
-int_p = POINTER(c_int)
+c_int_p = POINTER(c_int)
 
 # Symbolic constants used here and/or in more than one module in this package.
 NONE = 0x3038
@@ -410,7 +410,7 @@ class AttribList:
         arr.append(NONE)
 
         # Turn the array-of-ints into a pointer-to-int, to keep ctypes happy.
-        return int_p(arr_type(*arr))
+        return c_int_p(arr_type(*arr))
 
     def get(self, index):
         '''Get the value of an attribute, or its default if it is unset.

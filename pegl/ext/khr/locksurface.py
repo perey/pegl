@@ -37,15 +37,15 @@ from ...attribs import (Attribs, AttribList, BitMask, Details, DONT_CARE,
                         UNKNOWN_VALUE)
 from ...attribs.config import ConfigAttribs, SurfaceTypes
 from ...attribs.surface import SurfaceAttribs
-from ...native import ebool, display, surface, attr_list
+from ...native import c_ibool, c_display, c_surface, c_attr_list
 from ...config import Config
 from ...surface import Surface
 
 # Get handles of extension functions.
-native_lock = load_ext(b'eglLockSurfaceKHR', ebool,
-                       (display, surface, attr_list), fail_on=False)
-native_unlock = load_ext(b'eglUnlockSurfaceKHR', ebool,
-                         (display, surface), fail_on=False)
+native_lock = load_ext(b'eglLockSurfaceKHR', c_ibool,
+                       (c_display, c_surface, c_attr_list), fail_on=False)
+native_unlock = load_ext(b'eglUnlockSurfaceKHR', c_ibool,
+                         (c_display, c_surface), fail_on=False)
 
 # New config attributes.
 SurfaceTypes.extend(7, 'LOCK_SURFACE')

@@ -30,8 +30,9 @@ __all__ = ('eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglGetCurrentDisplay', 'eglQueryContext', 'eglWaitClient',
            'eglWaitGL', 'eglWaitNative', 'eglSwapBuffers', 'eglCopyBuffers',
            'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread',
-           'ebool', 'enum', 'attr_list', 'display', 'surface', 'client_buffer',
-           'config')
+           # Native types reused in extension modules.
+           'c_ibool', 'c_enum', 'c_attr_list', 'c_display', 'c_surface',
+           'c_client_buffer', 'c_config', 'c_int_p', 'make_int_p')
 
 # Standard library imports.
 import ctypes
@@ -39,7 +40,7 @@ from ctypes import POINTER, c_char_p, c_int, c_uint, c_void_p
 import sys
 
 # Local imports.
-from . import EGLError, error_codes, int_p, NO_CONTEXT, NO_SURFACE
+from . import EGLError, error_codes, NO_CONTEXT, NO_SURFACE
 
 # Native library import.
 libname = 'libEGL'
@@ -55,14 +56,27 @@ else:
 egl = libclass(libname + libext)
 
 # Type definitions.
-ebool = enum = c_uint
-config = context = surface = display = c_void_p
-native_display = native_pixmap = native_window = c_void_p
-client_buffer = c_void_p
-attr_list = int_p
-configs = POINTER(config)
-void_func = c_void_p # The function ext.load_ext() will cast this to a function
+c_int_p = POINTER(c_int)
+c_ibool = c_enum = c_uint
+c_config = c_context = c_surface = c_display = c_void_p
+c_native_display = c_native_pixmap = c_native_window = c_void_p
+c_client_buffer = c_void_p
+c_attr_list = c_int_p
+c_configs = POINTER(c_config)
+c_void_fn = c_void_p # The function ext.load_ext() will cast this to a function
                      # pointer with the correct argument and return types.
+
+def make_int_p(ival=0):
+    '''Create and initialise a pointer to an integer.
+
+    Keyword arguments:
+        ival -- The initial value of the referenced integer. The default
+            is 0.
+
+    '''
+    p = c_int_p()
+    p.contents = c_int(ival)
+    return p
 
 # Trap EGL errors. We set the argument type for "EGLint eglGetError(void)"
 # here, since we use it for error_check. We don't set a return type, because
@@ -103,11 +117,11 @@ def error_check(fn, fail_on=None, always_check=False, fallback_error=EGLError,
 
         if (always_check or (fail_on_null and result is None) or
             (not fail_on_null and (fail_on is None or fail_on == result or
-                                   (fn.restype is ebool and # ebool maps to a
-                                    fail_on == bool(result))# Python int, not
-                                   )                        # bool, because EGL
-             )):                                            # uses an integer,
-            # Check the error trap.                         # not a C boolean.
+                                   (fn.restype is c_ibool and # This boolean is
+                                    fail_on == bool(result))  # a Python int,
+                                   )                          # not bool, since
+             )):                                              # EGL uses int,
+            # Check the error trap.                           # not a C _Bool.
             errcode = error_codes.get(egl.eglGetError(), EGLError)
             if errcode is not None:
                 # The error trap held something other than the success code.
@@ -130,27 +144,27 @@ def error_check(fn, fail_on=None, always_check=False, fallback_error=EGLError,
 ################ 3.2 ################
 
 # EGLDisplay eglGetDisplay(EGLNativeDisplayType display_id);
-egl.eglGetDisplay.argtypes = (native_display,)
-egl.eglGetDisplay.restype = display
+egl.eglGetDisplay.argtypes = (c_native_display,)
+egl.eglGetDisplay.restype = c_display
 # TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglGetDisplay = error_check(egl.eglGetDisplay)
 
 # EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor);
-egl.eglInitialize.argtypes = (display, int_p, int_p)
-egl.eglInitialize.restype = ebool
+egl.eglInitialize.argtypes = (c_display, c_int_p, c_int_p)
+egl.eglInitialize.restype = c_ibool
 # Errors: BadDisplayError, NotInitializedError
 eglInitialize = error_check(egl.eglInitialize, fail_on=False)
 
 # EGLBoolean eglTerminate(EGLDisplay dpy);
-egl.eglTerminate.argtypes = (display,)
-egl.eglTerminate.restype = ebool
+egl.eglTerminate.argtypes = (c_display,)
+egl.eglTerminate.restype = c_ibool
 # Errors: BadDisplayError
 eglTerminate = error_check(egl.eglTerminate, fail_on=False)
 
 ################ 3.3 ################
 
 # const char *eglQueryString(EGLDisplay dpy, EGLint name);
-egl.eglQueryString.argtypes = (display, c_int)
+egl.eglQueryString.argtypes = (c_display, c_int)
 egl.eglQueryString.restype = c_char_p
 # Errors: BadDisplayError, BadParameterError
 eglQueryString = error_check(egl.eglQueryString, fail_on_null=True)
@@ -159,23 +173,24 @@ eglQueryString = error_check(egl.eglQueryString, fail_on_null=True)
 
 # EGLBoolean eglGetConfigs(EGLDisplay dpy, EGLConfig *configs,
 #                          EGLint config_size, EGLint *num_config);
-egl.eglGetConfigs.argtypes = (display, configs, c_int, int_p)
-egl.eglGetConfigs.restype = ebool
+egl.eglGetConfigs.argtypes = (c_display, c_configs, c_int, c_int_p)
+egl.eglGetConfigs.restype = c_ibool
 # Errors: BadDisplayError, BadParameterError
 eglGetConfigs = error_check(egl.eglGetConfigs, fail_on=False)
 
 # EGLBoolean eglChooseConfig(EGLDisplay dpy, const EGLint *attrib_list,
 #                            EGLConfig *configs, EGLint config_size,
 #                            EGLint *num_config);
-egl.eglChooseConfig.argtypes = (display, attr_list, configs, c_int, int_p)
-egl.eglChooseConfig.restype = ebool
+egl.eglChooseConfig.argtypes = (c_display, c_attr_list, c_configs, c_int,
+                                c_int_p)
+egl.eglChooseConfig.restype = c_ibool
 # Errors: BadAttributeError, BadDisplayError?, BadParameterError?
 eglChooseConfig = error_check(egl.eglChooseConfig, fail_on=False)
 
 # EGLBoolean eglGetConfigAttrib(EGLDisplay dpy, EGLConfig config,
 #                               EGLint attribute, EGLint *value);
-egl.eglGetConfigAttrib.argtypes = (display, config, c_int, int_p)
-egl.eglGetConfigAttrib.restype = ebool
+egl.eglGetConfigAttrib.argtypes = (c_display, c_config, c_int, c_int_p)
+egl.eglGetConfigAttrib.restype = c_ibool
 # Errors: BadAttributeError, BadConfigError?, BadDisplayError?
 eglGetConfigAttrib = error_check(egl.eglGetConfigAttrib, fail_on=False)
 
@@ -184,17 +199,17 @@ eglGetConfigAttrib = error_check(egl.eglGetConfigAttrib, fail_on=False)
 # EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config,
 #                                   EGLNativeWindowType win,
 #                                   const EGLint *attrib_list);
-egl.eglCreateWindowSurface.argtypes = (display, config, native_window,
-                                       attr_list)
-egl.eglCreateWindowSurface.restype = surface
+egl.eglCreateWindowSurface.argtypes = (c_display, c_config, c_native_window,
+                                       c_attr_list)
+egl.eglCreateWindowSurface.restype = c_surface
 # Errors: BadAllocError, BadConfigError, BadMatchError, BadNativeWindowError
 eglCreateWindowSurface = error_check(egl.eglCreateWindowSurface,
                                      fail_on=NO_SURFACE)
 
 # EGLSurface eglCreatePbufferSurface(EGLDisplay dpy, EGLConfig config,
 #                                    const EGLint *attrib_list);
-egl.eglCreatePbufferSurface.argtypes = (display, config, attr_list)
-egl.eglCreatePbufferSurface.restype = surface
+egl.eglCreatePbufferSurface.argtypes = (c_display, c_config, c_attr_list)
+egl.eglCreatePbufferSurface.restype = c_surface
 # Errors: BadAllocError, BadAttributeError, BadConfigError, BadMatchError,
 #         BadParameterError
 eglCreatePbufferSurface = error_check(egl.eglCreatePbufferSurface,
@@ -204,9 +219,9 @@ eglCreatePbufferSurface = error_check(egl.eglCreatePbufferSurface,
 #                                             EGLClientBuffer buffer,
 #                                             EGLConfig config,
 #                                             const EGLint *attrib_list);
-egl.eglCreatePbufferFromClientBuffer.argtypes = (display, enum, client_buffer,
-                                                 config, attr_list)
-egl.eglCreatePbufferFromClientBuffer.restype = surface
+egl.eglCreatePbufferFromClientBuffer.argtypes = (c_display, c_enum, c_client_buffer,
+                                                 c_config, c_attr_list)
+egl.eglCreatePbufferFromClientBuffer.restype = c_surface
 # Errors: BadAccessError, BadAllocError, BadAttributeError, BadConfigError,
 #         BadMatchError, BadParameterError
 eglCreatePbufferFromClientBuffer =\
@@ -215,30 +230,30 @@ eglCreatePbufferFromClientBuffer =\
 # EGLSurface eglCreatePixmapSurface(EGLDisplay dpy, EGLConfig config,
 #                                   EGLNativePixmapType pixmap,
 #                                   const EGLint *attrib_list);
-egl.eglCreatePixmapSurface.argtypes = (display, config, native_pixmap,
-                                       attr_list)
-egl.eglCreatePixmapSurface.restype = surface
+egl.eglCreatePixmapSurface.argtypes = (c_display, c_config, c_native_pixmap,
+                                       c_attr_list)
+egl.eglCreatePixmapSurface.restype = c_surface
 # Errors: BadAllocError, BadConfigError, BadMatchError, BadNativePixmapError
 eglCreatePixmapSurface = error_check(egl.eglCreatePixmapSurface,
                                      fail_on=NO_SURFACE)
 
 # EGLBoolean eglDestroySurface(EGLDisplay dpy, EGLSurface surface);
-egl.eglDestroySurface.argtypes = (display, surface)
-egl.eglDestroySurface.restype = ebool
+egl.eglDestroySurface.argtypes = (c_display, c_surface)
+egl.eglDestroySurface.restype = c_ibool
 # Errors: BadSurfaceError
 eglDestroySurface = error_check(egl.eglDestroySurface, fail_on=False)
 
 # EGLBoolean eglSurfaceAttrib(EGLDisplay dpy, EGLSurface surface,
 #                             EGLint attribute, EGLint value);
-egl.eglSurfaceAttrib.argtypes = (display, surface, c_int, c_int)
-egl.eglSurfaceAttrib.restype = ebool
+egl.eglSurfaceAttrib.argtypes = (c_display, c_surface, c_int, c_int)
+egl.eglSurfaceAttrib.restype = c_ibool
 # Errors: BadMatchError, BadParameterError, BadSurfaceError?
 eglSurfaceAttrib = error_check(egl.eglSurfaceAttrib, fail_on=False) # I assume.
 
 # EGLBoolean eglQuerySurface(EGLDisplay dpy, EGLSurface surface,
 #                            EGLint attribute, EGLint *value);
-egl.eglQuerySurface.argtypes = (display, surface, c_int, int_p)
-egl.eglQuerySurface.restype = ebool
+egl.eglQuerySurface.argtypes = (c_display, c_surface, c_int, c_int_p)
+egl.eglQuerySurface.restype = c_ibool
 # Errors: BadAttributeError, BadParameterError?, BadSurfaceError
 eglQuerySurface = error_check(egl.eglQuerySurface, fail_on=False)
 
@@ -246,51 +261,51 @@ eglQuerySurface = error_check(egl.eglQuerySurface, fail_on=False)
 
 # EGLBoolean eglBindTexImage(EGLDisplay dpy, EGLSurface surface,
 #                            EGLint buffer);
-egl.eglBindTexImage.argtypes = (display, surface, c_int)
-egl.eglBindTexImage.restype = ebool
+egl.eglBindTexImage.argtypes = (c_display, c_surface, c_int)
+egl.eglBindTexImage.restype = c_ibool
 # Errors: BadAccessError, BadMatchError, BadParameterError, BadSurfaceError
 eglBindTexImage = error_check(egl.eglBindTexImage, fail_on=False) # presumably.
 
 # EGLBoolean eglReleaseTexImage(EGLDisplay dpy, EGLSurface surface,
 #                               EGLint buffer);
-egl.eglReleaseTexImage.argtypes = (display, surface, c_int)
-egl.eglReleaseTexImage.restype = ebool
+egl.eglReleaseTexImage.argtypes = (c_display, c_surface, c_int)
+egl.eglReleaseTexImage.restype = c_ibool
 # Errors: BadMatchError, BadParameterError, BadSurfaceError
 eglReleaseTexImage = error_check(egl.eglReleaseTexImage, fail_on=False) # ditto
 
 ################ 3.7 ################
 
 # EGLBoolean eglBindAPI(EGLenum api);
-egl.eglBindAPI.argtypes = (enum,)
-egl.eglBindAPI.restype = ebool
+egl.eglBindAPI.argtypes = (c_enum,)
+egl.eglBindAPI.restype = c_ibool
 # Errors: BadParameterError
 eglBindAPI = error_check(egl.eglBindAPI, fail_on=False)
 
 # EGLenum eglQueryAPI(void);
 egl.eglQueryAPI.argtypes = ()
-egl.eglQueryAPI.restype = enum
+egl.eglQueryAPI.restype = c_enum
 # TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglQueryAPI = error_check(egl.eglQueryAPI)
 
 # EGLContext eglCreateContext(EGLDisplay dpy, EGLConfig config,
 #                             EGLContext share_context,
 #                             const EGLint *attrib_list);
-egl.eglCreateContext.argtypes = (display, config, context, attr_list)
-egl.eglCreateContext.restype = context
+egl.eglCreateContext.argtypes = (c_display, c_config, c_context, c_attr_list)
+egl.eglCreateContext.restype = c_context
 # Errors: BadAllocError, BadConfigError, BadContextError, BadDisplayError?,
 #         BadMatchError
 eglCreateContext = error_check(egl.eglCreateContext, fail_on=NO_CONTEXT)
 
 # EGLBoolean eglDestroyContext(EGLDisplay dpy, EGLContext ctx);
-egl.eglDestroyContext.argtypes = (display, context)
-egl.eglDestroyContext.restype = ebool
+egl.eglDestroyContext.argtypes = (c_display, c_context)
+egl.eglDestroyContext.restype = c_ibool
 # Errors: BadContextError
 eglDestroyContext = error_check(egl.eglDestroyContext, fail_on=False)
 
 # EGLBoolean eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface read,
 #                           EGLContext ctx);
-egl.eglMakeCurrent.argtypes = (display, surface, surface, context)
-egl.eglMakeCurrent.restype = ebool
+egl.eglMakeCurrent.argtypes = (c_display, c_surface, c_surface, c_context)
+egl.eglMakeCurrent.restype = c_ibool
 # Errors: BadAccessError, BadContextError, BadCurrentSurfaceError,
 #         BadMatchError, BadNativeWindowError, BadSurfaceError,
 #         ContextLostError
@@ -298,26 +313,26 @@ eglMakeCurrent = error_check(egl.eglMakeCurrent, fail_on=False)
 
 # EGLContext eglGetCurrentContext(void);
 egl.eglGetCurrentContext.argtypes = ()
-egl.eglGetCurrentContext.restype = context
+egl.eglGetCurrentContext.restype = c_context
 # TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglGetCurrentContext = error_check(egl.eglGetCurrentContext)
 
 # EGLSurface eglGetCurrentSurface(EGLint readdraw);
 egl.eglGetCurrentSurface.argtypes = (c_int,)
-egl.eglGetCurrentSurface.restype = surface
+egl.eglGetCurrentSurface.restype = c_surface
 # Errors: BadParameterError
 eglGetCurrentSurface = error_check(egl.eglGetCurrentSurface)
 
 # EGLDisplay eglGetCurrentDisplay(void);
 egl.eglGetCurrentDisplay.argtypes = ()
-egl.eglGetCurrentDisplay.restype = display
+egl.eglGetCurrentDisplay.restype = c_display
 # TODO: Remove error_check? The EGL spec indicates no errors for this function.
 eglGetCurrentDisplay = error_check(egl.eglGetCurrentDisplay)
 
 # EGLBoolean eglQueryContext(EGLDisplay dpy, EGLContext ctx, EGLint attribute,
 #                            EGLint *value);
-egl.eglQueryContext.argtypes = (display, context, c_int, int_p)
-egl.eglQueryContext.restype = ebool
+egl.eglQueryContext.argtypes = (c_display, c_context, c_int, c_int_p)
+egl.eglQueryContext.restype = c_ibool
 # Errors: BadAttributeError, BadContextError, BadParameterError?
 eglQueryContext = error_check(egl.eglQueryContext, fail_on=False)
 
@@ -325,41 +340,41 @@ eglQueryContext = error_check(egl.eglQueryContext, fail_on=False)
 
 # EGLBoolean eglWaitClient(void);
 egl.eglWaitClient.argtypes = ()
-egl.eglWaitClient.restype = ebool
+egl.eglWaitClient.restype = c_ibool
 # Errors: BadCurrentSurfaceError
 eglWaitClient = error_check(egl.eglWaitClient, fail_on=False)
 
 # EGLBoolean eglWaitGL(void);
 egl.eglWaitGL.argtypes = ()
-egl.eglWaitGL.restype = ebool
+egl.eglWaitGL.restype = c_ibool
 # Errors: BadCurrentSurfaceError
 eglWaitGL = error_check(egl.eglWaitGL, fail_on=False)
 
 # EGLBoolean eglWaitNative(EGLint engine);
 egl.eglWaitNative.argtypes = (c_int,)
-egl.eglWaitNative.restype = ebool
+egl.eglWaitNative.restype = c_ibool
 # Errors: BadCurrentSurfaceError, BadParameterError
 eglWaitNative = error_check(egl.eglWaitNative, fail_on=False)
 
 ################ 3.9 ################
 
 # EGLBoolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface);
-egl.eglSwapBuffers.argtypes = (display, surface)
-egl.eglSwapBuffers.restype = ebool
+egl.eglSwapBuffers.argtypes = (c_display, c_surface)
+egl.eglSwapBuffers.restype = c_ibool
 # Errors: BadNativeWindowError, BadSurfaceError, ContextLostError
 eglSwapBuffers = error_check(egl.eglSwapBuffers, fail_on=False)
 
 # EGLBoolean eglCopyBuffers(EGLDisplay dpy, EGLSurface surface,
 #                           EGLNativePixmapType target);
-egl.eglCopyBuffers.argtypes = (display, surface, native_pixmap)
-egl.eglCopyBuffers.restype = ebool
+egl.eglCopyBuffers.argtypes = (c_display, c_surface, c_native_pixmap)
+egl.eglCopyBuffers.restype = c_ibool
 # Errors: BadMatchError, BadNativePixmapError, BadSurfaceError,
 #         ContextLostError
 eglCopyBuffers = error_check(egl.eglCopyBuffers, fail_on=False)
 
 # EGLBoolean eglSwapInterval(EGLDisplay dpy, EGLint interval);
-egl.eglSwapInterval.argtypes = (display, c_int)
-egl.eglSwapInterval.restype = ebool
+egl.eglSwapInterval.argtypes = (c_display, c_int)
+egl.eglSwapInterval.restype = c_ibool
 # Errors: BadContextError, BadSurfaceError
 eglSwapInterval = error_check(egl.eglSwapInterval, fail_on=False)
 
@@ -367,7 +382,7 @@ eglSwapInterval = error_check(egl.eglSwapInterval, fail_on=False)
 
 # void (*eglGetProcAddress(const char *procname))(void);
 egl.eglGetProcAddress.argtypes = (c_char_p,)
-egl.eglGetProcAddress.restype = void_func
+egl.eglGetProcAddress.restype = c_void_fn
 # TODO: Remove error_check? The EGL spec indicates no errors for this function.
 # Alternatively, add fail_on_null=True and change the error handling in the
 # ext.load_ext() function that calls this.
@@ -377,6 +392,6 @@ eglGetProcAddress = error_check(egl.eglGetProcAddress)
 
 # EGLBoolean eglReleaseThread(void);
 egl.eglReleaseThread.argtypes = ()
-egl.eglReleaseThread.restype = ebool
+egl.eglReleaseThread.restype = c_ibool
 # The EGL spec defines no failure modes, but it fails on False anyway.
 eglReleaseThread = error_check(egl.eglReleaseThread, fail_on=False)

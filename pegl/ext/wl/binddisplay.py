@@ -32,16 +32,16 @@ from ctypes import c_void_p
 from .. import load_ext
 from ..khr.image import Image
 from ...display import Display
-from ...native import ebool, display
+from ...native import c_ibool, c_display
 
 # Extension type.
-wl_display = c_void_p
+c_wl_display = c_void_p
 
 # Get handles of extension functions.
-native_bind = load_ext(b'eglBindWaylandDisplayWL', ebool,
-                       (display, wl_display), fail_on=False)
-native_unbind = load_ext(b'eglUnbindWaylandDisplayWL', ebool,
-                         (display, wl_display), fail_on=False)
+native_bind = load_ext(b'eglBindWaylandDisplayWL', c_ibool,
+                       (c_display, c_wl_display), fail_on=False)
+native_unbind = load_ext(b'eglUnbindWaylandDisplayWL', c_ibool,
+                         (c_display, c_wl_display), fail_on=False)
 
 # Extend the Display class with methods to bind and unbind Wayland displays.
 def bind_wayland_display(self, wl_display):

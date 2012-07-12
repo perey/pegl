@@ -24,7 +24,7 @@ from collections import namedtuple
 from ctypes import c_void_p
 
 # Local imports.
-from . import make_int_p, native, NO_DISPLAY, NO_CONTEXT, NO_SURFACE
+from . import native, NO_DISPLAY, NO_CONTEXT, NO_SURFACE
 
 # EGL constants.
 # TODO: Put these four in a namedtuple instance, like in all the other modules?
@@ -175,7 +175,7 @@ class Display:
 
         '''
         # Create and initialize the return pointers.
-        major, minor = make_int_p(), make_int_p()
+        major, minor = native.make_int_p(), native.make_int_p()
 
         native.eglInitialize(self, major, minor)
         return (major.contents.value, minor.contents.value, '')

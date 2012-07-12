@@ -24,7 +24,7 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from . import make_int_p, native, NO_CONTEXT, NO_SURFACE
+from . import native, NO_CONTEXT, NO_SURFACE
 from .attribs import AttribList, NONE
 from .attribs.context import ContextAttribs, ContextAPIs
 from .config import get_configs
@@ -208,7 +208,7 @@ class Context:
 
         '''
         # Query the attribute, storing the result in a pointer.
-        result = make_int_p()
+        result = native.make_int_p()
         native.eglQueryContext(self.display, self, attr, result)
 
         # Dereference the pointer.

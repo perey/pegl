@@ -35,15 +35,16 @@ from collections import namedtuple
 # Local imports.
 from .. import load_ext
 from ..stream import Stream, StreamAttribs
-from ...native import ebool, enum, display
+from ...native import c_ibool, c_enum, c_display
 
 # New extension types.
-time_ns = c_ulonglong
-time_ns_p = POINTER(time_ns)
+c_time_ns = c_ulonglong
+c_time_ns_p = POINTER(c_time_ns)
 
 # Get the handle of the new extension function.
-native_streamtime = load_ext(b'eglQueryStreamTimeKHR', ebool,
-                             (display, stream, enum, time_ns_p), fail_on=False)
+native_streamtime = load_ext(b'eglQueryStreamTimeKHR', c_ibool,
+                             (c_display, c_stream, c_enum, c_time_ns_p),
+                             fail_on=False)
 
 # New attributes for stream objects.
 StreamAttribs.extend('STREAM_FIFO_LENGTH', 0x31FC, c_int, 0)
@@ -70,8 +71,8 @@ def time_of(self, reference=StreamTimeReferences.NOW):
 
     '''
     # Ready a pointer to store the result.
-    result = time_ns_p()
-    result.contents = time_ns(0)
+    result = c_time_ns_p()
+    result.contents = c_time_ns(0)
 
     # Convert string arguments to their equivalent values.
     reference = {'NOW': StreamTimeReferences.NOW,

@@ -20,8 +20,7 @@
 __author__ = 'Tim Pederick'
 __version__ = '0.1a3~1.4' # The ~N.n part is the EGL API version wrapped.
 __all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
-           'sync', 'int_p', 'make_int_p',
-           'NO_DISPLAY', 'NO_CONTEXT', 'NO_SURFACE',
+           'sync', 'NO_DISPLAY', 'NO_CONTEXT', 'NO_SURFACE',
            'EGLError', 'NotInitializedError', 'BadAccessError',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',
            'BadContextError', 'BadCurrentSurfaceError', 'BadDisplayError',
@@ -34,21 +33,7 @@ __all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
 # Standard library imports.
 from ctypes import POINTER, c_int, c_void_p
 
-# Types and symbolic constants.
-int_p = POINTER(c_int)
-
-def make_int_p(ival=0):
-    '''Create and initialise a pointer to an integer.
-
-    Keyword arguments:
-        ival -- The initial value of the referenced integer. The default
-            is 0.
-
-    '''
-    p = int_p()
-    p.contents = c_int(ival)
-    return p
-
+# Null handles for the major EGL objects.
 NO_DISPLAY, NO_CONTEXT, NO_SURFACE = c_void_p(0), c_void_p(0), c_void_p(0)
 
 # Exceptions for handling EGL errors.

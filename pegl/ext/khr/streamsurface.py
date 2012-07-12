@@ -27,17 +27,17 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_producer_eglsu
 
 # Local imports.
 from .. import load_ext
-from ..stream import stream
+from ..stream import c_stream
 from ...import NO_SURFACE
 from ...attribs.config import SurfaceTypes
-from ...native import attr_list, display, config, surface
+from ...native import c_attr_list, c_display, c_config, c_surface
 
 # New surface type.
 SurfaceTypes.extend(11, 'STREAM')
 
 # Get the handle of the extension function.
-native_createstream = load_ext(b'eglCreateStreamProducerSurfaceKHR', surface,
-                               (display, config, stream, attr_list),
+native_createstream = load_ext(b'eglCreateStreamProducerSurfaceKHR', c_surface,
+                               (c_display, c_config, c_stream, c_attr_list),
                                fail_on=NO_SURFACE)
 
 # Define the new Surface subclass.

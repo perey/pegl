@@ -31,12 +31,13 @@ from ctypes import c_int
 # Local imports.
 from .. import load_ext
 from ...attribs.surface import SurfaceAttribs
-from ...native import ebool
+from ...native import c_ibool, c_display, c_surface
 from ...surface import Surface
 
 # Get the handle for the extension function.
-native_postsubbuffer = load_ext(b'eglPostSubBufferNV', ebool,
-                                (display, surface, c_int, c_int, c_int, c_int),
+native_postsubbuffer = load_ext(b'eglPostSubBufferNV', c_ibool,
+                                (c_display, c_surface, c_int, c_int, c_int,
+                                 c_int),
                                 fail_on=False)
 
 # Wrap the extension function and place it on the Surface class. (While the
@@ -57,7 +58,7 @@ def post_subbuffer(self, rect):
 Surface.post_subbuffer = post_subbuffer
 
 # New surface attributes.
-SurfaceAttribs.extend('POST_SUB_BUFFER_SUPPORTED', 0x30BE, ebool, False)
+SurfaceAttribs.extend('POST_SUB_BUFFER_SUPPORTED', 0x30BE, c_ibool, False)
 
 # Provide a property to query the new attribute.
 def can_post_subbuffer(self):

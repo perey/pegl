@@ -30,15 +30,16 @@ from ctypes import c_int, c_void_p, POINTER
 
 # Local imports.
 from .. import load_ext
-from ...native import ebool, display, surface
+from ...native import c_ibool, c_display, c_surface
 from ...surface import Surface
 
 # ctypes type necessary for querying pointer values.
 c_void_pp = POINTER(c_void_p)
 
 # Get handle of the extension function.
-native_query = load_ext(b'eglQuerySurfacePointerANGLE', ebool,
-                        (display, surface, c_int, c_void_pp), fail_on=False)
+native_query = load_ext(b'eglQuerySurfacePointerANGLE', c_ibool,
+                        (c_display, c_surface, c_int, c_void_pp),
+                        fail_on=False)
 
 # Add function to the Surface class.
 def _attr_ptr(self, attr):

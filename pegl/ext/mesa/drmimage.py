@@ -31,20 +31,20 @@ from ctypes import c_int
 
 # Local imports.
 from .. import load_ext
-from ..khr.image import image, Image, ImageAttribs, NO_IMAGE
-from ... import int_p, make_int_p
+from ..khr.image import c_image, Image, ImageAttribs, NO_IMAGE
 from ...attribs import Attribs, AttribList, BitMask, Details
 from ...attribs.surface import SurfaceAttribs
-from ...native import ebool, display, attr_list
+from ...native import c_ibool, c_display, c_attr_list, c_int_p, make_int_p
 
 # Symbolic constants for values used more than once.
 DRM_BUFFER_FORMAT = 0x31D0
 
 # Get handles of extension functions.
-native_create = load_ext(b'eglCreateDRMImageMESA', image, (display, attr_list),
+native_create = load_ext(b'eglCreateDRMImageMESA', c_image,
+                         (c_display, c_attr_list),
                          fail_on=NO_IMAGE) # Not actually in the spec.
-native_export = load_ext(b'eglExportDRMImageMESA', ebool,
-                         (display, image, int_p, int_p, int_p),
+native_export = load_ext(b'eglExportDRMImageMESA', c_ibool,
+                         (c_display, c_image, c_int_p, c_int_p, c_int_p),
                          fail_on=False) # Also not in the spec, but implied...
 
 # New image attributes, for importing a shared buffer into an image.
@@ -148,9 +148,9 @@ class DRMImage(Image):
             the relevant assign_* argument was False.
 
         '''
-        name = make_int_p() if assign_name else int_p(None)
-        handle = make_int_p() if assign_handle else int_p(None)
-        stride = make_int_p() if assign_stride else int_p(None)
+        name = make_int_p() if assign_name else c_int_p(None)
+        handle = make_int_p() if assign_handle else c_int_p(None)
+        stride = make_int_p() if assign_stride else c_int_p(None)
 
         native_export(self.display, self, name, handle, stride)
 
