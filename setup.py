@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='Pegl',
-    version='0.1a3~1.4',
+    version='0.1a4_1.4',
     author='Tim Pederick',
     author_email='pederick@gmail.com',
     packages=['pegl', 'pegl.attribs',

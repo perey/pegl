@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 __author__ = 'Tim Pederick'
-__version__ = '0.1a3~1.4' # The ~N.n part is the EGL API version wrapped.
+__version__ = '0.1a4_1.4' # The _N.n part is the EGL API version wrapped.
 __all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
            'sync', 'NO_DISPLAY', 'NO_CONTEXT', 'NO_SURFACE',
            'EGLError', 'NotInitializedError', 'BadAccessError',
