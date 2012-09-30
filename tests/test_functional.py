@@ -75,8 +75,9 @@ print('There are', len(c), 'configurations available.')
 # 2a. Paring down the configurations by selecting desired attributes.
 reqs = {'RENDERABLE_TYPE': ClientAPIs(OPENGL=1)}
 c_gl = get_configs(d, reqs)
-print(len(c_gl), 'configurations support OpenGL. (I wonder what the other',
-      len(c) - len(c_gl), 'do?)')
+print(len(c_gl), 'configurations support OpenGL.' +
+      (' (I wonder what the other ' + str(len(c) - len(c_gl)) + ' do?)'
+       if len(c) - len(c_gl) else ''))
 
 reqs['RENDERABLE_TYPE'].OPENGL = 0
 reqs['RENDERABLE_TYPE'].OPENGL_ES = 1
