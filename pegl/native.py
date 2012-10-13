@@ -44,7 +44,7 @@ from . import EGLError, error_codes, NO_CONTEXT, NO_SURFACE
 
 # Native library import.
 libname = 'libEGL'
-if sys.platform == 'linux2':
+if sys.platform.startswith('linux'):
     libclass, libext = ctypes.CDLL, '.so'
 elif sys.platform == 'darwin':
     libclass, libext = ctypes.CDLL, '.dylib'
