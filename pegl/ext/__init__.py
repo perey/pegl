@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 
-'''EGL extension support.'''
+'''EGL extension support.
+
+Unimplemented:
+    1.  EGL_KHR_config_attribs
+    17. EGL_NV_coverage_sample
+    18. EGL_NV_depth_nonlinear
+    24. EGL_HI_clientpixmap
+    25. EGL_HI_colorformats
+    30. EGL_NV_coverage_sample_resolve
+
+'''
 
 # Copyright © 2012 Tim Pederick.
 #
@@ -19,12 +29,17 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = (# Registered vendor extensions.
-           'angle', 'hi', 'img', 'khr', 'mesa', 'nv',
-           # Registered cross-vendor (EXT) extensions.
-           'robustness',
+__all__ = (# Registered cross-vendor (EXT) extensions.
+           'ext_robustness',
+           # Registered vendor extensions.
+           'angle_d3dtexture', 'angle_surfacepointer',
+           'img_contextpriority',
+           'khr_context', 'khr_glimage', 'khr_image', 'khr_locksurface',
+           'khr_stream', 'khr_sync',
+           'mesa_drmimage',
+           'nv_postsubbuffer', 'nv_sync',
            # Unregistered extensions.
-           'nok', 'wl',
+           'nok_swapregion', 'wl_binddisplay',
            # Stuff defined here.
            'extensions', 'load_ext')
 
@@ -34,8 +49,47 @@ from ctypes import CFUNCTYPE
 # Local imports.
 from .. import native
 
-# Extensions in the EXT namespace.
-extensions = {'EGL_EXT_create_context_robustness': 'robustness'}
+# Mapping of name strings to module names.
+extensions = {
+# Extensions in the cross-vendor (EXT) namespace.
+    'EGL_EXT_create_context_robustness': 'ext_robustness',               #37
+# Extensions from ANGLE, the Almost Native Graphics Layer Engine.
+    'EGL_ANGLE_query_surface_pointer': 'angle_surfacepointer',           #28
+    'EGL_ANGLE_surface_d3d_texture_2d_share_handle': 'angle_d3dtexture', #29
+    'EGL_ANGLE_d3d_share_handle_client_buffer': 'angle_d3dtexture',      #38
+# Extensions from Imagination Technologies (IMG).
+    'EGL_IMG_context_priority': 'img_contextpriority',                   #10
+# Extensions from Khronos Group (KHR).
+    'EGL_KHR_lock_surface': 'khr_locksurface',                            #2
+    'EGL_KHR_image': 'khr_image',                                         #3
+    'EGL_KHR_vg_parent_image': 'khr_vgimage',                             #4
+    'EGL_KHR_gl_texture_2D_image': 'khr_glimage',                         #5
+    'EGL_KHR_gl_texture_cubemap_image': 'khr_glimage',                    #5
+    'EGL_KHR_gl_texture_3D_image': 'khr_glimage',                         #5
+    'EGL_KHR_gl_renderbuffer_image': 'khr_glimage',                       #5
+    'EGL_KHR_reusable_sync': 'khr_sync',                                  #6
+    'EGL_KHR_image_base': 'khr_image',                                    #8
+    'EGL_KHR_image_pixmap': 'khr_image',                                  #9
+    'EGL_KHR_lock_surface2': 'khr_locksurface',                          #16
+    'EGL_KHR_fence_sync': 'khr_sync',                                    #20
+    'EGL_KHR_stream': 'khr_stream',                                      #32
+    'EGL_KHR_stream_consumer_gltexture': 'khr_stream',                   #33
+    'EGL_KHR_stream_producer_eglsurface': 'khr_streamsurface',           #34
+    # This extension requires absolutely no new code on the EGL side.
+    'EGL_KHR_stream_producer_aldatalocator': 'khr_stream',               #35
+    'EGL_KHR_stream_fifo': 'khr_fifostream',                             #36
+    'EGL_KHR_create_context': 'khr_context',                             #39
+# Extensions from the Mesa 3D library.
+    'EGL_MESA_drm_image': 'mesa_drmimage',                               #26
+# Extensions from Nokia (NOK).
+    'EGL_NOK_swap_region': 'nok_swapregion',                    # Unofficial
+# Extensions from NVIDIA Corporation (NV).
+    'EGL_NV_sync': 'nv_sync',                                            #19
+    'EGL_NV_post_sub_buffer': 'nv_postsubbuffer',                        #27
+    'EGL_NV_system_time': 'nv_systime',                                  #31
+# Extensions from the Wayland compositor (WL).
+    'EGL_WL_bind_wayland_display': 'wl_binddisplay'             # Unofficial
+    }
 
 def load_ext(fname, return_type, arg_types, check_errors=True, **kwargs):
     '''Load an extension function at runtime.

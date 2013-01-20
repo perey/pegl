@@ -135,11 +135,8 @@ instance will usually be the first step when using EGL.
 pegl.ext
 --------
 A large selection of EGL extensions are given wrappers in the ``ext``
-subpackage, sorted into further subpackages by vendor. Cross-vendor
-("EXT") extensions live in the main ``ext`` subpackage.
-
-All extensions in the EGL Registry as of June 2012 are supported,
-except for the following:
+subpackage. All extensions in the EGL Registry as of June 2012 are
+supported, except for the following:
 
 +-----+----------------------------------+--------------------------------+
 |Ext #|           Name string            |             Reason             |
@@ -189,6 +186,6 @@ pegl.sync
 The ``sync`` module wraps the small number of core EGL synchronization
 functions that help ensure that native and client rendering calls do not
 interfere with one another. More advanced synchronization features are
-available in extensions_ (``pegl.ext.khr.sync``, ``pegl.ext.nv.sync``).
+available in extensions_ (``pegl.ext.khr_sync``, ``pegl.ext.nv_sync``).
 
 .. _extensions: `pegl.ext`_
