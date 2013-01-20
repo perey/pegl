@@ -25,7 +25,8 @@ __all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',
            'BadContextError', 'BadCurrentSurfaceError', 'BadDisplayError',
            'BadMatchError', 'BadNativePixmapError', 'BadNativeWindowError',
-           'BadParameterError', 'BadSurfaceError', 'ContextLostError']
+           'BadParameterError', 'BadSurfaceError', 'ContextLostError',
+           'error_codes']
 
 # TODO: Streamline the setup code. Take a look at README.rst -- see how many
 # imports are needed? Slim it down!
