@@ -156,6 +156,8 @@ supported, except for the following:
 |     |                                  |missing from ``eglenum.spec``.  |
 +-----+----------------------------------+--------------------------------+
 |30   |``EGL_NV_coverage_sample_resolve``|NVIDIA proprietary.             |
++-----+----------------------------------+                                +
+|46   |``EGL_NV_3dvision_surface``       |                                |
 +-----+----------------------------------+--------------------------------+
 
 In addition, some extensions that are not officially registered, but are
