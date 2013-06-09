@@ -29,7 +29,7 @@ Unimplemented:
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = (# Registered cross-vendor (EXT) extensions.
+__all__ = [# Registered cross-vendor (EXT) extensions.
            'ext_robustness',
            # Registered vendor extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
@@ -41,7 +41,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            # Unregistered extensions.
            'nok_swapregion', 'wl_binddisplay',
            # Stuff defined here.
-           'extensions', 'load_ext')
+           'extensions', 'load_ext']
 
 # Standard library imports.
 from ctypes import CFUNCTYPE
