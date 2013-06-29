@@ -30,8 +30,8 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from ...attribs import BitMask
-from ...attribs.context import ContextAttribs
+from ..attribs import BitMask
+from ..attribs.context import ContextAttribs
 
 # New context attributes.
 class ContextFlags(BitMask):

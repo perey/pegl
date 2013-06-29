@@ -30,11 +30,11 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from .. import load_ext
-from ..khr.image import c_image, Image, ImageAttribs, NO_IMAGE
-from ...attribs import Attribs, AttribList, BitMask, Details
-from ...attribs.surface import SurfaceAttribs
-from ...native import c_ibool, c_display, c_attr_list, c_int_p, make_int_p
+from . import load_ext
+from .khr_image import c_image, Image, ImageAttribs, NO_IMAGE
+from ..attribs import Attribs, AttribList, BitMask, Details
+from ..attribs.surface import SurfaceAttribs
+from ..native import c_ibool, c_display, c_attr_list, c_int_p, make_int_p
 
 # Symbolic constants for values used more than once.
 DRM_BUFFER_FORMAT = 0x31D0

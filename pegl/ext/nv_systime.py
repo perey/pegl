@@ -29,7 +29,7 @@ http://www.khronos.org/registry/egl/extensions/NV/EGL_NV_system_time.txt
 from ctypes import c_ulonglong
 
 # Local imports.
-from .. import load_ext
+from . import load_ext
 
 # Get handles for extension functions.
 native_freq = load_ext(b'eglGetSystemTimeFrequencyNV', c_ulonglong, ())

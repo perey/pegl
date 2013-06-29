@@ -29,9 +29,9 @@ http://www.khronos.org/registry/egl/extensions/ANGLE/EGL_ANGLE_query_surface_poi
 from ctypes import c_int, c_void_p, POINTER
 
 # Local imports.
-from .. import load_ext
-from ...native import c_ibool, c_display, c_surface
-from ...surface import Surface
+from . import load_ext
+from ..native import c_ibool, c_display, c_surface
+from ..surface import Surface
 
 # ctypes type necessary for querying pointer values.
 c_void_pp = POINTER(c_void_p)

@@ -26,11 +26,11 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_producer_eglsu
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Local imports.
-from .. import load_ext
-from ..stream import c_stream
-from ...import NO_SURFACE
-from ...attribs.config import SurfaceTypes
-from ...native import c_attr_list, c_display, c_config, c_surface
+from . import load_ext
+from .khr_stream import c_stream
+from .. import NO_SURFACE
+from ..attribs.config import SurfaceTypes
+from ..native import c_attr_list, c_display, c_config, c_surface
 
 # New surface type.
 SurfaceTypes.extend(11, 'STREAM')

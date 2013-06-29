@@ -206,22 +206,9 @@ class Display:
             raise ImportError('implementation does not declare support for ' +
                               extname)
 
-        egl_prefix, vendor, name = extname.split('_', 2)
-        if egl_prefix != 'EGL':
-            # How on earth did we get this far?
-            raise ValueError("extension names must begin with 'EGL_'")
-        elif vendor == 'EXT':
-            # Cross-vendor extensions live in the ext package.
-            vendor_pkg = 'ext'
-            from . import ext as ext_pkg
-        else:
-            # Extensions from vendor xxx live in the ext.xxx subpackage.
-            vendor_pkg = 'ext.' + vendor.lower()
-            top_ext_pkg = __import__(vendor_pkg, globals(), locals(), [], 1)
-            ext_pkg = getattr(top_ext_pkg, vendor.lower())
-
         # What module has this extension?
-        module_name = ext_pkg.extensions.get(extname)
+        from .ext import extensions as extlist
+        module_name = extlist.get(extname)
 
         if module_name is None:
             raise ImportError("no module found for extension "

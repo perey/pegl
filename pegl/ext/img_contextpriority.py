@@ -30,8 +30,8 @@ http://www.khronos.org/registry/egl/extensions/IMG/EGL_IMG_context_priority.txt
 from collections import namedtuple
 
 # Local imports.
-from ...attribs.context import ContextAttribs
-from ...context import Context
+from ..attribs.context import ContextAttribs
+from ..context import Context
 
 # New context attribute.
 PriorityLevels = namedtuple('PriorityLevels_tuple',

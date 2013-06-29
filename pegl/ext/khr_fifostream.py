@@ -33,9 +33,9 @@ from ctypes import POINTER, c_int, c_ulonglong
 from collections import namedtuple
 
 # Local imports.
-from .. import load_ext
-from ..stream import Stream, StreamAttribs
-from ...native import c_ibool, c_enum, c_display
+from . import load_ext
+from .khr_stream import Stream, StreamAttribs
+from ..native import c_ibool, c_enum, c_display
 
 # New extension types.
 c_time_ns = c_ulonglong

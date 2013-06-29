@@ -23,7 +23,7 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_vg_parent_image.txt
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Local imports.
-from .image import Image
+from .khr_image import Image
 
 # Extension image target type.
 Image.extend('EGL_KHR_vg_parent_image', {'VG_PARENT_IMAGE': 0x30BA})
