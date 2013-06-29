@@ -90,8 +90,8 @@ class Display:
     def __del__(self):
         '''Delete this display and all EGL resources in this thread.
 
-        Multithreaded applications should also call release() from all
-        all other threads in which this display has been used.
+        Multithreaded applications should also call release_thread()
+        from all other threads in which this display has been used.
 
         '''
         release_thread()
@@ -231,6 +231,10 @@ class Display:
                                          [module_name], 1)
             return getattr(pkg_with_module, module_name)
 
+    def clear_context(self):
+        '''Release the current context, if any.'''
+        native.eglMakeCurrent(self, NO_SURFACE, NO_SURFACE, NO_CONTEXT)
+
     def terminate(self):
         '''Invalidate all resources associated with this display.
 
@@ -241,7 +245,7 @@ class Display:
 
         It is not generally necessary to call this function directly, as
         it is called by the display's destructor method. The only
-        difference is that the destructor also calls release().
+        difference is that the destructor also calls release_thread().
 
         '''
         native.eglTerminate(self)
