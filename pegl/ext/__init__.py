@@ -35,10 +35,11 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            # Registered vendor extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
            'img_contextpriority',
-           'khr_context', 'khr_glimage', 'khr_image', 'khr_locksurface',
-           'khr_stream', 'khr_surfaceless', 'khr_sync',
+           'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_image',
+           'khr_locksurface', 'khr_stream', 'khr_streamcrossprocess',
+           'khr_streamsurface', 'khr_surfaceless', 'khr_sync', 'khr_vgimage',
            'mesa_drmimage',
-           'nv_postsubbuffer', 'nv_sync',
+           'nv_postsubbuffer', 'nv_sync', 'nv_systime',
            # Unregistered extensions.
            'nok_swapregion', 'wl_binddisplay',
            # Stuff defined here.
@@ -80,8 +81,10 @@ extensions = {
     'EGL_KHR_stream_producer_aldatalocator': 'khr_stream',               #35
     'EGL_KHR_stream_fifo': 'khr_fifostream',                             #36
     'EGL_KHR_create_context': 'khr_context',                             #39
-    # This extension requires absolutely no new code on the EGL side.
+    # This extension requires absolutely no new code on the EGL side, but a
+    # module for it is provided anyway.
     'EGL_KHR_surfaceless_context': 'khr_surfaceless',                    #40
+    'EGL_KHR_stream_cross_process_fd': 'khr_streamcrossprocess',         #41
 # Extensions from the Mesa 3D library.
     'EGL_MESA_drm_image': 'mesa_drmimage',                               #26
 # Extensions from Nokia (NOK).
