@@ -166,7 +166,7 @@ widely available through the Mesa library, are supported by Pegl:
 * ``EGL_NOK_swap_region``
 * ``EGL_WL_bind_wayland_display``
 
-.. [#] Extension numbers 1 to 6, 8 to 10, 16 to 20, and 24 to 39.
+.. [#] Extension numbers 1 to 6, 8 to 10, 16 to 20, and 24 to 45.
 
 -----------
 pegl.native
