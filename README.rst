@@ -135,7 +135,7 @@ instance will usually be the first step when using EGL.
 pegl.ext
 --------
 A large selection of EGL extensions are given wrappers in the ``ext``
-subpackage. All extensions in the EGL Registry as of June 2012[#]_ are
+subpackage. All extensions in the EGL Registry as of June 2012 [#]_ are
 supported, except for the following:
 
 +-----+----------------------------------+--------------------------------+
