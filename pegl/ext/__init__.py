@@ -31,7 +31,7 @@ Unimplemented:
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 __all__ = (# Registered cross-vendor (EXT) extensions.
-           'ext_robustness',
+           'ext_multiview', 'ext_robustness',
            # Registered vendor extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
            'img_contextpriority',
@@ -55,6 +55,7 @@ from .. import native
 extensions = {
 # Extensions in the cross-vendor (EXT) namespace.
     'EGL_EXT_create_context_robustness': 'ext_robustness',               #37
+    'EGL_EXT_multiview_window': 'ext_multiview',                         #42
 # Extensions from ANGLE, the Almost Native Graphics Layer Engine.
     'EGL_ANGLE_query_surface_pointer': 'angle_surfacepointer',           #28
     'EGL_ANGLE_surface_d3d_texture_2d_share_handle': 'angle_d3dtexture', #29
