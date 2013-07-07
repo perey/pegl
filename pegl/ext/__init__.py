@@ -99,6 +99,7 @@ extensions = {
     # This extension requires absolutely no new code on the EGL side, but a
     # module for it is provided anyway.
     'EGL_NV_post_convert_rounding': 'nv_postconvert',                    #44
+    'EGL_NV_native_query': 'nv_nativequery',                             #45
 # Extensions from the Wayland compositor (WL).
     'EGL_WL_bind_wayland_display': 'wl_binddisplay'             # Unofficial
     }
