@@ -96,6 +96,9 @@ extensions = {
     'EGL_NV_sync': 'nv_sync',                                            #19
     'EGL_NV_post_sub_buffer': 'nv_postsubbuffer',                        #27
     'EGL_NV_system_time': 'nv_systime',                                  #31
+    # This extension requires absolutely no new code on the EGL side, but a
+    # module for it is provided anyway.
+    'EGL_NV_post_convert_rounding': 'nv_postconvert',                    #44
 # Extensions from the Wayland compositor (WL).
     'EGL_WL_bind_wayland_display': 'wl_binddisplay'             # Unofficial
     }
