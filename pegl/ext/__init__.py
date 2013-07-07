@@ -38,6 +38,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_image',
            'khr_locksurface', 'khr_stream', 'khr_streamcrossprocess',
            'khr_streamsurface', 'khr_surfaceless', 'khr_sync', 'khr_vgimage',
+           'khr_waitsync',
            'mesa_drmimage',
            'nv_postsubbuffer', 'nv_sync', 'nv_systime',
            # Unregistered extensions.
@@ -86,6 +87,7 @@ extensions = {
     # module for it is provided anyway.
     'EGL_KHR_surfaceless_context': 'khr_surfaceless',                    #40
     'EGL_KHR_stream_cross_process_fd': 'khr_streamcrossprocess',         #41
+    'EGL_KHR_wait_sync': 'khr_waitsync',                                 #43
 # Extensions from the Mesa 3D library.
     'EGL_MESA_drm_image': 'mesa_drmimage',                               #26
 # Extensions from Nokia (NOK).

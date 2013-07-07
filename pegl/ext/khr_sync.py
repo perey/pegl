@@ -15,6 +15,11 @@ a condition is met. The condition depends on the completion of "fence
 commands", a concept from OpenGL that has been extended to other client
 APIs.
 
+Both extensions can be supported in the one module because both define
+the same extension functions, differing only in the attributes they
+accept (and define). It is the application's responsibility to only use
+the supported sync type if the implementation does not support both.
+
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_reusable_sync.txt
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_fence_sync.txt
 
