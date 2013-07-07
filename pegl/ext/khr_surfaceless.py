@@ -13,7 +13,7 @@ error is simply propagated upwards. Importing this module can serve as a
 check on whether that functionality will cause an error.
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2013 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -29,3 +29,5 @@ check on whether that functionality will cause an error.
 #
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
+
+# No code! See docstring above.
