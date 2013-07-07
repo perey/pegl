@@ -26,9 +26,28 @@ http://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_multiview_window.txt
 from ctypes import c_int
 
 # Local imports.
-from ...attribs.surface import SurfaceAttribs
+from ..attribs.context import ContextAttribs
+from ..attribs.surface import SurfaceAttribs
+from ..context import Context
+from ..surface import Surface
 
-# This extension defines just one new attribute.
-SurfaceAttribs.extend('MULTIVIEW_VIEW_COUNT', 0x3134, c_int, 1)
+# This extension defines just one new attribute, but it applies to both
+# surfaces and contexts.
+MULTIVIEW_VIEW_COUNT = 0x3134
+ContextAttribs.extend('MULTIVIEW_VIEW_COUNT', MULTIVIEW_VIEW_COUNT, c_int, 1)
+SurfaceAttribs.extend('MULTIVIEW_VIEW_COUNT', MULTIVIEW_VIEW_COUNT, c_int, 1)
 
-# TODO: Convenient querying of this attribute?
+# New Context property, for querying the new attribute in ContextAttribs.
+# This attribute cannot be set except by creating a surface with the
+# corresponding attribute.
+def ctx_multiview_view_count(self):
+    '''Get the number of multiview buffers created by this context.'''
+    return self._attr(ContextAttribs.MULTIVIEW_VIEW_COUNT)
+Context.multiview_view_count = property(ctx_multiview_view_count)
+
+# New Surface property, for querying the new attribute in SurfaceAttribs.
+# This attribute cannot be set except at surface creation.
+def surf_multiview_view_count(self):
+    '''Get the number of multiview buffers requested for this surface.'''
+    return self._attr(SurfaceAttribs.MULTIVIEW_VIEW_COUNT)
+Surface.multiview_view_count = property(surf_multiview_view_count)
