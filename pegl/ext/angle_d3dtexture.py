@@ -19,7 +19,7 @@ http://www.khronos.org/registry/egl/extensions/ANGLE/EGL_ANGLE_surface_d3d_textu
 http://www.khronos.org/registry/egl/extensions/ANGLE/EGL_ANGLE_d3d_share_handle_client_buffer.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #

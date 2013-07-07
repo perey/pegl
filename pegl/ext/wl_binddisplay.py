@@ -8,7 +8,7 @@ Khronos, it is widely available through the Mesa library.
 http://cgit.freedesktop.org/mesa/mesa/tree/docs/WL_bind_wayland_display.spec
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #

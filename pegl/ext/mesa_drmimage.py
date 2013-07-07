@@ -8,7 +8,7 @@ the Linux DRM (Direct Rendering Manager) system.
 http://www.khronos.org/registry/egl/extensions/MESA/EGL_MESA_drm_image.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #

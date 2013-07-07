@@ -9,7 +9,7 @@ priority assigned may be queried.
 http://www.khronos.org/registry/egl/extensions/IMG/EGL_IMG_context_priority.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #

@@ -11,7 +11,7 @@ producer may be blocked from adding more.
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_fifo.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #

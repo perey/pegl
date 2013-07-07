@@ -7,7 +7,7 @@ This wrapper has been designed for version 3 of the extension.
 http://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_create_context_robustness.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #

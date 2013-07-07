@@ -8,7 +8,7 @@ strings and parameters.
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_gl_image.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #

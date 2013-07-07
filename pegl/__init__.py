@@ -2,7 +2,7 @@
 
 '''Pegl: A Python wrapper for the EGL 1.4 API.'''
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
