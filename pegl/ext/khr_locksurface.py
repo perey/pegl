@@ -187,7 +187,7 @@ def bitmap_component_offsets(self):
         values.
 
     '''
-    components = ('red', 'green', 'blue', 'alpha', 'luminance')
+    components = ('RED', 'GREEN', 'BLUE', 'ALPHA', 'LUMINANCE')
 
     return dict((comp.lower(),
                  self._attr(getattr(SurfaceAttribs,
