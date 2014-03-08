@@ -36,9 +36,9 @@ except ImportError:
     from ctypes import c_longlong as c_sizei
 
 # Local imports.
-from .. import load_ext
-from ...display import Display
-from ...native import c_display
+from . import load_ext
+from ..display import Display
+from ..native import c_display
 
 # New extension types. Note that c_sizei was defined by import, above.
 c_setter = CFUNCTYPE(None, c_void_p, c_sizei, c_void_p, c_sizei)

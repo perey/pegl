@@ -28,8 +28,8 @@ http://www.khronos.org/registry/egl/extensions/ANDROID/EGL_ANDROID_framebuffer_t
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Local imports.
-from ...attribs import DONT_CARE
-from ...attribs.config import ConfigAttribs
+from ..attribs import DONT_CARE
+from ..attribs.config import ConfigAttribs
 
 # New config attribute.
 ConfigAttribs.extend('FRAMEBUFFER_TARGET_ANDROID', 0x3147, bool, DONT_CARE,
