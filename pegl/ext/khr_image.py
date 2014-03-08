@@ -46,7 +46,8 @@ NO_IMAGE = c_void_p(0)
 
 # Get handles of extension functions.
 native_create = load_ext(b'eglCreateImageKHR', c_image,
-                         (c_display, c_context, c_enum, c_client_buffer, c_attr_list),
+                         (c_display, c_context, c_enum, c_client_buffer,
+                          c_attr_list),
                          fail_on=NO_IMAGE)
 native_destroy = load_ext(b'eglDestroyImageKHR', c_ibool,
                           (c_display, c_image), fail_on=False)
