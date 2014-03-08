@@ -33,6 +33,7 @@ Unimplemented:
 __all__ = (# Registered cross-vendor (EXT) extensions.
            'ext_multiview', 'ext_robustness',
            # Registered vendor extensions.
+           'android_framebuffer', 'android_blob_cache',
            'angle_d3dtexture', 'angle_surfacepointer',
            'img_contextpriority',
            'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_image',
@@ -57,6 +58,9 @@ extensions = {
 # Extensions in the cross-vendor (EXT) namespace.
     'EGL_EXT_create_context_robustness': 'ext_robustness',               #37
     'EGL_EXT_multiview_window': 'ext_multiview',                         #42
+# Extensions from the Android operating system.
+    'EGL_ANDROID_framebuffer_target': 'android_framebuffer',             #47
+    'EGL_ANDROID_blob_cache': 'android_blob_cache'                       #48
 # Extensions from ANGLE, the Almost Native Graphics Layer Engine.
     'EGL_ANGLE_query_surface_pointer': 'angle_surfacepointer',           #28
     'EGL_ANGLE_surface_d3d_texture_2d_share_handle': 'angle_d3dtexture', #29
