@@ -59,6 +59,7 @@ extensions = {
     'EGL_EXT_create_context_robustness': 'ext_robustness',               #37
     'EGL_EXT_multiview_window': 'ext_multiview',                         #42
     'EGL_EXT_buffer_age': 'ext_bufferage',                               #52
+    'EGL_EXT_image_dma_buf_import': 'ext_dma_buf',                       #53
 # Extensions from the Android operating system.
     'EGL_ANDROID_framebuffer_target': 'android_framebuffer',             #47
     'EGL_ANDROID_blob_cache': 'android_blobcache',                       #48
