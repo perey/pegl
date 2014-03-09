@@ -7,7 +7,6 @@ Image extension class.
 
 http://www.khronos.org/registry/egl/extensions/ANDROID/EGL_ANDROID_image_native_buffer.txt
 
-
 '''
 # Copyright © 2014 Tim Pederick.
 #
@@ -30,5 +29,4 @@ http://www.khronos.org/registry/egl/extensions/ANDROID/EGL_ANDROID_image_native_
 from .khr_image import Image
 
 # New Image target type.
-NATIVE_BUFFER = 0x3140
-Image.acceptable_targets[NATIVE_BUFFER] = 'EGL_ANDROID_image_native_buffer'
+Image.extend('EGL_ANDROID_image_native_buffer', {'NATIVE_BUFFER': 0x3140})
