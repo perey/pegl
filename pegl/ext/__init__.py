@@ -60,8 +60,10 @@ extensions = {
     'EGL_EXT_multiview_window': 'ext_multiview',                         #42
 # Extensions from the Android operating system.
     'EGL_ANDROID_framebuffer_target': 'android_framebuffer',             #47
-    'EGL_ANDROID_blob_cache': 'android_blob_cache',                      #48
+    'EGL_ANDROID_blob_cache': 'android_blobcache',                       #48
     'EGL_ANDROID_image_native_buffer': 'android_bufferimage',            #49
+    'EGL_ANDROID_native_fence_sync': 'android_nativesync',               #50
+    'EGL_ANDROID_recordable': 'android_recordable',                      #51
 # Extensions from ANGLE, the Almost Native Graphics Layer Engine.
     'EGL_ANGLE_query_surface_pointer': 'angle_surfacepointer',           #28
     'EGL_ANGLE_surface_d3d_texture_2d_share_handle': 'angle_d3dtexture', #29

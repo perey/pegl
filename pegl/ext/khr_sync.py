@@ -86,7 +86,7 @@ class WaitFlags(BitMask):
     bit_names = ['FLUSH_COMMANDS']
 
 
-class SyncAttr(Attribs):
+class SyncAttribs(Attribs):
     '''The set of attributes relevant to sync objects.
 
     Class attributes:
