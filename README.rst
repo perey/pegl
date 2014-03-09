@@ -135,7 +135,7 @@ instance will usually be the first step when using EGL.
 pegl.ext
 --------
 A large selection of EGL extensions are given wrappers in the ``ext``
-subpackage. All extensions in the EGL Registry as of June 2012 [#]_ are
+subpackage. All extensions in the EGL Registry as of March 2013 [#]_ are
 supported, except for the following:
 
 +-----+----------------------------------+--------------------------------+
@@ -166,7 +166,7 @@ widely available through the Mesa library, are supported by Pegl:
 * ``EGL_NOK_swap_region``
 * ``EGL_WL_bind_wayland_display``
 
-.. [#] Extension numbers 1 to 6, 8 to 10, 16 to 20, and 24 to 45.
+.. [#] Extension numbers 1 to 6, 8 to 10, 16 to 20, and 24 to 53.
 
 -----------
 pegl.native
