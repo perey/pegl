@@ -31,9 +31,10 @@ Unimplemented:
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 __all__ = (# Registered cross-vendor (EXT) extensions.
-           'ext_multiview', 'ext_robustness',
+           'ext_bufferage', 'ext_dma_buf', 'ext_multiview', 'ext_robustness',
            # Registered vendor extensions.
-           'android_framebuffer', 'android_blobcache', 'android_bufferimage',
+           'android_blobcache', 'android_bufferimage', 'android_framebuffer',
+           'android_nativesync', 'android_recordable',
            'angle_d3dtexture', 'angle_surfacepointer',
            'img_contextpriority',
            'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_image',
@@ -41,7 +42,8 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'khr_streamsurface', 'khr_surfaceless', 'khr_sync', 'khr_vgimage',
            'khr_waitsync',
            'mesa_drmimage',
-           'nv_postsubbuffer', 'nv_sync', 'nv_systime',
+           'nv_nativequery', 'nv_postconvert', 'nv_postsubbuffer', 'nv_sync',
+           'nv_systime',
            # Unregistered extensions.
            'nok_swapregion', 'wl_binddisplay',
            # Stuff defined here.
