@@ -36,6 +36,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'android_blobcache', 'android_bufferimage', 'android_framebuffer',
            'android_nativesync', 'android_recordable',
            'angle_d3dtexture', 'angle_surfacepointer',
+           'arm_discardmulti',
            'img_contextpriority',
            'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_image',
            'khr_locksurface', 'khr_stream', 'khr_streamcrossprocess',
@@ -72,6 +73,8 @@ extensions = {
     'EGL_ANGLE_query_surface_pointer': 'angle_surfacepointer',           #28
     'EGL_ANGLE_surface_d3d_texture_2d_share_handle': 'angle_d3dtexture', #29
     'EGL_ANGLE_d3d_share_handle_client_buffer': 'angle_d3dtexture',      #38
+# Extensions from ARM Holdings (ARM).
+    'EGL_ARM_pixmap_multisample_discard': 'arm_discardmulti',            #54
 # Extensions from Imagination Technologies (IMG).
     'EGL_IMG_context_priority': 'img_contextpriority',                   #10
 # Extensions from Khronos Group (KHR).
