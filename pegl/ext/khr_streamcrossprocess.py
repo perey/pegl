@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 
-'''Khronos stream extensions for EGL.
+'''Khronos cross-process stream extension for EGL.
 
-This module supports two extensions. The first adds objects to handle
-streams of image frames that can flow between EGL client APIs. The
-second allows an OpenGL or OpenGL ES texture to act as a "consumer" of
-this image stream; availability of this consumer is conditional on
-whether the extension is supported. Other extension modules provide
-"producers" for these streams.
+This extension allows access to a file descriptor for a stream, so that
+the stream producer and consumer can be in difference processes.
 
-http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream.txt
-http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_consumer_gltexture.txt
+http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_cross_process_fd.txt
 
 '''
-# Copyright © 2013 Tim Pederick.
+# Copyright © 2013-14 Tim Pederick.
 #
 # This file is part of Pegl.
 #
