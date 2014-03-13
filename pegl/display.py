@@ -151,7 +151,7 @@ class Display:
 
         '''
         native.eglSwapInterval(self, int(val))
-    set_swap_interval = property(fset=set_swap_interval)
+    swap_interval = property(fset=set_swap_interval)
 
     @property
     def vendor(self):
