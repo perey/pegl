@@ -94,7 +94,7 @@ class Display:
         from all other threads in which this display has been used.
 
         '''
-        self.release_thread()
+        release_thread()
         self.terminate()
 
     def __eq__(self, other):
@@ -225,11 +225,9 @@ class Display:
     def terminate(self):
         '''Invalidate all resources associated with this display.
 
-        The display handle itself remains valid, and so its
-        release_thread() method can still be called in any threads that
-        have used it. The display can even be reinitialized (by calling
-        initialize()), though the terminated resources will not be made
-        valid again.
+        The display handle itself remains valid. The display can even be
+        reinitialized (by calling initialize()), though the terminated
+        resources will not be made valid again.
 
         It is not generally necessary to call this function directly, as
         it is called by the display's destructor method. The only
