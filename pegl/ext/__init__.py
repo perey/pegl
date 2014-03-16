@@ -32,7 +32,7 @@ Unimplemented:
 
 __all__ = (# Registered cross-vendor (EXT) extensions.
            'ext_bufferage', 'ext_dma_buf', 'ext_extensiontypes',
-           'ext_multiview', 'ext_robustness',
+           'ext_multiview', 'ext_platform', 'ext_robustness',
            # Registered vendor extensions.
            'android_blobcache', 'android_bufferimage', 'android_framebuffer',
            'android_nativesync', 'android_recordable',
@@ -64,6 +64,7 @@ extensions = {
     'EGL_EXT_multiview_window': 'ext_multiview',                         #42
     'EGL_EXT_buffer_age': 'ext_bufferage',                               #52
     'EGL_EXT_image_dma_buf_import': 'ext_dma_buf',                       #53
+    'EGL_EXT_platform_base': 'ext_platform',                             #57
     'EGL_EXT_client_extensions': 'ext_extensiontypes',                   #58
 # Extensions from the Android operating system.
     'EGL_ANDROID_framebuffer_target': 'android_framebuffer',             #47
