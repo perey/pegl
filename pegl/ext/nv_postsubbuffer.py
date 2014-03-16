@@ -58,7 +58,7 @@ def post_subbuffer(self, rect):
 Surface.post_subbuffer = post_subbuffer
 
 # New surface attributes.
-SurfaceAttribs.extend('POST_SUB_BUFFER_SUPPORTED', 0x30BE, c_ibool, False)
+SurfaceAttribs.extend('POST_SUB_BUFFER_SUPPORTED', 0x30BE, bool, False)
 
 # Provide a property to query the new attribute.
 def can_post_subbuffer(self):
