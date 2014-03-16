@@ -32,9 +32,7 @@ from .ext_platform import PlatformDisplay, DisplayAttribs
 from ..attribs import AttribList
 
 # New display attribute.
-DisplayAttribs.extend('PLATFORM_X11_SCREEN', 0x31D6,
-                      c_int,#FIXME: I actually have no idea what type it wants.
-                      None)
+DisplayAttribs.extend('PLATFORM_X11_SCREEN', 0x31D6, c_int, None)
 
 # New PlatformDisplay subclass.
 class X11Display(PlatformDisplay):
