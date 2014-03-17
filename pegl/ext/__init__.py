@@ -45,8 +45,8 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'khr_streamsurface', 'khr_surfaceless', 'khr_sync', 'khr_vgimage',
            'khr_waitsync',
            'mesa_drmimage',
-           'nv_nativequery', 'nv_postconvert', 'nv_postsubbuffer', 'nv_sync',
-           'nv_systime',
+           'nv_nativequery', 'nv_postconvert', 'nv_postsubbuffer',
+           'nv_streamsync', 'nv_sync', 'nv_systime',
            # Unregistered extensions.
            'nok_swapregion', 'wl_binddisplay',
            # Stuff defined here.
@@ -121,6 +121,7 @@ extensions = {
     # module for it is provided anyway.
     'EGL_NV_post_convert_rounding': 'nv_postconvert',                    #44
     'EGL_NV_native_query': 'nv_nativequery',                             #45
+    'EGL_NV_stream_sync': 'nv_streamsync',                               #56
 # Extensions from the Wayland compositor (WL).
     'EGL_WL_bind_wayland_display': 'wl_binddisplay'             # Unofficial
     }
