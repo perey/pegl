@@ -13,7 +13,7 @@ Unimplemented:
 
 '''
 
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2012-14 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -41,7 +41,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'arm_discardmulti',
            'img_contextpriority',
            'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_glstream',
-           'khr_image', 'khr_locksurface', 'khr_stream',
+           'khr_image', 'khr_locksurface', 'khr_stream', 'khr_streammaxal',
            'khr_streamcrossprocess', 'khr_streamsurface', 'khr_surfaceless',
            'khr_sync', 'khr_vgimage', 'khr_waitsync',
            'mesa_drmimage',
