@@ -13,7 +13,7 @@ Unimplemented:
 
 '''
 
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2012-14 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -36,7 +36,8 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
            'img_contextpriority',
            'khr_context', 'khr_glimage', 'khr_glstream', 'khr_image',
-           'khr_locksurface', 'khr_stream', 'khr_surfaceless', 'khr_sync',
+           'khr_locksurface', 'khr_stream', 'khr_streammaxal',
+           'khr_surfaceless', 'khr_sync',
            'mesa_drmimage',
            'nv_postsubbuffer', 'nv_sync',
            # Unregistered extensions.
