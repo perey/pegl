@@ -2,34 +2,13 @@
 
 '''Nokia swap buffer region extension for EGL.
 
-I can't find any official specification for this extension; it appears
-to have gone offline when http://developer.symbian.org/ was closed.
-However, support is widely available through the Mesa library, which
-gives just one function signature:
+This extension allows a buffer swap to be performed only on specified
+regions of the back buffer.
 
-    EGLBoolean eglSwapBuffersRegionNOK(EGLDisplay dpy,
-                                       EGLSurface surface,
-                                       EGLint numRects,
-                                       const EGLint* rects);
-
-The Mesa commit message that added support also has this to say:
-    This extension adds a new function which provides an alternative to
-    eglSwapBuffers. eglSwapBuffersRegionNOK accepts two new parameters
-    in addition to those in eglSwapBuffers. The new parameters consist
-    of a pointer to a list of 4-integer blocks defining rectangles (x,
-    y, width, height) and an integer specifying the number of rectangles
-    in the list.
-
-Lastly, this extension is obsoleted by EGL_NOK_swap_region2, which
-indicates that this earlier extension provided the region(s) as a hint
-only, whereas the later one makes it mandatory to only copy the given
-regions. Given that extension's existence, this module will probably be
-removed in the near future.
-
-http://cgit.freedesktop.org/mesa/mesa/commit/src/egl?id=52c554a79d3ed3104a9f7d112faa9129073b5a25
+http://www.khronos.org/registry/egl/extensions/NOK/EGL_NOK_swap_region2.txt
 
 '''
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2012-14 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -55,9 +34,15 @@ from ..native import c_ibool, c_display, c_surface, c_int_p
 from ..surface import Surface
 
 # Get the handle for the extension function.
-native_swapregion = load_ext(b'eglSwapBuffersRegionNOK', c_ibool,
+native_swapregion = load_ext(b'eglSwapBuffersRegion2NOK', c_ibool,
                              (c_display, c_surface, c_int, c_int_p),
                              fail_on=False)
+
+# TODO: This code is copied more or less exactly from the older nok_swapregion
+# module; the ext_swapdamage module does the same. Any changes to one of these
+# modules should be tracked in the others, and it would be nice to rip out the
+# common code and put it into a shared module. Also, nok_swapregion can be
+# deprecated now that this extension is supported.
 
 # Wrap the extension function and place it on the Surface class.
 def swap_regions(self, rects):

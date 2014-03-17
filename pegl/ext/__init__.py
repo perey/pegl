@@ -46,6 +46,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'khr_streamcrossprocess', 'khr_streamsurface', 'khr_surfaceless',
            'khr_sync', 'khr_vgimage', 'khr_waitsync',
            'mesa_drmimage',
+           'nok_swapregion2',
            'nv_nativequery', 'nv_postconvert', 'nv_postsubbuffer',
            'nv_streamsync', 'nv_sync', 'nv_systime',
            # Unregistered extensions.
@@ -112,7 +113,7 @@ extensions = {
     'EGL_MESA_drm_image': 'mesa_drmimage',                               #26
 # Extensions from Nokia (NOK).
     'EGL_NOK_swap_region': 'nok_swapregion',                    # Unofficial
-    # TODO: An official version, EGL_NOK_swap_region2, is registered as #23!
+    'EGL_NOK_swap_region2': 'nok_swapregion2',                           #23
 # Extensions from NVIDIA Corporation (NV).
     'EGL_NV_sync': 'nv_sync',                                            #19
     'EGL_NV_post_sub_buffer': 'nv_postsubbuffer',                        #27
