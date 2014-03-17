@@ -10,10 +10,11 @@ Unimplemented:
     25. EGL_HI_colorformats
     30. EGL_NV_coverage_sample_resolve
     46. EGL_NV_3dvision_surface
+    60. EGL_KHR_cl_event
 
 '''
 
-# Copyright © 2012-14 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -41,7 +42,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'arm_discardmulti',
            'img_contextpriority',
            'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_glstream',
-           'khr_image', 'khr_locksurface', 'khr_stream', 'khr_streammaxal',
+           'khr_image', 'khr_locksurface', 'khr_stream',
            'khr_streamcrossprocess', 'khr_streamsurface', 'khr_surfaceless',
            'khr_sync', 'khr_vgimage', 'khr_waitsync',
            'mesa_drmimage',

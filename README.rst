@@ -159,6 +159,9 @@ supported, except for the following:
 +-----+----------------------------------+                                +
 |46   |``EGL_NV_3dvision_surface``       |                                |
 +-----+----------------------------------+--------------------------------+
+|60   |``EGL_KHR_cl_event``              |Obsolete, replaced by extension |
+|     |                                  |#65, ``EGL_KHR_cl_event2``.     |
++-----+----------------------------------+--------------------------------+
 
 In addition, some extensions that are not officially registered, but are
 widely available through the Mesa library, are supported by Pegl:
