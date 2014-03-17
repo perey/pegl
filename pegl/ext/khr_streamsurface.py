@@ -8,7 +8,7 @@ as a producer.
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_producer_eglsurface.txt
 
 '''
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2012-14 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -27,7 +27,7 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_producer_eglsu
 
 # Local imports.
 from . import load_ext
-from .khr_stream import c_stream
+from .khr_stream import c_stream, Stream
 from .. import NO_SURFACE
 from ..attribs.config import SurfaceTypes
 from ..native import c_attr_list, c_display, c_config, c_surface
@@ -39,6 +39,9 @@ SurfaceTypes.extend(11, 'STREAM')
 native_createstream = load_ext(b'eglCreateStreamProducerSurfaceKHR', c_surface,
                                (c_display, c_config, c_stream, c_attr_list),
                                fail_on=NO_SURFACE)
+
+# Register the new stream producer.
+Stream.register_producer('EGL Surface', None)
 
 # Define the new Surface subclass.
 class StreamSurface(Surface):

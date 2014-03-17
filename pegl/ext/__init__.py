@@ -35,8 +35,8 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            # Registered vendor extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
            'img_contextpriority',
-           'khr_context', 'khr_glimage', 'khr_image', 'khr_locksurface',
-           'khr_stream', 'khr_surfaceless', 'khr_sync',
+           'khr_context', 'khr_glimage', 'khr_glstream', 'khr_image',
+           'khr_locksurface', 'khr_stream', 'khr_surfaceless', 'khr_sync',
            'mesa_drmimage',
            'nv_postsubbuffer', 'nv_sync',
            # Unregistered extensions.
@@ -74,10 +74,9 @@ extensions = {
     'EGL_KHR_lock_surface2': 'khr_locksurface',                          #16
     'EGL_KHR_fence_sync': 'khr_sync',                                    #20
     'EGL_KHR_stream': 'khr_stream',                                      #32
-    'EGL_KHR_stream_consumer_gltexture': 'khr_stream',                   #33
+    'EGL_KHR_stream_consumer_gltexture': 'khr_glstream',                 #33
     'EGL_KHR_stream_producer_eglsurface': 'khr_streamsurface',           #34
-    # This extension requires absolutely no new code on the EGL side.
-    'EGL_KHR_stream_producer_aldatalocator': 'khr_stream',               #35
+    'EGL_KHR_stream_producer_aldatalocator': 'khr_streammaxal',          #35
     'EGL_KHR_stream_fifo': 'khr_fifostream',                             #36
     'EGL_KHR_create_context': 'khr_context',                             #39
     # This extension requires absolutely no new code on the EGL side, but a
