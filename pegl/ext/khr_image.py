@@ -12,7 +12,7 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_image_base.txt
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_image_pixmap.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -33,12 +33,12 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_image_pixmap.txt
 from ctypes import c_void_p
 
 # Local imports.
-from .. import load_ext
-from ... import NO_CONTEXT
-from ...attribs import (Attribs, AttribList, Details)
-from ...context import Context
-from ...native import (c_ibool, c_enum, c_client_buffer, c_display, c_surface,
-                       c_attr_list)
+from . import load_ext
+from .. import NO_CONTEXT
+from ..attribs import (Attribs, AttribList, Details)
+from ..context import Context
+from ..native import (c_ibool, c_enum, c_client_buffer, c_display, c_surface,
+                      c_attr_list)
 
 # Extension types.
 c_image = c_void_p

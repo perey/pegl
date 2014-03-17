@@ -2,7 +2,7 @@
 
 '''EGL library interface.'''
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ('eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
+__all__ = ['eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglGetConfigs', 'eglChooseConfig', 'eglGetConfigAttrib',
            'eglCreateWindowSurface', 'eglCreatePbufferSurface',
            'eglCreatePbufferFromClientBuffer', 'eglCreatePixmapSurface',
@@ -32,7 +32,7 @@ __all__ = ('eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread',
            # Native types reused in extension modules.
            'c_ibool', 'c_enum', 'c_attr_list', 'c_display', 'c_surface',
-           'c_client_buffer', 'c_config', 'c_int_p', 'make_int_p')
+           'c_client_buffer', 'c_config', 'c_int_p', 'make_int_p']
 
 # Standard library imports.
 import ctypes

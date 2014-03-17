@@ -2,7 +2,7 @@
 
 '''EGL display management.'''
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -90,8 +90,8 @@ class Display:
     def __del__(self):
         '''Delete this display and all EGL resources in this thread.
 
-        Multithreaded applications should also call release() from all
-        all other threads in which this display has been used.
+        Multithreaded applications should also call release_thread()
+        from all other threads in which this display has been used.
 
         '''
         release_thread()
@@ -151,7 +151,7 @@ class Display:
 
         '''
         native.eglSwapInterval(self, int(val))
-    set_swap_interval = property(fset=set_swap_interval)
+    swap_interval = property(fset=set_swap_interval)
 
     @property
     def vendor(self):
@@ -206,22 +206,9 @@ class Display:
             raise ImportError('implementation does not declare support for ' +
                               extname)
 
-        egl_prefix, vendor, name = extname.split('_', 2)
-        if egl_prefix != 'EGL':
-            # How on earth did we get this far?
-            raise ValueError("extension names must begin with 'EGL_'")
-        elif vendor == 'EXT':
-            # Cross-vendor extensions live in the ext package.
-            vendor_pkg = 'ext'
-            from . import ext as ext_pkg
-        else:
-            # Extensions from vendor xxx live in the ext.xxx subpackage.
-            vendor_pkg = 'ext.' + vendor.lower()
-            top_ext_pkg = __import__(vendor_pkg, globals(), locals(), [], 1)
-            ext_pkg = getattr(top_ext_pkg, vendor.lower())
-
         # What module has this extension?
-        module_name = ext_pkg.extensions.get(extname)
+        from .ext import extensions as extlist
+        module_name = extlist.get(extname)
 
         if module_name is None:
             raise ImportError("no module found for extension "
@@ -231,17 +218,20 @@ class Display:
                                          [module_name], 1)
             return getattr(pkg_with_module, module_name)
 
+    def clear_context(self):
+        '''Release the current context, if any.'''
+        native.eglMakeCurrent(self, NO_SURFACE, NO_SURFACE, NO_CONTEXT)
+
     def terminate(self):
         '''Invalidate all resources associated with this display.
 
-        The display handle itself remains valid, and so its release()
-        method can still be called in any threads that have used it. The
-        display can even be reinitialized (by calling initialize()),
-        though the terminated resources will not be made valid again.
+        The display handle itself remains valid. The display can even be
+        reinitialized (by calling initialize()), though the terminated
+        resources will not be made valid again.
 
         It is not generally necessary to call this function directly, as
         it is called by the display's destructor method. The only
-        difference is that the destructor also calls release().
+        difference is that the destructor also calls release_thread().
 
         '''
         native.eglTerminate(self)

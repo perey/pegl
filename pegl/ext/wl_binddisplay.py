@@ -8,7 +8,7 @@ Khronos, it is widely available through the Mesa library.
 http://cgit.freedesktop.org/mesa/mesa/tree/docs/specs/WL_bind_wayland_display.spec
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -29,10 +29,10 @@ http://cgit.freedesktop.org/mesa/mesa/tree/docs/specs/WL_bind_wayland_display.sp
 from ctypes import c_void_p
 
 # Local imports.
-from .. import load_ext
-from ..khr.image import Image
-from ...display import Display
-from ...native import c_ibool, c_display
+from . import load_ext
+from .khr_image import Image
+from ..display import Display
+from ..native import c_ibool, c_display
 
 # Extension type.
 c_wl_display = c_void_p

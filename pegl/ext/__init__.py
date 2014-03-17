@@ -13,7 +13,7 @@ Unimplemented:
 
 '''
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -40,10 +40,10 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
            'arm_discardmulti',
            'img_contextpriority',
-           'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_image',
-           'khr_locksurface', 'khr_stream', 'khr_streamcrossprocess',
-           'khr_streamsurface', 'khr_surfaceless', 'khr_sync', 'khr_vgimage',
-           'khr_waitsync',
+           'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_glstream',
+           'khr_image', 'khr_locksurface', 'khr_stream',
+           'khr_streamcrossprocess', 'khr_streamsurface', 'khr_surfaceless',
+           'khr_sync', 'khr_vgimage', 'khr_waitsync',
            'mesa_drmimage',
            'nv_nativequery', 'nv_postconvert', 'nv_postsubbuffer',
            'nv_streamsync', 'nv_sync', 'nv_systime',
@@ -97,10 +97,9 @@ extensions = {
     'EGL_KHR_lock_surface2': 'khr_locksurface',                          #16
     'EGL_KHR_fence_sync': 'khr_sync',                                    #20
     'EGL_KHR_stream': 'khr_stream',                                      #32
-    'EGL_KHR_stream_consumer_gltexture': 'khr_stream',                   #33
+    'EGL_KHR_stream_consumer_gltexture': 'khr_glstream',                 #33
     'EGL_KHR_stream_producer_eglsurface': 'khr_streamsurface',           #34
-    # This extension requires absolutely no new code on the EGL side.
-    'EGL_KHR_stream_producer_aldatalocator': 'khr_stream',               #35
+    'EGL_KHR_stream_producer_aldatalocator': 'khr_streammaxal',          #35
     'EGL_KHR_stream_fifo': 'khr_fifostream',                             #36
     'EGL_KHR_create_context': 'khr_context',                             #39
     # This extension requires absolutely no new code on the EGL side, but a

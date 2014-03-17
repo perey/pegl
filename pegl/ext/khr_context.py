@@ -8,7 +8,7 @@ context creation to specify OpenGL and OpenGL ES version support.
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_create_context.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -30,8 +30,8 @@ from collections import namedtuple
 from ctypes import c_int
 
 # Local imports.
-from ...attribs import BitMask
-from ...attribs.context import ContextAttribs
+from ..attribs import BitMask
+from ..attribs.context import ContextAttribs
 
 # New context attributes.
 class ContextFlags(BitMask):

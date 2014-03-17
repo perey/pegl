@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
-'''Khronos OpenVG parent image binding for EGL.
+'''Khronos OpenMAX AL stream producer extension for EGL.
 
-http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_vg_parent_image.txt
+This extension allows an OpenMAX AL MediaPlayer to provide image frames
+to a stream as a producer.
+
+http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_stream_producer_aldatalocator.txt
 
 '''
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2014 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -23,7 +26,9 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_vg_parent_image.txt
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Local imports.
-from .khr_image import Image
+from .khr_stream import Stream
 
-# Extension image target type.
-Image.extend('EGL_KHR_vg_parent_image', {'VG_PARENT_IMAGE': 0x30BA})
+# Register the new stream producer.
+Stream.register_producer('OpenMAX AL MediaPlayer', None)
+
+# No other code is needed on the EGL side.

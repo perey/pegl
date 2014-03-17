@@ -8,7 +8,7 @@ surface while preserving the back buffer.
 http://www.khronos.org/registry/egl/extensions/NV/EGL_NV_post_sub_buffer.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -29,10 +29,10 @@ http://www.khronos.org/registry/egl/extensions/NV/EGL_NV_post_sub_buffer.txt
 from ctypes import c_int
 
 # Local imports.
-from .. import load_ext
-from ...attribs.surface import SurfaceAttribs
-from ...native import c_ibool, c_display, c_surface
-from ...surface import Surface
+from . import load_ext
+from ..attribs.surface import SurfaceAttribs
+from ..native import c_ibool, c_display, c_surface
+from ..surface import Surface
 
 # Get the handle for the extension function.
 native_postsubbuffer = load_ext(b'eglPostSubBufferNV', c_ibool,

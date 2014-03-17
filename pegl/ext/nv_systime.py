@@ -8,7 +8,7 @@ system rather than any external API.
 http://www.khronos.org/registry/egl/extensions/NV/EGL_NV_system_time.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -29,7 +29,7 @@ http://www.khronos.org/registry/egl/extensions/NV/EGL_NV_system_time.txt
 from ctypes import c_ulonglong
 
 # Local imports.
-from .. import load_ext
+from . import load_ext
 
 # Get handles for extension functions.
 native_freq = load_ext(b'eglGetSystemTimeFrequencyNV', c_ulonglong, ())

@@ -24,7 +24,7 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_reusable_sync.txt
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_fence_sync.txt
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -46,10 +46,10 @@ from ctypes import c_int, c_ulonglong, c_void_p
 from collections import namedtuple
 
 # Local imports.
-from .. import load_ext
-from ...attribs import attr_convert, Attribs, AttribList, BitMask, Details
-from ...native import (c_ibool, c_enum, c_attr_list, c_display, c_int_p,
-                       make_int_p)
+from . import load_ext
+from ..attribs import attr_convert, Attribs, AttribList, BitMask, Details
+from ..native import (c_ibool, c_enum, c_attr_list, c_display, c_int_p,
+                      make_int_p)
 
 # Extension types and symbolic constants.
 c_sync = c_void_p

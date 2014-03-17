@@ -2,7 +2,7 @@
 
 '''EGL attribute lists.'''
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -19,10 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ('NONE', 'NO_TEXTURE', 'UNKNOWN_VALUE', 'SCALE_FACTOR',
+__all__ = ['NONE', 'NO_TEXTURE', 'UNKNOWN_VALUE', 'SCALE_FACTOR',
            'Attribs', 'AttribList', 'BitMask', 'Details',
            'attr_convert', 'scaled',
-           'config', 'context', 'surface')
+           'config', 'context', 'surface']
 
 # Standard library imports.
 from collections import namedtuple

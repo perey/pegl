@@ -2,7 +2,7 @@
 
 '''Pegl: A Python wrapper for the EGL 1.4 API.'''
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ __all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
            'BadAllocError', 'BadAttributeError', 'BadConfigError',
            'BadContextError', 'BadCurrentSurfaceError', 'BadDisplayError',
            'BadMatchError', 'BadNativePixmapError', 'BadNativeWindowError',
-           'BadParameterError', 'BadSurfaceError', 'ContextLostError']
+           'BadParameterError', 'BadSurfaceError', 'ContextLostError',
+           'error_codes']
 
 # TODO: Streamline the setup code. Take a look at README.rst -- see how many
 # imports are needed? Slim it down!

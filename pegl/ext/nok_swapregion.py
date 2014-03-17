@@ -23,7 +23,7 @@ The Mesa commit message that added support also has this to say:
 http://cgit.freedesktop.org/mesa/mesa/commit/src/egl?id=52c554a79d3ed3104a9f7d112faa9129073b5a25
 
 '''
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -44,9 +44,9 @@ http://cgit.freedesktop.org/mesa/mesa/commit/src/egl?id=52c554a79d3ed3104a9f7d11
 from ctypes import c_int
 
 # Local imports.
-from .. import load_ext
-from ...native import c_display, c_surface, c_int_p
-from ...surface import Surface
+from . import load_ext
+from ..native import c_display, c_surface, c_int_p
+from ..surface import Surface
 
 # Get the handle for the extension function.
 native_swapregion = load_ext(b'eglSwapBuffersRegionNOK', ebool,
