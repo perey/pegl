@@ -159,8 +159,8 @@ supported, except for the following:
 +-----+----------------------------------+                                +
 |46   |``EGL_NV_3dvision_surface``       |                                |
 +-----+----------------------------------+--------------------------------+
-|60   |``EGL_KHR_cl_event``              |Obsolete, replaced by extension |
-|     |                                  |#65, ``EGL_KHR_cl_event2``.     |
+|61   |``EGL_KHR_get_all_proc_addresses``|Would involve an architectural  |
+|     |and ```EGL_KHR_client_get_``...   |change to the ``native`` module.|
 +-----+----------------------------------+--------------------------------+
 
 In addition, some extensions that are not officially registered, but are

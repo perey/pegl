@@ -10,7 +10,8 @@ Unimplemented:
     25. EGL_HI_colorformats
     30. EGL_NV_coverage_sample_resolve
     46. EGL_NV_3dvision_surface
-    60. EGL_KHR_cl_event
+    61. EGL_KHR_get_all_proc_addresses and
+        EGL_KHR_client_get_all_proc_addresses
 
 '''
 
@@ -41,11 +42,11 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
            'arm_discardmulti',
            'img_contextpriority',
-           'khr_context', 'khr_fifostream', 'khr_glimage', 'khr_glstream',
-           'khr_image', 'khr_locksurface', 'khr_stream',
+           'khr_clevent', 'khr_context', 'khr_fifostream', 'khr_glimage',
+           'khr_glstream', 'khr_image', 'khr_locksurface', 'khr_stream',
            'khr_streamcrossprocess', 'khr_streamsurface', 'khr_surfaceless',
            'khr_sync', 'khr_vgimage', 'khr_waitsync',
-           'mesa_drmimage',
+           'mesa_drmimage', 'mesa_platform_gbm',
            'nok_swapregion2',
            'nv_nativequery', 'nv_postconvert', 'nv_postsubbuffer',
            'nv_streamsync', 'nv_sync', 'nv_systime',
@@ -109,8 +110,10 @@ extensions = {
     'EGL_KHR_surfaceless_context': 'khr_surfaceless',                    #40
     'EGL_KHR_stream_cross_process_fd': 'khr_streamcrossprocess',         #41
     'EGL_KHR_wait_sync': 'khr_waitsync',                                 #43
+    'EGL_KHR_cl_event': 'khr_clevent',                                   #60
 # Extensions from the Mesa 3D library.
     'EGL_MESA_drm_image': 'mesa_drmimage',                               #26
+    'EGL_MESA_platform_gbm': 'mesa_platform_gbm',                        #62
 # Extensions from Nokia (NOK).
     'EGL_NOK_swap_region': 'nok_swapregion',                    # Unofficial
     'EGL_NOK_swap_region2': 'nok_swapregion2',                           #23
