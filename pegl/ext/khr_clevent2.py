@@ -2,11 +2,11 @@
 
 '''Khronos OpenCL event sync extension for EGL.
 
-Note that, because it puts an OpenCL event handle into an attribute list
-where (especially on 64-bit systems) it is not guaranteed to fit, this
-extension is deprecated and replaced by khr_clevent2.
+This extension obsoletes the one in the khr_clevent module. The decision
+to use one module or the other, however, depends on which extension the
+EGL implementation supports.
 
-http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_cl_event.txt
+http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_cl_event2.txt
 
 '''
 # Copyright © 2014 Tim Pederick.
@@ -27,13 +27,44 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_cl_event.txt
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
-from ctypes import c_int
+from ctypes import c_int, c_int64, POINTER
 
 # Local imports.
 from .khr_sync import FenceSync, SyncAttribs
 
-# New sync attribute.
-SyncAttribs.extend('CL_EVENT_HANDLE', 0x309C, c_int, None)
+# New native type. Note that the type EGLAttribKHR is actually defined to be an
+# intptr_t, but as that's not supported in ctypes, a 64-bit integer will have
+# to suffice. This might break on 128-bit systems(!).
+c_wideattr = c_int64
+c_wideattr_list = POINTER(c_int64)
+
+# Get handle for the new extension function.
+native_createsync = load_ext(b'eglCreateSync64KHR', c_sync,
+                             (c_display, c_enum, c_wideattr_list),
+                             fail_on=NO_SYNC)
+
+# Subclass SyncAttribs to generate wider native values, and add the new sync
+# attribute.
+class WideSyncAttribs(SyncAttribs):
+    '''The set of attributes relevant to sync objects.
+
+    Unlike the superclass, SyncAttribs, this class uses a native type
+    that can fit any pointer, avoiding size issues on systems wider than
+    32 bits that fail to define their EGLint types as an appropriate
+    width.
+
+    Class attributes:
+        details -- As per the superclass, Attribs.
+        Additionally, symbolic constants for all the known attributes
+        are available as class attributes. Their names are the same as
+        in the extension specification, except without the EGL_ prefix
+        and _KHR suffix.
+
+    '''
+    _native_item = c_wideattr
+    _native_list = c_wideattr_list
+
+WideSyncAttribs.extend('CL_EVENT_HANDLE', 0x309C, c_wideattr, None)
 
 # New values for SyncTypes and SyncConditions.
 # TODO: Replace the namedtuple instances with extensible enumerations.
@@ -53,7 +84,7 @@ class OpenCLSync(FenceSync):
         synchandle, display, status, signaled, sync_type -- As per the
             superclass, FenceSync.
         attribs -- Contains one attribute, namely the OpenCL event
-            handle (attribute SyncAttribs.CL_EVENT_HANDLE).
+            handle (attribute WideSyncAttribs.CL_EVENT_HANDLE).
         sync_condition -- The condition under which this sync object
             will be automatically set to signaled. Should always be the
             value SYNC_CL_EVENT_COMPLETE.
@@ -71,4 +102,9 @@ class OpenCLSync(FenceSync):
 
         '''
         # OpenCL event sync objects have one attribute, an OpenCL event handle.
-        super().__init__(display, {SyncAttribs.CL_EVENT_HANDLE: cl_event})
+        super().__init__(display, {WideSyncAttribs.CL_EVENT_HANDLE: cl_event})
+
+    def _create_handle(self):
+        '''Call the native function that generates the sync handle.'''
+        return native_createsync(self.display, self.__class__.sync_type,
+                                 self.attribs)

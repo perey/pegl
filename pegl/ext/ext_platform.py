@@ -87,13 +87,14 @@ class PlatformDisplay(Display):
 
         '''
         # We're not trying to instantiate THIS class, are we?
-        if self.platform is None:
+        if self.__class__.platform is None:
             raise NotImplementedError("use a subclass of PlatformDisplay that "
                                       "defines class attribute 'platform'")
 
         self.attribs = (attribs if isinstance(attribs, AttribList) else
                         AttribList(DisplayAttribs, attribs))
-        dhandle = native_getdisplay(self.platform, native_id, attribs)
+        dhandle = native_getdisplay(self.__class__.platform, native_id,
+                                    attribs)
 
         # Call the parent class constructor.
         super().__init__(dhandle=dhandle, delay_init=delay_init)

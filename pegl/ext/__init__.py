@@ -42,8 +42,9 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
            'arm_discardmulti',
            'img_contextpriority',
-           'khr_clevent', 'khr_context', 'khr_fifostream', 'khr_glimage',
-           'khr_glstream', 'khr_image', 'khr_locksurface', 'khr_stream',
+           'khr_clevent', 'khr_clevent2', 'khr_context', 'khr_fifostream',
+           'khr_glcolor', 'khr_glimage', 'khr_glstream', 'khr_image',
+           'khr_locksurface', 'khr_locksurface3', 'khr_stream',
            'khr_streamcrossprocess', 'khr_streamsurface', 'khr_surfaceless',
            'khr_sync', 'khr_vgimage', 'khr_waitsync',
            'mesa_drmimage', 'mesa_platform_gbm',
@@ -62,6 +63,7 @@ from ctypes import CFUNCTYPE
 from .. import native
 
 # Mapping of name strings to module names.
+# TODO: Separate lists for client and display extensions?
 extensions = {
 # Extensions in the cross-vendor (EXT) namespace.
     'EGL_EXT_create_context_robustness': 'ext_robustness',               #37
@@ -72,6 +74,7 @@ extensions = {
     'EGL_EXT_platform_base': 'ext_platform',                             #57
     'EGL_EXT_client_extensions': 'ext_extensiontypes',                   #58
     'EGL_EXT_platform_x11': 'ext_platform_x11',                          #59
+    'EGL_EXT_platform_wayland': 'ext_platform_wayland',                  #63
 # Extensions from the Android operating system.
     'EGL_ANDROID_framebuffer_target': 'android_framebuffer',             #47
     'EGL_ANDROID_blob_cache': 'android_blobcache',                       #48
@@ -111,6 +114,9 @@ extensions = {
     'EGL_KHR_stream_cross_process_fd': 'khr_streamcrossprocess',         #41
     'EGL_KHR_wait_sync': 'khr_waitsync',                                 #43
     'EGL_KHR_cl_event': 'khr_clevent',                                   #60
+    'EGL_KHR_lock_surface3': 'khr_locksurface3',                         #64
+    'EGL_KHR_cl_event2': 'khr_clevent2',                                 #65
+    'EGL_KHR_gl_colorspace': 'khr_glcolor',                              #66
 # Extensions from the Mesa 3D library.
     'EGL_MESA_drm_image': 'mesa_drmimage',                               #26
     'EGL_MESA_platform_gbm': 'mesa_platform_gbm',                        #62
