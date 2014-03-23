@@ -32,7 +32,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'ext_robustness',
            # Registered vendor extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
-           'hi_pixmap', 'hi_color',
+           'hi_color', 'hi_pixmap',
            'img_contextpriority',
            'khr_context', 'khr_glimage', 'khr_glstream', 'khr_image',
            'khr_locksurface', 'khr_stream', 'khr_streammaxal',
