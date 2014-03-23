@@ -27,47 +27,6 @@ import sys
 sys.path.append('..')
 import pegl
 
-class TestIntPointer:
-    '''Test the integer pointer that Pegl provides.'''
-    @staticmethod
-    def test_default_value():
-        '''Test creating a pointer with the default value.'''
-        ip = pegl.make_int_p()
-        assert type(ip.contents) is ctypes.c_int
-        assert ip.contents.value == 0
-        assert ip[0] == 0
-
-    @staticmethod
-    def test_custom_value():
-        '''Test creating a pointer with a custom value.'''
-        ip = pegl.make_int_p(42)
-        assert type(ip.contents) is ctypes.c_int
-        assert ip.contents.value == 42
-        assert ip[0] == 42
-
-    @staticmethod
-    def test_set_value():
-        '''Test setting the value of an existing pointer.'''
-        ip = pegl.make_int_p()
-
-        # Set value by contents...
-        ip.contents = ctypes.c_int(66)
-        assert type(ip.contents) is ctypes.c_int
-        assert ip.contents.value == 66
-        assert ip[0] == 66
-
-        # ...by contents.value...
-        ip.contents.value = 3142
-        assert type(ip.contents) is ctypes.c_int
-        assert ip.contents.value == 3142
-        assert ip[0] == 3142
-
-        # ...and by array-style dereferencing.
-        ip[0] = 34
-        assert type(ip.contents) is ctypes.c_int
-        assert ip.contents.value == 34
-        assert ip[0] == 34
-
 class TestErrors:
     '''Test the exception objects that represent EGL errors.'''
     @staticmethod
