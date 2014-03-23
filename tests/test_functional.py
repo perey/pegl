@@ -58,6 +58,16 @@ def clientAPIs(seq):
     for api in seq:
         yield apis.get(api, 'an unknown API')
 
+# 0. Check for "client extension" support.
+try:
+    import pegl.ext.ext_extensiontypes as xt
+except ImportError:
+    print('Client extensions not supported, creating display...')
+else:
+    print('The following client extensions are supported:')
+    print('  *', '\n *'.join(xt.client_extensions))
+    print()
+
 # 1. Initialising the EGL display.
 d = Display(delay_init=True)
 print('Initialised EGL version {0[0]}.{0[1]} ({1} '

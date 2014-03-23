@@ -10,10 +10,12 @@ Unimplemented:
     25. EGL_HI_colorformats
     30. EGL_NV_coverage_sample_resolve
     46. EGL_NV_3dvision_surface
+    61. EGL_KHR_get_all_proc_addresses and
+        EGL_KHR_client_get_all_proc_addresses
 
 '''
 
-# Copyright © 2012-14 Tim Pederick.
+# Copyright © 2012-13 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -31,15 +33,24 @@ Unimplemented:
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 __all__ = (# Registered cross-vendor (EXT) extensions.
-           'ext_robustness',
+           'ext_bufferage', 'ext_dma_buf', 'ext_extensiontypes',
+           'ext_multiview', 'ext_platform', 'ext_platform_x11',
+           'ext_robustness', 'ext_swapdamage',
            # Registered vendor extensions.
+           'android_blobcache', 'android_bufferimage', 'android_framebuffer',
+           'android_nativesync', 'android_recordable',
            'angle_d3dtexture', 'angle_surfacepointer',
+           'arm_discardmulti',
            'img_contextpriority',
-           'khr_context', 'khr_glimage', 'khr_glstream', 'khr_image',
-           'khr_locksurface', 'khr_stream', 'khr_streammaxal',
-           'khr_surfaceless', 'khr_sync',
-           'mesa_drmimage',
-           'nv_postsubbuffer', 'nv_sync',
+           'khr_clevent', 'khr_clevent2', 'khr_context', 'khr_fifostream',
+           'khr_glcolor', 'khr_glimage', 'khr_glstream', 'khr_image',
+           'khr_locksurface', 'khr_locksurface3', 'khr_stream',
+           'khr_streamcrossprocess', 'khr_streamsurface', 'khr_surfaceless',
+           'khr_sync', 'khr_vgimage', 'khr_waitsync',
+           'mesa_drmimage', 'mesa_platform_gbm',
+           'nok_swapregion2',
+           'nv_nativequery', 'nv_postconvert', 'nv_postsubbuffer',
+           'nv_streamsync', 'nv_sync', 'nv_systime',
            # Unregistered extensions.
            'nok_swapregion', 'wl_binddisplay',
            # Stuff defined here.
@@ -52,13 +63,30 @@ from ctypes import CFUNCTYPE
 from .. import native
 
 # Mapping of name strings to module names.
+# TODO: Separate lists for client and display extensions?
 extensions = {
 # Extensions in the cross-vendor (EXT) namespace.
     'EGL_EXT_create_context_robustness': 'ext_robustness',               #37
+    'EGL_EXT_multiview_window': 'ext_multiview',                         #42
+    'EGL_EXT_buffer_age': 'ext_bufferage',                               #52
+    'EGL_EXT_image_dma_buf_import': 'ext_dma_buf',                       #53
+    'EGL_EXT_swap_buffers_with_damage': 'ext_swapdamage',                #55
+    'EGL_EXT_platform_base': 'ext_platform',                             #57
+    'EGL_EXT_client_extensions': 'ext_extensiontypes',                   #58
+    'EGL_EXT_platform_x11': 'ext_platform_x11',                          #59
+    'EGL_EXT_platform_wayland': 'ext_platform_wayland',                  #63
+# Extensions from the Android operating system.
+    'EGL_ANDROID_framebuffer_target': 'android_framebuffer',             #47
+    'EGL_ANDROID_blob_cache': 'android_blobcache',                       #48
+    'EGL_ANDROID_image_native_buffer': 'android_bufferimage',            #49
+    'EGL_ANDROID_native_fence_sync': 'android_nativesync',               #50
+    'EGL_ANDROID_recordable': 'android_recordable',                      #51
 # Extensions from ANGLE, the Almost Native Graphics Layer Engine.
     'EGL_ANGLE_query_surface_pointer': 'angle_surfacepointer',           #28
     'EGL_ANGLE_surface_d3d_texture_2d_share_handle': 'angle_d3dtexture', #29
     'EGL_ANGLE_d3d_share_handle_client_buffer': 'angle_d3dtexture',      #38
+# Extensions from ARM Holdings (ARM).
+    'EGL_ARM_pixmap_multisample_discard': 'arm_discardmulti',            #54
 # Extensions from Imagination Technologies (IMG).
     'EGL_IMG_context_priority': 'img_contextpriority',                   #10
 # Extensions from Khronos Group (KHR).
@@ -83,14 +111,27 @@ extensions = {
     # This extension requires absolutely no new code on the EGL side, but a
     # module for it is provided anyway.
     'EGL_KHR_surfaceless_context': 'khr_surfaceless',                    #40
+    'EGL_KHR_stream_cross_process_fd': 'khr_streamcrossprocess',         #41
+    'EGL_KHR_wait_sync': 'khr_waitsync',                                 #43
+    'EGL_KHR_cl_event': 'khr_clevent',                                   #60
+    'EGL_KHR_lock_surface3': 'khr_locksurface3',                         #64
+    'EGL_KHR_cl_event2': 'khr_clevent2',                                 #65
+    'EGL_KHR_gl_colorspace': 'khr_glcolor',                              #66
 # Extensions from the Mesa 3D library.
     'EGL_MESA_drm_image': 'mesa_drmimage',                               #26
+    'EGL_MESA_platform_gbm': 'mesa_platform_gbm',                        #62
 # Extensions from Nokia (NOK).
     'EGL_NOK_swap_region': 'nok_swapregion',                    # Unofficial
+    'EGL_NOK_swap_region2': 'nok_swapregion2',                           #23
 # Extensions from NVIDIA Corporation (NV).
     'EGL_NV_sync': 'nv_sync',                                            #19
     'EGL_NV_post_sub_buffer': 'nv_postsubbuffer',                        #27
     'EGL_NV_system_time': 'nv_systime',                                  #31
+    # This extension requires absolutely no new code on the EGL side, but a
+    # module for it is provided anyway.
+    'EGL_NV_post_convert_rounding': 'nv_postconvert',                    #44
+    'EGL_NV_native_query': 'nv_nativequery',                             #45
+    'EGL_NV_stream_sync': 'nv_streamsync',                               #56
 # Extensions from the Wayland compositor (WL).
     'EGL_WL_bind_wayland_display': 'wl_binddisplay'             # Unofficial
     }

@@ -2,15 +2,14 @@
 
 '''Khronos lock-surface extension for EGL.
 
-Surface locking is defined in a pair of extension specifications. This
-wrapper has been designed for version 2 of the second extension, which
-claims backwards compatibility with the first extension.
+This extension obsoletes the two in the khr_locksurface module. The
+decision to use one module or the other, however, depends on which
+extension the EGL implementation supports.
 
-http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_lock_surface.txt
-http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_lock_surface2.txt
+http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_lock_surface3.txt
 
 '''
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2012-14 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -29,23 +28,42 @@ http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_lock_surface2.txt
 
 # Standard library imports.
 from collections import namedtuple
-from ctypes import c_int, c_void_p
+from ctypes import c_int, c_int64, c_void_p
 
 # Local imports.
 from . import load_ext
 from ..attribs import (Attribs, AttribList, BitMask, Details, DONT_CARE,
-                       UNKNOWN_VALUE)
+                       UNKNOWN_VALUE, attr_convert)
 from ..attribs.config import ConfigAttribs, SurfaceTypes
 from ..attribs.surface import SurfaceAttribs
 from ..native import c_ibool, c_display, c_surface, c_attr_list
 from ..config import Config
 from ..surface import Surface
 
+# New native type. Note that the type EGLAttribKHR is actually defined to be an
+# intptr_t, but as that's not supported in ctypes, a 64-bit integer will have
+# to suffice. This might break on 128-bit systems(!).
+c_int64_p = POINTER(c_int64)
+def make_int64_p(ival=0):
+    '''Create and initialise a pointer to a 64-bit integer.
+
+    Keyword arguments:
+        ival -- The initial value of the referenced integer. The default
+            is 0.
+
+    '''
+    p = c_int64_p()
+    p.contents = c_int(ival)
+    return p
+
 # Get handles of extension functions.
 native_lock = load_ext(b'eglLockSurfaceKHR', c_ibool,
                        (c_display, c_surface, c_attr_list), fail_on=False)
 native_unlock = load_ext(b'eglUnlockSurfaceKHR', c_ibool,
                          (c_display, c_surface), fail_on=False)
+native_querysurface = load_ext(b'eglQuerySurface64KHR', c_ibool,
+                               (c_display, c_surface, c_int, c_int64_p),
+                               fail_on=False)
 
 # New config attributes.
 SurfaceTypes.extend(7, 'LOCK_SURFACE')
@@ -67,7 +85,7 @@ new_attribs = ('BITMAP_POINTER', 'BITMAP_PITCH', 'BITMAP_ORIGIN',
                'BITMAP_PIXEL_BLUE_OFFSET', 'BITMAP_PIXEL_ALPHA_OFFSET',
                'BITMAP_PIXEL_LUMINANCE_OFFSET')
 new_values = range(0x30C6, 0x30CE)
-new_types = (c_void_p, c_int, BitmapOrigins, c_int, c_int, c_int, c_int, c_int)
+new_types = (c_int64_p, c_int, BitmapOrigins, c_int, c_int, c_int, c_int, c_int)
 new_defaults = (None, UNKNOWN_VALUE, BitmapOrigins.LOWER_LEFT, UNKNOWN_VALUE,
                 UNKNOWN_VALUE, UNKNOWN_VALUE, UNKNOWN_VALUE, UNKNOWN_VALUE)
 for args in zip(new_attribs, new_values, new_types, new_defaults):
@@ -148,10 +166,26 @@ def match_format(self):
         raise ValueError('EGL returned an unknown format')
 Config.match_format = property(match_format)
 
+# New Surface method, for querying 64-bit properties.
+def _attr64(self, attr):
+    '''Get the value of a surface attribute that might exceed 32 bits.
+
+    Keyword arguments:
+        attr -- The identifier of the attribute requested.
+
+    '''
+    # Query the attribute, storing the result in a pointer.
+    result = native.make_int64_p()
+    native_querysurface(self.display, self, attr, result)
+
+    # Dereference the pointer and convert to an appropriate type.
+    return attr_convert(attr, result.contents.value, SurfaceAttribs)
+Surface._attr64 = _attr64
+
 # New Surface properties, for querying the new attributes in SurfaceAttribs.
 def bitmap_pointer(self):
     '''Get the native pointer to the mapped buffer.'''
-    return self._attr(SurfaceAttribs.BITMAP_POINTER)
+    return self._attr64(SurfaceAttribs.BITMAP_POINTER)
 Surface.bitmap_pointer = property(bitmap_pointer)
 
 def bitmap_pitch(self):
@@ -196,17 +230,6 @@ def bitmap_component_offsets(self):
 Surface.bitmap_component_offsets = property(bitmap_component_offsets)
 
 def bitmap_pixel_size(self):
-    '''Get the bit size of pixels in the mapped buffer.
-
-    The lock_surface2 extension provides a simple query attribute for
-    this. If that is not available, the size of a pixel in the color
-    buffer is given (which may include some "unused" bits).
-
-    '''
-    if 'EGL_KHR_lock_surface2' in self.display.extensions:
-        # Easy!
-        return self._attr(SurfaceAttribs.BITMAP_PIXEL_SIZE)
-    else:
-        # We fall back on the buffer size.
-        return self.config._attr(ConfigAttribs.BUFFER_SIZE)
+    '''Get the bit size of pixels in the mapped buffer.'''
+    return self._attr(SurfaceAttribs.BITMAP_PIXEL_SIZE)
 Surface.bitmap_pixel_size = property(bitmap_pixel_size)

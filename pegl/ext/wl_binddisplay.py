@@ -5,7 +5,7 @@
 While the specification of this extension has not been submitted to
 Khronos, it is widely available through the Mesa library.
 
-http://cgit.freedesktop.org/mesa/mesa/tree/docs/WL_bind_wayland_display.spec
+http://cgit.freedesktop.org/mesa/mesa/tree/docs/specs/WL_bind_wayland_display.spec
 
 '''
 # Copyright © 2012-13 Tim Pederick.

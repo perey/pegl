@@ -15,6 +15,11 @@ a condition is met. The condition depends on the completion of "fence
 commands", a concept from OpenGL that has been extended to other client
 APIs.
 
+Both extensions can be supported in the one module because both define
+the same extension functions, differing only in the attributes they
+accept (and define). It is the application's responsibility to only use
+the supported sync type if the implementation does not support both.
+
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_reusable_sync.txt
 http://www.khronos.org/registry/egl/extensions/KHR/EGL_KHR_fence_sync.txt
 
@@ -81,7 +86,7 @@ class WaitFlags(BitMask):
     bit_names = ['FLUSH_COMMANDS']
 
 
-class SyncAttr(Attribs):
+class SyncAttribs(Attribs):
     '''The set of attributes relevant to sync objects.
 
     Class attributes:
@@ -151,9 +156,21 @@ class Sync:
         self.display = display
         self.attribs = (attribs if isinstance(attribs, AttribList) else
                         AttribList(SyncAttribs, attribs))
-        self.synchandle = native_createsync(self.display,
-                                            self.__class__.sync_type,
-                                            self.attribs)
+        self.synchandle = self._create_handle()
+
+    def _create_handle(self):
+        '''Call the native function that generates the sync handle.
+
+        This is separated from __init__() so that extension sync types
+        can use their own native functions without needing to duplicate
+        everything else that the constructor does.
+
+        Returns:
+            The new native sync handle.
+
+        '''
+        return native_createsync(self.display, self.__class__.sync_type,
+                                 self.attribs)
 
     def __del__(self):
         '''Destroy the sync object.'''

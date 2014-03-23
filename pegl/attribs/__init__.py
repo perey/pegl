@@ -244,8 +244,8 @@ class Attribs:
 
         '''
         # TODO: Track loaded extensions and filter by name string, in a similar
-        # manner to the ext.khr.image.Image class. This is useful because some
-        # extension modules (including that one and ext.khr.glimage) define
+        # manner to the ext.khr_image.Image class. This is useful because some
+        # extension modules (including that one and ext.khr_glimage) define
         # more than one extension, not all of which need be supported for the
         # module to be loaded.
         cls.extensions[attr_name] = value
@@ -266,6 +266,13 @@ class AttribList:
             available in this list.
 
     '''
+    # For compatibility with 64-bit systems (and up!), some late extensions
+    # require an attribute list with a wider native type, so we split out the
+    # native type information here. These should only be referenced from the
+    # _as_parameter_ property.
+    _native_list = c_int_p
+    _native_item = c_int
+
     def __init__(self, attribs, mapping=None):
         '''Initialise the attribute list.
 
@@ -395,7 +402,7 @@ class AttribList:
     def _as_parameter_(self):
         '''Convert to an array for use by foreign functions.'''
         arr_len = 2 * len(self._items) + 1
-        arr_type = c_int * arr_len
+        arr_type = self.__class__._native_item * arr_len
 
         arr = []
         for key, value in self.items():
@@ -409,8 +416,8 @@ class AttribList:
         # Terminate the array with NONE.
         arr.append(NONE)
 
-        # Turn the array-of-ints into a pointer-to-int, to keep ctypes happy.
-        return c_int_p(arr_type(*arr))
+        # Turn the array-of-items into a pointer-to-item, to keep ctypes happy.
+        return self.__class__._native_list(arr_type(*arr))
 
     def get(self, index):
         '''Get the value of an attribute, or its default if it is unset.
