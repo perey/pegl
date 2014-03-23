@@ -135,8 +135,8 @@ instance will usually be the first step when using EGL.
 pegl.ext
 --------
 A large selection of EGL extensions are given wrappers in the ``ext``
-subpackage. All extensions in the EGL Registry as of June 2012 are
-supported, except for the following:
+subpackage. All non-draft extensions in the EGL Registry as of March
+2014 [#]_ are supported, except for the following:
 
 +-----+----------------------------------+--------------------------------+
 |Ext #|           Name string            |             Reason             |
@@ -147,15 +147,12 @@ supported, except for the following:
 +-----+----------------------------------+                                |
 |18   |``EGL_NV_depth_nonlinear``        |                                |
 +-----+----------------------------------+--------------------------------+
-|24   |``EGL_HI_clientpixmap``           |Underspecified; specifically,   |
-|     |                                  |``EGL_CLIENT_PIXMAP_POINTER_HI``|
-|     |                                  |is undefined.                   |
-+-----+----------------------------------+--------------------------------+
-|25   |``EGL_HI_colorformats``           |Seems pointless without the     |
-|     |                                  |above. Also, its enum values are|
-|     |                                  |missing from ``eglenum.spec``.  |
-+-----+----------------------------------+--------------------------------+
 |30   |``EGL_NV_coverage_sample_resolve``|NVIDIA proprietary.             |
++-----+----------------------------------+                                +
+|46   |``EGL_NV_3dvision_surface``       |                                |
++-----+----------------------------------+--------------------------------+
+|61   |``EGL_KHR_get_all_proc_addresses``|Would involve an architectural  |
+|     |and ``EGL_KHR_client_get_``etc.   |change to the ``native`` module.|
 +-----+----------------------------------+--------------------------------+
 
 In addition, some extensions that are not officially registered, but are
@@ -163,6 +160,8 @@ widely available through the Mesa library, are supported by Pegl:
 
 * ``EGL_NOK_swap_region``
 * ``EGL_WL_bind_wayland_display``
+
+.. [#] Extension numbers 1 to 6, 8 to 10, 16 to 20, and 23 to 66.
 
 -----------
 pegl.native

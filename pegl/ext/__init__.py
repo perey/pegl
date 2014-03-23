@@ -6,8 +6,6 @@ Unimplemented:
     1.  EGL_KHR_config_attribs
     17. EGL_NV_coverage_sample
     18. EGL_NV_depth_nonlinear
-    24. EGL_HI_clientpixmap
-    25. EGL_HI_colorformats
     30. EGL_NV_coverage_sample_resolve
     46. EGL_NV_3dvision_surface
 
@@ -34,6 +32,7 @@ __all__ = (# Registered cross-vendor (EXT) extensions.
            'ext_robustness',
            # Registered vendor extensions.
            'angle_d3dtexture', 'angle_surfacepointer',
+           'hi_pixmap', 'hi_color',
            'img_contextpriority',
            'khr_context', 'khr_glimage', 'khr_glstream', 'khr_image',
            'khr_locksurface', 'khr_stream', 'khr_streammaxal',
@@ -59,6 +58,9 @@ extensions = {
     'EGL_ANGLE_query_surface_pointer': 'angle_surfacepointer',           #28
     'EGL_ANGLE_surface_d3d_texture_2d_share_handle': 'angle_d3dtexture', #29
     'EGL_ANGLE_d3d_share_handle_client_buffer': 'angle_d3dtexture',      #38
+# Extensions from HI Corporation (HI).
+    'EGL_HI_clientpixmap': 'hi_pixmap',                                  #24
+    'EGL_HI_colorformats': 'hi_color',                                   #25
 # Extensions from Imagination Technologies (IMG).
     'EGL_IMG_context_priority': 'img_contextpriority',                   #10
 # Extensions from Khronos Group (KHR).
