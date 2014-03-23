@@ -160,7 +160,7 @@ subpackage. All non-draft extensions in the EGL Registry as of March
 |46   |``EGL_NV_3dvision_surface``       |                                |
 +-----+----------------------------------+--------------------------------+
 |61   |``EGL_KHR_get_all_proc_addresses``|Would involve an architectural  |
-|     |and ``EGL_KHR_client_get_``etc.   |change to the ``native`` module.|
+|     |and ``EGL_KHR_client_get_`` etc.  |change to the ``native`` module.|
 +-----+----------------------------------+--------------------------------+
 
 In addition, some extensions that are not officially registered, but are
