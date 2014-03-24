@@ -1,3 +1,3 @@
 #!/bin/sh
 
-nosetests3 test_config.py test_display.py test_pegl.py
+nosetests3 test_*.py
