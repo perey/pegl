@@ -135,8 +135,14 @@ instance will usually be the first step when using EGL.
 pegl.ext
 --------
 A large selection of EGL extensions are given wrappers in the ``ext``
-subpackage. All non-draft extensions in the EGL Registry as of March
-2014 [#]_ are supported, except for the following:
+subpackage. Note that, with the exception of ``ext.ext_extensiontypes``
+(``EGL_EXT_client_extensions``), extensions should be loaded using the
+``load_extension()`` method of a ``Display`` object (or the function of
+the same name that ``ext.ext_extensiontypes`` provides) rather than
+being imported directly.
+
+All non-draft extensions in the EGL Registry as of March 2014 [#]_ are
+supported, except for the following:
 
 +-----+----------------------------------+--------------------------------+
 |Ext #|           Name string            |             Reason             |
