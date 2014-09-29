@@ -37,8 +37,8 @@ from . import load_ext
 from .. import NO_CONTEXT
 from ..attribs import (Attribs, AttribList, Details)
 from ..context import Context
-from ..native import (c_ibool, c_enum, c_client_buffer, c_display, c_surface,
-                      c_attr_list)
+from ..native import (c_ibool, c_enum, c_client_buffer, c_display, c_context,
+                      c_surface, c_attr_list)
 
 # Extension types.
 c_image = c_void_p

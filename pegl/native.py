@@ -31,8 +31,8 @@ __all__ = ['eglGetDisplay', 'eglInitialize', 'eglTerminate', 'eglQueryString',
            'eglWaitGL', 'eglWaitNative', 'eglSwapBuffers', 'eglCopyBuffers',
            'eglSwapInterval', 'eglGetProcAddress', 'eglReleaseThread',
            # Native types reused in extension modules.
-           'c_ibool', 'c_enum', 'c_attr_list', 'c_display', 'c_surface',
-           'c_client_buffer', 'c_config', 'c_int_p', 'make_int_p']
+           'c_ibool', 'c_enum', 'c_attr_list', 'c_display', 'c_context',
+           'c_surface', 'c_client_buffer', 'c_config', 'c_int_p', 'make_int_p']
 
 # Standard library imports.
 import ctypes

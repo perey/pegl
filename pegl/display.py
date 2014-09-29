@@ -214,7 +214,7 @@ class Display:
             raise ImportError("no module found for extension "
                               "'{}'".format(extname))
         else:
-            pkg_with_module = __import__(vendor_pkg, globals(), locals(),
+            pkg_with_module = __import__('ext', globals(), locals(),
                                          [module_name], 1)
             return getattr(pkg_with_module, module_name)
 

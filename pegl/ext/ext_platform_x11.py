@@ -61,5 +61,5 @@ class X11Display(PlatformDisplay):
         super().__init__(native_id=x11_display,
                          attribs=AttribList(DisplayAttribs,
                                             {'PLATFORM_X11_SCREEN': x11_screen
-                                             },
+                                             }),
                          delay_init=delay_init)

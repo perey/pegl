@@ -20,16 +20,17 @@
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 import pegl
-from pegl.display import Display
-from pegl.config import get_configs
 from pegl.attribs.config import ConfigAttribs, ClientAPIs, CBufferTypes
 from pegl.attribs.context import ContextAPIs
+from pegl.config import get_configs
 import pegl.context as context
+from pegl.display import Display
+from pegl.ext import extensions as extlist
 from pegl.surface import PbufferSurface
 
 # TODO: Obsolete this file by writing unit tests and real functional tests!
 
-# 0. Utility functions.
+# -1. Utility functions.
 def and_list(seq, serial_comma=True, comma_between_two=False, sort=True):
     '''List elements of the sequence in natural-looking English.'''
     if sort:
@@ -58,7 +59,7 @@ def clientAPIs(seq):
     for api in seq:
         yield apis.get(api, 'an unknown API')
 
-# 0. Check for "client extension" support.
+# 0. Checking for "client extension" support.
 try:
     import pegl.ext.ext_extensiontypes as xt
 except ImportError:
@@ -74,8 +75,28 @@ print('Initialised EGL version {0[0]}.{0[1]} ({1} '
       '{2!s}).'.format(d.initialize(), d.vendor, d.version))
 print('This implementation supports these APIs:')
 print('  *', '\n  * '.join(d.client_apis))
+
+# 1a. Checking for supported extensions.
+first_supported = None
 print('...and these extensions:')
-print('  *', '\n  * '.join(d.extensions))
+for ext in d.extensions:
+    if first_supported is None and ext in extlist:
+        first_supported = ext
+    print('  * {} ({}supported by Pegl)'.format(ext,
+                                                '' if ext in extlist
+                                                else 'not '))
+if first_supported is not None:
+    print("Trying to enable extension '{}'...".format(first_supported),
+          end=' ')
+    try:
+        ext = d.load_extension(first_supported)
+    except ImportError:
+        print('Failed!')
+    else:
+        print('Success!')
+else:
+    print('No extensions supported by Pegl and by the implementation.',
+          'Skipping extension-loading test.')
 print()
 
 # 2. Getting available configurations.
