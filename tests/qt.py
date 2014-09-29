@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Test creating a WindowSurface bound to an X11 window.'''
+'''Test creating a WindowSurface bound to a Qt window.'''
 
 # Copyright © 2012-14 Tim Pederick.
 #
