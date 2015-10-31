@@ -37,7 +37,8 @@ Version.__str__ = lambda self: '{0.major}.{0.minor} {0.vendor}'.format(self)
 
 def current_display():
     '''Get the current EGL display.'''
-    return Display(dhandle=native.eglGetCurrentDisplay())
+    dhandle = native.eglGetCurrentDisplay()
+    return (None if dhandle == NO_DISPLAY else Display(dhandle))
 
 class Display:
     '''An EGL display.
