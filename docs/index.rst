@@ -1,16 +1,16 @@
-.. Pegl documentation master file, created by
-   sphinx-quickstart on Sat Feb 27 15:49:38 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+========================
+Pegl 0.1a5 Documentation
+========================
 
-Welcome to Pegl's documentation!
-================================
+Welcome to the documentation for Pegl, a Python wrapper for the
+`EGL`:abbreviation: API.
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
+   intro
 
 
 Indices and tables
