@@ -1,6 +1,6 @@
 # Setup file for Pegl.
 #
-# Copyright © 2012-14 Tim Pederick.
+# Copyright © 2012, 2013, 2014, 2019 Tim Pederick.
 # 
 # Some parts based on the PyPA sample project:
 #   https://github.com/pypa/sampleproject/
@@ -43,10 +43,11 @@ def get_version(package, filename='__init__.py'):
 
 setup(
     name='Pegl',
-    version=get_version('pegl'),
+    version=get_version('src/pegl'),
     author='Tim Pederick',
     author_email='pederick@gmail.com',
     packages=['pegl', 'pegl.attribs', 'pegl.ext'],
+    package_dir={'pegl': 'src/pegl'},
     url='https://github.com/perey/pegl',
     description='Python 3 wrapper for the EGL API',
     classifiers=['Development Status :: 3 - Alpha',
