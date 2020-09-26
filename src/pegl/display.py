@@ -132,7 +132,7 @@ class Display:
         """Get available configurations that match given attributes."""
         if num_config is None:
             num_config = self.get_config_count()
-        configs = (egl.EGLConfig * num_config)()
+        configs = (egl._common.EGLConfig * num_config)()
         actual_count = egl.eglChooseConfig(self, attrib_list(attribs),
                                               configs, num_config)
         return tuple(Config(configs[n]) for n in range(actual_count))
@@ -146,8 +146,8 @@ class Display:
         """Get a list of available configurations."""
         if num_config is None:
             num_config = self.get_config_count()
-        configs = (egl.EGLConfig * num_config)()
-        actual_count = egl.eglGetConfigs(self, configs, max_configs)
+        configs = (egl._common.EGLConfig * num_config)()
+        actual_count = egl.eglGetConfigs(self, configs, num_config)
         return tuple(Config(configs[n]) for n in range(actual_count))
 
     def initialize(self) -> Tuple[int, int]:
