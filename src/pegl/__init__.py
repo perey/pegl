@@ -35,3 +35,7 @@ __all__.extend(enums_all)
 from .errors import *
 from .errors import __all__ as errors_all
 __all__.extend(errors_all)
+
+from .image import *
+from .image import __all__ as image_all
+__all__.extend(image_all)

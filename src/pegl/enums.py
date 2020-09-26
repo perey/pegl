@@ -25,9 +25,12 @@ from enum import IntEnum, IntFlag
 # Local imports.
 from . import egl
 
-__all__ = ['ConfigAttrib', 'SurfaceTypeFlag']
+__all__ = ['ConfigAttrib', 'NativeEngine', 'SurfaceTypeFlag']
 
 # Enumerations available unchanged from EGL 1.0.
+class NativeEngine(IntEnum):
+    CORE = egl.EGL_CORE_NATIVE_ENGINE
+    CORE_NATIVE_ENGINE = egl.EGL_CORE_NATIVE_ENGINE
 
 # Data for enumerations that expand in later versions.
 config_attrib = [('ALPHA_SIZE', egl.EGL_ALPHA_SIZE),
@@ -106,6 +109,57 @@ if egl.egl_version >= (1, 4):
                                egl.EGL_SWAP_BEHAVIOR_PRESERVED_BIT),
                               ('SWAP_BEHAVIOR_PRESERVED_BIT',
                                egl.EGL_SWAP_BEHAVIOR_PRESERVED_BIT)])
+
+if egl.egl_version >= (1, 5):
+    class ImageAttrib(IntEnum):
+        GL_TEXTURE_LEVEL = egl.EGL_GL_TEXTURE_LEVEL
+        GL_TEXTURE_ZOFFSET = egl.EGL_GL_TEXTURE_ZOFFSET
+        IMAGE_PRESERVED = egl.EGL_IMAGE_PRESERVED
+
+    class ImageTarget(IntEnum):
+        GL_TEXTURE_2D = egl.EGL_GL_TEXTURE_2D
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X = egl.EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_X
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_X = egl.EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Y = egl.EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y = egl.EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Z = egl.EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = egl.EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+        GL_TEXTURE_3D = egl.EGL_GL_TEXTURE_3D
+        GL_RENDERBUFFER = egl.EGL_GL_RENDERBUFFER
+
+    class Platform(IntEnum):
+        pass
+
+    class PlatformAttrib(IntEnum):
+        pass
+
+    class SyncAttrib(IntEnum):
+        CL_EVENT_HANDLE = egl.EGL_CL_EVENT_HANDLE
+
+    class SyncCondition(IntEnum):
+        PRIOR_COMMANDS_COMPLETE = egl.EGL_SYNC_PRIOR_COMMANDS_COMPLETE
+        SYNC_PRIOR_COMMANDS_COMPLETE = egl.EGL_SYNC_PRIOR_COMMANDS_COMPLETE
+        CL_EVENT_COMPLETE = egl.EGL_SYNC_CL_EVENT_COMPLETE
+        SYNC_CL_EVENT_COMPLETE = egl.EGL_SYNC_CL_EVENT_COMPLETE
+
+    class SyncFlag(IntFlag):
+        NONE = 0
+        FLUSH_COMMANDS = egl.EGL_SYNC_FLUSH_COMMANDS_BIT
+        SYNC_FLUSH_COMMANDS_BIT = egl.EGL_SYNC_FLUSH_COMMANDS_BIT
+
+    class SyncResult(IntEnum):
+        CONDITION_SATISFIED = egl.EGL_CONDITION_SATISFIED
+        TIMEOUT_EXPIRED = egl.EGL_TIMEOUT_EXPIRED
+
+    class SyncType(IntEnum):
+        FENCE = egl.EGL_SYNC_FENCE
+        SYNC_FENCE = egl.EGL_SYNC_FENCE
+        CL_EVENT = egl.EGL_SYNC_CL_EVENT
+        SYNC_CL_EVENT = egl.EGL_SYNC_CL_EVENT
+
+    __all__.extend(['ImageAttrib', 'ImageTarget', 'Platform', 'PlatformAttrib',
+                    'SyncAttrib', 'SyncCondition', 'SyncFlag', 'SyncResult',
+                    'SyncType'])
 
 # Construct enumerations that may have expanded.
 ConfigAttrib = IntEnum('ConfigAttrib', config_attrib, module=__name__)

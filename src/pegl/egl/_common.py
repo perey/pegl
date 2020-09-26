@@ -166,11 +166,16 @@ def _load_function(func_name: str, restype: Any, *args: Sequence,
         pass
     else:
         def error_check(result, func, args):
+            logging.debug(f"Called '{func.name}' with args '{args}' and got "
+                          f"result '{result}'")
             if result == error_on:
                 error_code = eglGetError()
                 if error_code != EGL_SUCCESS:
                     raise KNOWN_ERRORS.get(error_code, EGLError)
             return args
         fn.errcheck = error_check
+
+    # Store the function name, for debugging.
+    fn.name = func_name
 
     return fn
