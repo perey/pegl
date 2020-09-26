@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''EGL display management.'''
+"""EGL display management for Pegl."""
 
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2012, 2013, 2020 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -20,230 +20,150 @@
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
-from collections import namedtuple
-from ctypes import c_void_p
+import ctypes
+from typing import Any, Dict, Optional, Tuple
+from weakref import WeakValueDictionary
 
 # Local imports.
-from . import native, NO_DISPLAY, NO_CONTEXT, NO_SURFACE
+from . import egl
+from .errors import BadDisplayError
+##from .config import Config
+class Config: # TODO!
+    def __init__(self, handle):
+        self._as_parameter_ = handle
 
-# EGL constants.
-# TODO: Put these four in a namedtuple instance, like in all the other modules?
-CLIENT_APIS, EXTENSIONS, VENDOR, VERSION = 0x308D, 0x3055, 0x3053, 0x3054
-DEFAULT_DISPLAY = c_void_p(0)
+__all__ = ['Display', 'NoDisplay']
 
-# Version info structure.
-Version = namedtuple('Version', ('major', 'minor', 'vendor'))
-Version.__str__ = lambda self: '{0.major}.{0.minor} {0.vendor}'.format(self)
-
-def current_display():
-    '''Get the current EGL display.'''
-    dhandle = native.eglGetCurrentDisplay()
-    return (None if dhandle == NO_DISPLAY else Display(dhandle))
-
+_display_cache = WeakValueDictionary()
 class Display:
-    '''An EGL display.
+    """An EGL display.
 
-    In EGL, a display is not only a representation of a (physical or
-    virtual) display device; it is also the overall context of all EGL
-    operations (although "context" also has a different meaning in EGL).
-    As such, details of the EGL implementation are accessed from a
-    Display instance.
+    In EGL, a display is both a representation of a (physical or virtual)
+    display device, and an environment for other objects.
 
-    Instance attributes:
-        dhandle -- The foreign object handle for this display.
-        client_apis -- A sequence listing the client APIs supported
-            (such as OpenGL, OpenGL_ES, and OpenVG). Although I can't
-            find it specified in the EGL standard, it seems likely that
-            these will be limited to ASCII.
-        extensions -- A sequence listing the EGL extensions supported;
-            again, probably limited to ASCII.
-        swap_interval -- An integer number of video frames between
-            buffer swaps. This value is write-only and applies to the
-            current context. It will be clamped to the range permitted
-            by the context's configuration.
-        vendor -- The vendor string for this EGL implementation.
-        version -- A 3-tuple describing the implementation version, in
-            the format (major, minor, vendor_info).
+    """
+    def __init__(self, display_id: Optional[int]=None, init: bool=True,
+                 *, handle=None):
+        # Specifying a display by its EGLDisplay handle overrides everything
+        # else.
+        if handle is not None:
+            _display_cache[handle.value] = self
+            self._as_parameter_ = handle
+            return
 
-    '''
-    def __init__(self, dhandle=None, native_id=None, delay_init=False):
-        '''Get a display, either a specified one or the default one.
+        if display_id is None:
+            if egl.egl_version < (1, 4):
+                raise ValueError('default display not available before EGL '
+                                 '1.4')
+            else:
+                display_id = egl.EGL_DEFAULT_DISPLAY
 
-        Keyword arguments:
-            dhandle -- As the instance attribute. If omitted, the
-                native_id is used, if supplied, or else the EGL default
-                display is requested.
-            native_id -- An identifier for a platform-native display.
-                This is ignored if dhandle is supplied. If both are
-                omitted, the EGL default display is requested.
-            delay_init -- If True, the display's initialize() method
-                will not be called automatically. This should then be
-                done by the application before doing any EGL operations.
+        self._as_parameter_ = egl.eglGetDisplay(display_id)
+        _display_cache[self._as_parameter_.value] = self
 
-        '''
-        self.dhandle = (dhandle if dhandle is not None else
-                        native.eglGetDisplay(DEFAULT_DISPLAY
-                                             if native_id is None else
-                                             native_id))
-        if not delay_init:
-            self.initialize()
+        if init:
+            egl.eglInitialize(self)
 
     def __del__(self):
-        '''Delete this display and all EGL resources in this thread.
+        # Remove this display from the cache.
+        try:
+            del _display_cache[self._as_parameter_]
+        except AttributeError:
+            # This instance never got its handle properly assigned.
+            pass
+        except KeyError:
+            # This instance never got cached.
+            pass
 
-        Multithreaded applications should also call release_thread()
-        from all other threads in which this display has been used.
+        # Terminate this display.
+        try:
+            egl.eglTerminate(self)
+        except BadDisplayError:
+            # This instance has an invalid handle, so there's nothing to
+            # terminate.
+            pass
 
-        '''
-        release_thread()
-        self.terminate()
+        # Release EGL resources in this thread.
+        if egl.egl_version >= (1, 2):
+            egl.eglReleaseThread()
 
     def __eq__(self, other):
-        '''Compare two displays for equivalence.
-
-        Two displays are considered equal if they have the same foreign
-        function reference (i.e. the dhandle attribute).
-
-        '''
         try:
-            return self.dhandle == other.dhandle
+            return (other._as_parameter_ == self._as_parameter_)
         except AttributeError:
-            # The other object doesn't have a dhandle.
             return False
 
-    @property
-    def _as_parameter_(self):
-        '''Get the display reference for use by foreign functions.'''
-        return self.dhandle
+    @classmethod
+    def get_current_display(cls) -> 'Display':
+        """Get the display for the current context on the calling thread."""
+        handle = egl.eglGetCurrentDisplay()
+        try:
+            dpy = _display_cache[handle.value]
+        except KeyError:
+            dpy = cls(handle=handle)
+        return dpy
 
-    def _attr(self, attr):
-        '''Query an EGL instance parameter.
+    def choose_config(self, attribs: Dict['ConfigAttrib', Any],
+                      num_configs: Optional[int]=None) -> Tuple[Config, ...]:
+        ...
 
-        Keyword arguments:
-            attr -- A value identifying the parameter sought. This
-                should be a symbolic constant from those defined in this
-                module (CLIENT_APIS, EXTENSIONS, VENDOR, or VERSION).
-        Returns:
-            A string value for the EGL parameter requested.
+    def get_config_count(self) -> int:
+        """Get the number of configurations available on this display."""
+        _, count = egl.eglGetConfigs(self, None, 0)
 
-        '''
-        # TODO: The codec chosen is a bit arbitrary and might be best left off.
-        # Client applications can just use the bytes or decode them themselves.
-        return native.eglQueryString(self, attr).decode('ISO-8859-1')
+    def get_configs(self,
+                    max_configs: Optional[int]=None) -> Tuple[Config, ...]:
+        """Get a list of available configurations."""
+        if max_configs is None:
+            max_configs = self.get_config_count()
+        configs = (egl.EGLConfig * max_configs)()
+        actual_count = egl.eglGetConfigs(self, configs, max_configs)
+        return tuple(Config(configs[n]) for n in range(actual_count))
 
-    @property
-    def client_apis(self):
-        '''Get the client APIs available on this EGL instance.'''
-        return tuple(self._attr(CLIENT_APIS).split())
+    def initialize(self) -> Tuple[int, int]:
+        """Initialise this display."""
+        return egl.eglInitialize(self)
 
-    @property
-    def extensions(self):
-        '''Get the extensions available on this EGL instance.'''
-        return tuple(self._attr(EXTENSIONS).split())
-
-    def set_swap_interval(self, val):
-        '''Set the number of video frames between buffer swaps.
-
-        This value applies to the current context, and will be silently
-        clamped to the range defined by the context's configuration.
-
-        Keyword arguments:
-            val -- The number of frames to set the interval to.
-
-        '''
-        native.eglSwapInterval(self, int(val))
-    swap_interval = property(fset=set_swap_interval)
+    def terminate(self) -> None:
+        """Terminate all resources associated with this display."""
+        egl.eglTerminate(self)
 
     @property
-    def vendor(self):
-        '''Get the vendor string for this EGL instance.'''
-        return self._attr(VENDOR)
+    def extensions(self) -> str:
+        return egl.eglQueryString(self, egl.EGL_EXTENSIONS).decode()
 
     @property
-    def version(self):
-        '''Get the EGL version of this EGL instance.'''
-        major_minor, vendor = self._attr(VERSION).split(None, 1)
-        major, minor = major_minor.split('.')
-        return Version(int(major), int(minor), vendor)
+    def vendor(self) -> str:
+        return egl.eglQueryString(self, egl.EGL_VENDOR).decode()
 
-    def initialize(self):
-        '''Initialize EGL for this display.
+    @property
+    def version(self) -> Tuple[int, int, str]:
+        vnum, vendor_info = self.version_string.split(maxsplit=1)
+        major, minor = vnum.split('.', maxsplit=1)
+        return int(major), int(minor), vendor_info
 
-        Returns:
-            An EGL version number, in (major, minor, vendor) format.
-            The vendor part is an empty string; after initialization
-            it can be obtained from the version attribute.
+    @property
+    def version_string(self) -> str:
+        return egl.eglQueryString(self, egl.EGL_VERSION).decode()
 
-        '''
-        # Create and initialize the return pointers.
-        major, minor = native.make_int_p(), native.make_int_p()
 
-        native.eglInitialize(self, major, minor)
-        return (major.contents.value, minor.contents.value, '')
+NoDisplay = Display(handle=egl.EGL_NO_DISPLAY)
 
-    def load_extension(self, extname):
-        '''Load an extension conditional on it being declared available.
 
-        The extensions attribute of this display is used to determine
-        whether the extension named is supported by the implementation
-        of EGL that the display represents. An ImportError will be
-        raised to signify that the extension is unavailable. Also, even
-        when it is declared to be available, if an ImportError occurs
-        anyway while the extension module is being loaded, it will be
-        raised.
+if egl.egl_version >= (1, 2):
+    def client_apis(self) -> str:
+        return egl.eglQueryString(self, egl.EGL_CLIENT_APIS).decode()
+    Display.client_apis = property(client_apis)
 
-        Keyword arguments:
-            extname -- The name string of the extension. Name strings
-                are consistently of the form EGL_xxx_yyy, where xxx
-                represents the vendor proposing the extension (or EXT
-                for a cross-vendor proposal) and yyy is a descriptive
-                name for the extension.
+    def release_thread():
+        """Release EGL resources used in this thread.
 
-        '''
-        # Ensure the name is a string.
-        extname = str(extname)
+        This cleanup is performed automatically for the current thread when
+        a display is deleted. Multithreaded applications that share one
+        display across several threads must call this function in each
+        thread to ensure all resources are deallocated.
 
-        if extname not in self.extensions:
-            raise ImportError('implementation does not declare support for ' +
-                              extname)
+        """
+        egl.eglReleaseThread()
 
-        # What module has this extension?
-        from .ext import extensions as extlist
-        module_name = extlist.get(extname)
-
-        if module_name is None:
-            raise ImportError("no module found for extension "
-                              "'{}'".format(extname))
-        else:
-            pkg_with_module = __import__('ext', globals(), locals(),
-                                         [module_name], 1)
-            return getattr(pkg_with_module, module_name)
-
-    def clear_context(self):
-        '''Release the current context, if any.'''
-        native.eglMakeCurrent(self, NO_SURFACE, NO_SURFACE, NO_CONTEXT)
-
-    def terminate(self):
-        '''Invalidate all resources associated with this display.
-
-        The display handle itself remains valid. The display can even be
-        reinitialized (by calling initialize()), though the terminated
-        resources will not be made valid again.
-
-        It is not generally necessary to call this function directly, as
-        it is called by the display's destructor method. The only
-        difference is that the destructor also calls release_thread().
-
-        '''
-        native.eglTerminate(self)
-
-def release_thread():
-    '''Release EGL resources used in this thread.
-
-    This cleanup is performed automatically for the current thread when
-    a display is deleted. Multithreaded applications that share one
-    display across several threads must call this function in each
-    thread to ensure all resources are deallocated.
-
-    '''
-    native.eglReleaseThread()
+    __all__.extend(['release_thread'])
