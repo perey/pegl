@@ -63,4 +63,5 @@ setup(
                  'Topic :: Multimedia :: Graphics',
                  'Topic :: Software Development :: Libraries'],
     long_description=open('README.rst', 'rt').read(),
+    install_requires=['aenum'],
 )

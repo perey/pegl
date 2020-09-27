@@ -20,16 +20,40 @@
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
-from enum import IntEnum, IntFlag
-# TODO: Write your own extensible enums instead. With blackjack! And hex repr!
+from aenum import IntEnum, IntFlag, extend_enum
 
 # Local imports.
 from . import egl
 
-__all__ = ['ConfigAttrib', 'ConfigCaveat', 'ContextAttrib', 'NativeEngine',
-           'ReadOrDraw', 'SurfaceAttrib', 'SurfaceTypeFlag', 'TransparentType']
+__all__ = ['ConfigAttrib', 'ConfigCaveat', 'NativeEngine', 'ReadOrDraw',
+           'SurfaceAttrib', 'SurfaceTypeFlag', 'TransparentType']
 
-# Enumerations available unchanged from EGL 1.0.
+# EGL 1.0 enumerations.
+class ConfigAttrib(IntEnum):
+    ALPHA_SIZE = egl.EGL_ALPHA_SIZE
+    BLUE_SIZE = egl.EGL_BLUE_SIZE
+    BUFFER_SIZE = egl.EGL_BUFFER_SIZE
+    CONFIG_CAVEAT = egl.EGL_CONFIG_CAVEAT
+    CONFIG_ID = egl.EGL_CONFIG_ID
+    DEPTH_SIZE = egl.EGL_DEPTH_SIZE
+    GREEN_SIZE = egl.EGL_GREEN_SIZE
+    LEVEL = egl.EGL_LEVEL
+    MAX_PBUFFER_HEIGHT = egl.EGL_MAX_PBUFFER_HEIGHT
+    MAX_PBUFFER_PIXELS = egl.EGL_MAX_PBUFFER_PIXELS
+    MAX_PBUFFER_WIDTH = egl.EGL_MAX_PBUFFER_WIDTH
+    NATIVE_RENDERABLE = egl.EGL_NATIVE_RENDERABLE
+    NATIVE_VISUAL_ID = egl.EGL_NATIVE_VISUAL_ID
+    NATIVE_VISUAL_TYPE = egl.EGL_NATIVE_VISUAL_TYPE
+    RED_SIZE = egl.EGL_RED_SIZE
+    SAMPLES = egl.EGL_SAMPLES
+    SAMPLE_BUFFERS = egl.EGL_SAMPLE_BUFFERS
+    STENCIL_SIZE = egl.EGL_STENCIL_SIZE
+    SURFACE_TYPE = egl.EGL_SURFACE_TYPE
+    TRANSPARENT_BLUE_VALUE = egl.EGL_TRANSPARENT_BLUE_VALUE
+    TRANSPARENT_GREEN_VALUE = egl.EGL_TRANSPARENT_GREEN_VALUE
+    TRANSPARENT_RED_VALUE = egl.EGL_TRANSPARENT_RED_VALUE
+    TRANSPARENT_TYPE = egl.EGL_TRANSPARENT_TYPE
+
 class ConfigCaveat(IntEnum):
     NONE = egl.EGL_NONE
     NON_CONFORMANT = egl.EGL_NON_CONFORMANT_CONFIG
@@ -45,70 +69,41 @@ class ReadOrDraw(IntEnum):
     DRAW = egl.EGL_DRAW
     READ = egl.EGL_READ
 
+class SurfaceAttrib(IntEnum):
+    HEIGHT = egl.EGL_HEIGHT
+    LARGEST_PBUFFER = egl.EGL_LARGEST_PBUFFER
+    WIDTH = egl.EGL_WIDTH
+
+class SurfaceTypeFlag(IntFlag):
+    PBUFFER = egl.EGL_PBUFFER_BIT
+    PBUFFER_BIT = egl.EGL_PBUFFER_BIT
+    PIXMAP = egl.EGL_PIXMAP_BIT
+    PIXMAP_BIT = egl.EGL_PIXMAP_BIT
+    WINDOW = egl.EGL_WINDOW_BIT
+    WINDOW_BIT = egl.EGL_WINDOW_BIT
+
 class TransparentType(IntEnum):
     NONE = egl.EGL_NONE
     RGB = egl.EGL_TRANSPARENT_RGB
     TRANSPARENT_RGB = egl.EGL_TRANSPARENT_RGB
 
-# Data for enumerations that expand in later versions.
-client_api = None
-
-client_api_flag = None
-
-config_attrib = [('ALPHA_SIZE', egl.EGL_ALPHA_SIZE),
-                 ('BLUE_SIZE', egl.EGL_BLUE_SIZE),
-                 ('BUFFER_SIZE', egl.EGL_BUFFER_SIZE),
-                 ('CONFIG_CAVEAT', egl.EGL_CONFIG_CAVEAT),
-                 ('CONFIG_ID', egl.EGL_CONFIG_ID),
-                 ('DEPTH_SIZE', egl.EGL_DEPTH_SIZE),
-                 ('GREEN_SIZE', egl.EGL_GREEN_SIZE),
-                 ('LEVEL', egl.EGL_LEVEL),
-                 ('MAX_PBUFFER_HEIGHT', egl.EGL_MAX_PBUFFER_HEIGHT),
-                 ('MAX_PBUFFER_PIXELS', egl.EGL_MAX_PBUFFER_PIXELS),
-                 ('MAX_PBUFFER_WIDTH', egl.EGL_MAX_PBUFFER_WIDTH),
-                 ('NATIVE_RENDERABLE', egl.EGL_NATIVE_RENDERABLE),
-                 ('NATIVE_VISUAL_ID', egl.EGL_NATIVE_VISUAL_ID),
-                 ('NATIVE_VISUAL_TYPE', egl.EGL_NATIVE_VISUAL_TYPE),
-                 ('RED_SIZE', egl.EGL_RED_SIZE),
-                 ('SAMPLES', egl.EGL_SAMPLES),
-                 ('SAMPLE_BUFFERS', egl.EGL_SAMPLE_BUFFERS),
-                 ('STENCIL_SIZE', egl.EGL_STENCIL_SIZE),
-                 ('SURFACE_TYPE', egl.EGL_SURFACE_TYPE),
-                 ('TRANSPARENT_BLUE_VALUE', egl.EGL_TRANSPARENT_BLUE_VALUE),
-                 ('TRANSPARENT_GREEN_VALUE', egl.EGL_TRANSPARENT_GREEN_VALUE),
-                 ('TRANSPARENT_RED_VALUE', egl.EGL_TRANSPARENT_RED_VALUE),
-                 ('TRANSPARENT_TYPE', egl.EGL_TRANSPARENT_TYPE)]
-
-context_attrib = None
-
-render_buffer = None
-
-surface_attrib = [('HEIGHT', egl.EGL_HEIGHT),
-                  ('LARGEST_PBUFFER', egl.EGL_LARGEST_PBUFFER),
-                  ('WIDTH', egl.EGL_WIDTH)]
-
-surface_type_flag = [('PBUFFER', egl.EGL_PBUFFER_BIT),
-                     ('PBUFFER_BIT', egl.EGL_PBUFFER_BIT),
-                     ('PIXMAP', egl.EGL_PIXMAP_BIT),
-                     ('PIXMAP_BIT', egl.EGL_PIXMAP_BIT),
-                     ('WINDOW', egl.EGL_WINDOW_BIT),
-                     ('WINDOW_BIT', egl.EGL_WINDOW_BIT)]
-
 
 # Additional enumerations and data by version.
 if egl.egl_version >= (1, 1):
-    config_attrib.extend([('BIND_TO_TEXTURE_RGB', egl.EGL_BIND_TO_TEXTURE_RGB),
-                          ('BIND_TO_TEXTURE_RGBA',
-                           egl.EGL_BIND_TO_TEXTURE_RGBA),
-                          ('MAX_SWAP_INTERVAL', egl.EGL_MAX_SWAP_INTERVAL),
-                          ('MIN_SWAP_INTERVAL', egl.EGL_MIN_SWAP_INTERVAL)])
+    for name, value in [('BIND_TO_TEXTURE_RGB', egl.EGL_BIND_TO_TEXTURE_RGB),
+                        ('BIND_TO_TEXTURE_RGBA', egl.EGL_BIND_TO_TEXTURE_RGBA),
+                        ('MAX_SWAP_INTERVAL', egl.EGL_MAX_SWAP_INTERVAL),
+                        ('MIN_SWAP_INTERVAL', egl.EGL_MIN_SWAP_INTERVAL)]:
+        extend_enum(ConfigAttrib, name, value)
 
-    render_buffer = [('BACK', egl.EGL_BACK_BUFFER),
-                     ('BACK_BUFFER', egl.EGL_BACK_BUFFER)]
+    for name, value in [('MIPMAP_TEXTURE', egl.EGL_MIPMAP_TEXTURE),
+                        ('TEXTURE_FORMAT', egl.EGL_TEXTURE_FORMAT),
+                        ('TEXTURE_TARGET', egl.EGL_TEXTURE_TARGET)]:
+        extend_enum(SurfaceAttrib, name, value)
 
-    surface_attrib.extend([('MIPMAP_TEXTURE', egl.EGL_MIPMAP_TEXTURE),
-                           ('TEXTURE_FORMAT', egl.EGL_TEXTURE_FORMAT),
-                           ('TEXTURE_TARGET', egl.EGL_TEXTURE_TARGET)])
+    class RenderBuffer(IntEnum):
+        BACK = egl.EGL_BACK_BUFFER
+        BACK_BUFFER = egl.EGL_BACK_BUFFER
 
     class TextureFormat(IntEnum):
         NO_TEXTURE = egl.EGL_NO_TEXTURE
@@ -121,32 +116,34 @@ if egl.egl_version >= (1, 1):
         NO_TEXTURE = egl.EGL_NO_TEXTURE
         TEXTURE_2D = egl.EGL_TEXTURE_2D
 
-    __all__.extend(['TextureFormat', 'TextureTarget'])
+    __all__.extend(['RenderBuffer', 'TextureFormat', 'TextureTarget'])
 
 
 if egl.egl_version >= (1, 2):
-    client_api = [('OPENGL_ES', egl.EGL_OPENGL_ES_API),
-                  ('OPENGL_ES_API', egl.EGL_OPENGL_ES_API),
-                  ('OPENVG', egl.EGL_OPENVG_API),
-                  ('OPENVG_API', egl.EGL_OPENVG_API)]
+    for name, value in [('ALPHA_MASK_SIZE', egl.EGL_ALPHA_MASK_SIZE),
+                        ('COLOR_BUFFER_TYPE', egl.EGL_COLOR_BUFFER_TYPE),
+                        ('LUMINANCE_SIZE', egl.EGL_LUMINANCE_SIZE),
+                        ('RENDERABLE_TYPE', egl.EGL_RENDERABLE_TYPE)]:
+        extend_enum(ConfigAttrib, name, value)
 
-    client_api_flag = [('OPENGL_ES', egl.EGL_OPENGL_ES_BIT),
-                       ('OPENGL_ES_BIT', egl.EGL_OPENGL_ES_BIT),
-                       ('OPENVG', egl.EGL_OPENVG_BIT),
-                       ('OPENVG_BIT', egl.EGL_OPENVG_BIT)]
+    for name, value in [('SINGLE', egl.EGL_SINGLE_BUFFER),
+                        ('SINGLE_BUFFER', egl.EGL_SINGLE_BUFFER)]:
+        extend_enum(RenderBuffer, name, value)
 
-    config_attrib.extend([('ALPHA_MASK_SIZE', egl.EGL_ALPHA_MASK_SIZE),
-                          ('COLOR_BUFFER_TYPE', egl.EGL_COLOR_BUFFER_TYPE),
-                          ('LUMINANCE_SIZE', egl.EGL_LUMINANCE_SIZE),
-                          ('RENDERABLE_TYPE', egl.EGL_RENDERABLE_TYPE)])
+    for name, value in [('RENDER_BUFFER', egl.EGL_RENDER_BUFFER)]:
+        extend_enum(SurfaceAttrib, name, value)
 
-    context_attrib = [('CLIENT_TYPE', egl.EGL_CONTEXT_CLIENT_TYPE),
-                      ('CONTEXT_CLIENT_TYPE', egl.EGL_CONTEXT_CLIENT_TYPE)]
+    class ClientAPI(IntEnum):
+        OPENGL_ES = egl.EGL_OPENGL_ES_API
+        OPENGL_ES_API = egl.EGL_OPENGL_ES_API
+        OPENVG = egl.EGL_OPENVG_API
+        OPENVG_API = egl.EGL_OPENVG_API
 
-    render_buffer.extend([('SINGLE', egl.EGL_SINGLE_BUFFER),
-                          ('SINGLE_BUFFER', egl.EGL_SINGLE_BUFFER)])
-
-    surface_attrib.extend([('RENDER_BUFFER', egl.EGL_RENDER_BUFFER)])
+    class ClientAPIFlag(IntFlag):
+        OPENGL_ES = egl.EGL_OPENGL_ES_BIT
+        OPENGL_ES_BIT = egl.EGL_OPENGL_ES_BIT
+        OPENVG = egl.EGL_OPENVG_BIT
+        OPENVG_BIT = egl.EGL_OPENVG_BIT
 
     class ClientBufferType(IntEnum):
         OPENVG_IMAGE = egl.EGL_OPENVG_IMAGE
@@ -157,37 +154,45 @@ if egl.egl_version >= (1, 2):
         LUMINANCE = egl.EGL_LUMINANCE_BUFFER
         LUMINANCE_BUFFER = egl.EGL_LUMINANCE_BUFFER
 
+    class ContextAttrib(IntEnum):
+        CLIENT_TYPE = egl.EGL_CONTEXT_CLIENT_TYPE
+        CONTEXT_CLIENT_TYPE = egl.EGL_CONTEXT_CLIENT_TYPE
+
     class SwapBehavior(IntEnum):
         BUFFER_DESTROYED = egl.EGL_BUFFER_DESTROYED
         BUFFER_PRESERVED = egl.EGL_BUFFER_PRESERVED
 
-    __all__.extend(['ClientAPIFlag', 'ClientBufferType', 'ColorBufferType',
-                    'SwapBehavior'])
+    __all__.extend(['ClientAPI', 'ClientAPIFlag', 'ClientBufferType',
+                    'ColorBufferType', 'ContextAttrib', 'SwapBehavior'])
 
 
 if egl.egl_version >= (1, 3):
-    client_api_flag.extend([('OPENGL_ES2', egl.EGL_OPENGL_ES2_BIT),
-                            ('OPENGL_ES2_BIT', egl.EGL_OPENGL_ES2_BIT)])
+    for name, value in [('OPENGL_ES2', egl.EGL_OPENGL_ES2_BIT),
+                        ('OPENGL_ES2_BIT', egl.EGL_OPENGL_ES2_BIT)]:
+        extend_enum(ClientAPI, name, value)
 
-    config_attrib.extend([('CONFORMANT', egl.EGL_CONFORMANT),
-                          ('MATCH_NATIVE_PIXMAP',
-                           egl.EGL_MATCH_NATIVE_PIXMAP)])
+    for name, value in [('CONFORMANT', egl.EGL_CONFORMANT),
+                        ('MATCH_NATIVE_PIXMAP', egl.EGL_MATCH_NATIVE_PIXMAP)]:
+        extend_enum(ConfigAttrib, name, value)
 
-    context_attrib.extend([('CLIENT_VERSION', egl.EGL_CONTEXT_CLIENT_VERSION),
-                           ('CONTEXT_CLIENT_VERSION',
-                            egl.EGL_CONTEXT_CLIENT_VERSION)])
+    for name, value in [('CLIENT_VERSION', egl.EGL_CONTEXT_CLIENT_VERSION),
+                        ('CONTEXT_CLIENT_VERSION',
+                         egl.EGL_CONTEXT_CLIENT_VERSION)]:
+        extend_enum(ContextAttrib, name, value)
 
-    surface_attrib.extend([('VG_ALPHA_FORMAT', egl.EGL_VG_ALPHA_FORMAT),
-                           ('VG_COLORSPACE', egl.EGL_VG_COLORSPACE)])
+    for name, value in [('VG_ALPHA_FORMAT', egl.EGL_VG_ALPHA_FORMAT),
+                        ('VG_COLORSPACE', egl.EGL_VG_COLORSPACE)]:
+        extend_enum(SurfaceAttrib, name, value)
 
-    surface_type_flag.extend([('VG_ALPHA_FORMAT_PRE',
-                               egl.EGL_VG_ALPHA_FORMAT_PRE_BIT),
-                              ('VG_ALPHA_FORMAT_PRE_BIT',
-                               egl.EGL_VG_ALPHA_FORMAT_PRE_BIT),
-                              ('VG_COLORSPACE_LINEAR',
-                               egl.EGL_VG_COLORSPACE_LINEAR_BIT),
-                              ('VG_COLORSPACE_LINEAR_BIT',
-                               egl.EGL_VG_COLORSPACE_LINEAR_BIT)])
+    for name, value in [('VG_ALPHA_FORMAT_PRE',
+                         egl.EGL_VG_ALPHA_FORMAT_PRE_BIT),
+                        ('VG_ALPHA_FORMAT_PRE_BIT',
+                         egl.EGL_VG_ALPHA_FORMAT_PRE_BIT),
+                        ('VG_COLORSPACE_LINEAR',
+                         egl.EGL_VG_COLORSPACE_LINEAR_BIT),
+                        ('VG_COLORSPACE_LINEAR_BIT',
+                         egl.EGL_VG_COLORSPACE_LINEAR_BIT)]:
+        extend_enum(SurfaceTypeFlag, name, value)
 
     class VGAlphaFormat(IntEnum):
         NONPRE = egl.EGL_VG_ALPHA_FORMAT_NONPRE
@@ -209,20 +214,23 @@ if egl.egl_version >= (1, 3):
 
 
 if egl.egl_version >= (1, 4):
-    surface_type_flag.extend([('MULTISAMPLE_RESOLVE_BOX',
-                               egl.EGL_MULTISAMPLE_RESOLVE_BOX_BIT),
-                              ('MULTISAMPLE_RESOLVE_BOX_BIT',
-                               egl.EGL_MULTISAMPLE_RESOLVE_BOX_BIT),
-                              ('SWAP_BEHAVIOR_PRESERVED',
-                               egl.EGL_SWAP_BEHAVIOR_PRESERVED_BIT),
-                              ('SWAP_BEHAVIOR_PRESERVED_BIT',
-                               egl.EGL_SWAP_BEHAVIOR_PRESERVED_BIT)])
+    for name, value in [('MULTISAMPLE_RESOLVE_BOX',
+                         egl.EGL_MULTISAMPLE_RESOLVE_BOX_BIT),
+                        ('MULTISAMPLE_RESOLVE_BOX_BIT',
+                         egl.EGL_MULTISAMPLE_RESOLVE_BOX_BIT),
+                        ('SWAP_BEHAVIOR_PRESERVED',
+                         egl.EGL_SWAP_BEHAVIOR_PRESERVED_BIT),
+                        ('SWAP_BEHAVIOR_PRESERVED_BIT',
+                         egl.EGL_SWAP_BEHAVIOR_PRESERVED_BIT)]:
+        extend_enum(SurfaceTypeFlag, name, value)
 
-    client_api.extend([('OPENGL', egl.EGL_OPENGL_API),
-                       ('OPENGL_API', egl.EGL_OPENGL_API)])
+    for name, value in [('OPENGL', egl.EGL_OPENGL_API),
+                        ('OPENGL_API', egl.EGL_OPENGL_API)]:
+        extend_enum(ClientAPI, name, value)
 
-    client_api_flag.extend([('OPENGL', egl.EGL_OPENGL_BIT),
-                            ('OPENGL_BIT', egl.EGL_OPENGL_BIT)])
+    for name, value in [('OPENGL', egl.EGL_OPENGL_BIT),
+                        ('OPENGL_BIT', egl.EGL_OPENGL_BIT)]:
+        extend_enum(ClientAPIFlag, name, value)
 
 
     class MultisampleResolve(IntEnum):
@@ -235,37 +243,39 @@ if egl.egl_version >= (1, 4):
 
 
 if egl.egl_version >= (1, 5):
-    client_api_flag.extend([('OPENGL_ES3', egl.EGL_OPENGL_ES3_BIT),
-                            ('OPENGL_ES3_BIT', egl.EGL_OPENGL_ES3_BIT)])
+    for name, value in [('OPENGL_ES3', egl.EGL_OPENGL_ES3_BIT),
+                        ('OPENGL_ES3_BIT', egl.EGL_OPENGL_ES3_BIT)]:
+        extend_enum(ClientAPIFlag, name, value)
 
-    context_attrib.extend([('MAJOR_VERSION', egl.EGL_CONTEXT_MAJOR_VERSION),
-                           ('CONTEXT_MAJOR_VERSION',
-                            egl.EGL_CONTEXT_MAJOR_VERSION),
-                           ('MINOR_VERSION', egl.EGL_CONTEXT_MINOR_VERSION),
-                           ('CONTEXT_MINOR_VERSION',
-                            egl.EGL_CONTEXT_MINOR_VERSION),
-                           ('OPENGL_PROFILE',
-                            egl.EGL_CONTEXT_OPENGL_PROFILE_MASK),
-                           ('CONTEXT_OPENGL_PROFILE_MASK',
-                            egl.EGL_CONTEXT_OPENGL_PROFILE_MASK),
-                           ('OPENGL_DEBUG', egl.EGL_CONTEXT_OPENGL_DEBUG),
-                           ('CONTEXT_OPENGL_DEBUG',
-                            egl.EGL_CONTEXT_OPENGL_DEBUG),
-                           ('OPENGL_FORWARD_COMPATIBLE',
-                            egl.EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE),
-                           ('CONTEXT_OPENGL_FORWARD_COMPATIBLE',
-                            egl.EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE),
-                           ('OPENGL_ROBUST_ACCESS',
-                            egl.EGL_CONTEXT_OPENGL_ROBUST_ACCESS),
-                           ('CONTEXT_OPENGL_ROBUST_ACCESS',
-                            egl.EGL_CONTEXT_OPENGL_ROBUST_ACCESS),
-                           ('OPENGL_RESET_NOTIFICATION_STRATEGY',
-                            egl.EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY),
-                           ('CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY',
-                            egl.EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY)
-                           ])
+    for name, value in [('MAJOR_VERSION', egl.EGL_CONTEXT_MAJOR_VERSION),
+                        ('CONTEXT_MAJOR_VERSION',
+                         egl.EGL_CONTEXT_MAJOR_VERSION),
+                        ('MINOR_VERSION', egl.EGL_CONTEXT_MINOR_VERSION),
+                        ('CONTEXT_MINOR_VERSION',
+                         egl.EGL_CONTEXT_MINOR_VERSION),
+                        ('OPENGL_PROFILE',
+                         egl.EGL_CONTEXT_OPENGL_PROFILE_MASK),
+                        ('CONTEXT_OPENGL_PROFILE_MASK',
+                         egl.EGL_CONTEXT_OPENGL_PROFILE_MASK),
+                        ('OPENGL_DEBUG', egl.EGL_CONTEXT_OPENGL_DEBUG),
+                        ('CONTEXT_OPENGL_DEBUG',
+                         egl.EGL_CONTEXT_OPENGL_DEBUG),
+                        ('OPENGL_FORWARD_COMPATIBLE',
+                         egl.EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE),
+                        ('CONTEXT_OPENGL_FORWARD_COMPATIBLE',
+                         egl.EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE),
+                        ('OPENGL_ROBUST_ACCESS',
+                         egl.EGL_CONTEXT_OPENGL_ROBUST_ACCESS),
+                        ('CONTEXT_OPENGL_ROBUST_ACCESS',
+                         egl.EGL_CONTEXT_OPENGL_ROBUST_ACCESS),
+                        ('OPENGL_RESET_NOTIFICATION_STRATEGY',
+                         egl.EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY),
+                        ('CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY',
+                         egl.EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY)]:
+        extend_enum(ContextAttrib, name, value)
 
-    surface_attrib.extend([('GL_COLORSPACE', egl.EGL_GL_COLORSPACE)])
+    for name, value in [('GL_COLORSPACE', egl.EGL_GL_COLORSPACE)]:
+        extend_enum(SurfaceAttrib, name, value)
 
 
     class GLColorspace(IntEnum):
@@ -339,27 +349,3 @@ if egl.egl_version >= (1, 5):
     __all__.extend(['GLColorspace', 'ImageAttrib', 'ImageTarget', 'Platform',
                     'PlatformAttrib', 'SyncAttrib', 'SyncCondition',
                     'SyncFlag', 'SyncResult', 'SyncType'])
-
-# Construct enumerations that may have expanded.
-ConfigAttrib = IntEnum('ConfigAttrib', config_attrib, module=__name__)
-
-SurfaceAttrib = IntEnum('SurfaceAttrib', surface_attrib, module=__name__)
-
-SurfaceTypeFlag = IntFlag('SurfaceTypeFlag', surface_type_flag,
-                          module=__name__)
-
-if client_api is not None:
-    ClientAPI = IntEnum('ClientAPI', client_api, module=__name__)
-    __all__.append('ClientAPI')
-
-if client_api_flag is not None:
-    ClientAPIFlag = IntFlag('ClientAPIFlag', client_api_flag, module=__name__)
-    __all__.append('ClientAPIFlag')
-
-if context_attrib is not None:
-    ContextAttrib = IntEnum('ContextAttrib', client_api_flag, module=__name__)
-    __all__.append('ContextAttrib')
-
-if render_buffer is not None:
-    RenderBuffer = IntEnum('RenderBuffer', render_buffer, module=__name__)
-    __all__.append('RenderBuffer')
