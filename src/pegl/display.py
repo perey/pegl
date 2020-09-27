@@ -19,11 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 __all__ = ['Display', 'NoDisplay']
 
 # Standard library imports.
 import ctypes
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 from weakref import WeakValueDictionary
 
 # Local imports.
@@ -37,7 +39,7 @@ class Config: # TODO!
         self._as_parameter_ = handle
 
 _display_cache = WeakValueDictionary()
-def _add_to_cache(display):
+def _add_to_cache(display: Display):
     """Add a display to the cache."""
     try:
         key = display._as_parameter_.value
@@ -46,7 +48,7 @@ def _add_to_cache(display):
 
     _display_cache[key] = display
 
-def _remove_from_cache(display):
+def _remove_from_cache(display: Display):
     """Remove a display from the cache."""
     try:
         key = display._as_parameter_.value
@@ -64,7 +66,7 @@ class Display:
 
     """
     def __init__(self, display_id: Optional[int]=None, init: bool=True,
-                 *, handle=None):
+                 *, handle: Any=None):
         # Specifying a display by its EGLDisplay handle overrides everything
         # else.
         if handle is not None:
@@ -111,14 +113,14 @@ class Display:
         if egl.egl_version >= (1, 2):
             egl.eglReleaseThread()
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         try:
             return (other._as_parameter_ == self._as_parameter_)
         except AttributeError:
             return False
 
     @classmethod
-    def get_current_display(cls) -> 'Display':
+    def get_current_display(cls) -> Display:
         """Get the display for the current context on the calling thread."""
         handle = egl.eglGetCurrentDisplay()
         try:
@@ -127,8 +129,8 @@ class Display:
             dpy = cls(handle=handle)
         return dpy
 
-    def choose_config(self, attribs: Dict[ConfigAttrib, Any],
-                      num_config: Optional[int]=None) -> Tuple[Config, ...]:
+    def choose_config(self, attribs: dict[ConfigAttrib, Any],
+                      num_config: Optional[int]=None) -> tuple[Config, ...]:
         """Get available configurations that match given attributes."""
         if num_config is None:
             num_config = self.get_config_count()
@@ -142,7 +144,7 @@ class Display:
         return egl.eglGetConfigs(self, None, 0)
 
     def get_configs(self, num_config: Optional[int]=None
-                    ) -> Tuple[Config, ...]:
+                    ) -> tuple[Config, ...]:
         """Get a list of available configurations."""
         if num_config is None:
             num_config = self.get_config_count()
@@ -150,7 +152,7 @@ class Display:
         actual_count = egl.eglGetConfigs(self, configs, num_config)
         return tuple(Config(configs[n]) for n in range(actual_count))
 
-    def initialize(self) -> Tuple[int, int]:
+    def initialize(self) -> tuple[int, int]:
         """Initialise this display."""
         return egl.eglInitialize(self)
 
@@ -159,7 +161,7 @@ class Display:
         egl.eglTerminate(self)
 
     @property
-    def attribs(self) -> Dict[Any, Any]:
+    def attribs(self) -> dict[Any, Any]:
         return self._attribs
 
     @property
@@ -171,7 +173,7 @@ class Display:
         return egl.eglQueryString(self, egl.EGL_VENDOR).decode()
 
     @property
-    def version(self) -> Tuple[int, int, str]:
+    def version(self) -> tuple[int, int, str]:
         vnum, vendor_info = self.version_string.split(maxsplit=1)
         major, minor = vnum.split('.', maxsplit=1)
         return int(major), int(minor), vendor_info
@@ -194,7 +196,7 @@ if egl.egl_version >= (1, 2):
         return egl.eglQueryString(self, egl.EGL_CLIENT_APIS).decode()
     Display.client_apis = property(client_apis)
 
-    def release_thread():
+    def release_thread() -> None:
         """Release EGL resources used in this thread.
 
         This cleanup is performed automatically for the current thread when
@@ -208,13 +210,11 @@ if egl.egl_version >= (1, 2):
     __all__.extend(['release_thread'])
 
 if egl.egl_version >= (1, 5):
-    from .enums import (ImageAttrib, ImageTarget, Platform, PlatformAttrib,
-                        SyncAttrib, SyncType)
     from .image import Image
     from .sync import Sync
 
     def get_platform_display(cls, platform: Platform, native_display: int,
-                             attribs: Optional[Dict[PlatformAttrib, Any]]=None,
+                             attribs: Optional[dict[PlatformAttrib, Any]]=None,
                              init: bool=True) -> Display:
         """Get a display associated with a given platform."""
         handle = egl.eglGetPlatformDisplay(platform, native_display,
@@ -227,7 +227,7 @@ if egl.egl_version >= (1, 5):
     Display.get_platform_display = classmethod(get_platform_display)
 
     def create_image(self, target: ImageTarget, buffer, int,
-                     attribs: Optional[Dict[ImageAttrib, Any]]=None) -> Image:
+                     attribs: Optional[dict[ImageAttrib, Any]]=None) -> Image:
         """Create an image from the given buffer.
 
         This method creates an image without reference to a context. None
@@ -240,7 +240,7 @@ if egl.egl_version >= (1, 5):
     Display.create_image = create_image
 
     def create_sync(self, synctype: SyncType,
-                    attribs: Optional[Dict[SyncAttrib, Any]]=None) -> Sync:
+                    attribs: Optional[dict[SyncAttrib, Any]]=None) -> Sync:
         """Create a sync object."""
         return Sync(self, egl.eglCreateSync(self, synctype,
                                             attrib_list(attribs)))

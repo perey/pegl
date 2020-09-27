@@ -19,17 +19,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 __all__ = ['attrib_list']
 
 # Standard library imports.
 from itertools import chain
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 # Local imports.
 from .egl import EGL_NONE
 from .egl._common import EGLAttrib, EGLint
 
-def attrib_list(attribs: Optional[Dict[Any, Any]], new_type=False):
+def attrib_list(attribs: Optional[dict[Any, Any]], new_type=False):
     """Convert a Python dict into an EGL attribute list.
 
     Keyword arguments:

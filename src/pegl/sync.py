@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 __all__ = ['wait_gl', 'wait_native']
 
 # Standard library imports
@@ -69,7 +71,7 @@ if egl.egl_version >= (1, 5):
 
     class Sync:
         """An object that is 'signalled' when a condition is met."""
-        def __init__(self, display: 'Display', handle: Any):
+        def __init__(self, display: Display, handle: Any):
             self._as_parameter_ = handle
             self._display = display
 
