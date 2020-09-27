@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-__all__ = ['attrib_list']
+__all__ = ['attrib_list', 'DONT_CARE']
 
 # Standard library imports.
 from itertools import chain
@@ -53,3 +53,5 @@ def attrib_list(attribs: Optional[dict[Any, Any]], new_type=False):
         seq = [*chain.from_iterable(attribs.items()), EGL_NONE]
 
         return (ctype * length)(seq)
+
+DONT_CARE = egl.EGL_DONT_CARE

@@ -33,10 +33,7 @@ from . import egl
 from .attribs import attrib_list
 from .enums import ConfigAttrib
 from .errors import BadDisplayError
-##from .config import Config
-class Config: # TODO!
-    def __init__(self, handle):
-        self._as_parameter_ = handle
+from .config import Config
 
 _display_cache = WeakValueDictionary()
 def _add_to_cache(display: Display):
@@ -236,12 +233,15 @@ if egl.egl_version >= (1, 5):
 
         """
         return Image(self, egl.eglCreateImage(self, EGL_NO_CONTEXT, target,
-                                              buffer, attrib_list(attribs)))
+                                              buffer, attrib_list(attribs,
+                                                                  new_type=True
+                                                                  )))
     Display.create_image = create_image
 
     def create_sync(self, synctype: SyncType,
                     attribs: Optional[dict[SyncAttrib, Any]]=None) -> Sync:
         """Create a sync object."""
         return Sync(self, egl.eglCreateSync(self, synctype,
-                                            attrib_list(attribs)))
+                                            attrib_list(attribs, new_type=True)
+                                            ))
     Display.create_sync = create_sync

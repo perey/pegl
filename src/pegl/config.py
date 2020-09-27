@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''EGL configuration management.'''
+"""EGL configuration management for Pegl."""
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012, 2020 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -19,297 +19,260 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 # Standard library imports.
-from collections import namedtuple
-from ctypes import c_void_p
+from typing import Any, Optional
 
 # Local imports.
-from . import native
-from .attribs import attr_convert, AttribList, DONT_CARE
-from .attribs.config import Caveats, CBufferTypes, ConfigAttribs
-
-MAX_CONFIGS = 256 # Arbitrary! "256 configs should be enough for anybody..."
-
-# TODO: Consider making these two functions methods of Display instead.
-def count_configs(display):
-    '''Get the number of configurations supported for a given display.
-
-    Keyword arguments:
-        display -- The EGL display for which to check configurations.
-
-    '''
-    count = native.make_int_p()
-    # Calling eglGetConfigs with a null pointer (i.e. None) gets the
-    # total number of available configurations, without retrieving any.
-    native.eglGetConfigs(display, None, 0, count)
-
-    # Dereference the pointer holding the result.
-    return count.contents.value
-
-def get_configs(display, attribs=None, max_configs=MAX_CONFIGS):
-    '''Get supported configurations for a given display.
-
-    Keyword arguments:
-        display -- The EGL display for which to check configurations.
-        attribs -- An optional mapping (a dict or AttribList) that lists
-            attributes required of any configurations. The EGL standard
-            specifies which attributes must match exactly, which must be
-            the given value or greater, and which match at least the
-            given flags in a bit mask.
-        max_configs -- The maximum number of configurations to return.
-            If omitted, the default is {}. If None, count_configs() will
-            be called first to ensure that all available configurations
-            are retrieved.
-            
-
-    '''.format(MAX_CONFIGS)
-    if max_configs is None:
-        max_configs = count_configs(display)
-
-    configs = (c_void_p * max_configs)()
-    actual_count = native.make_int_p()
-
-    if attribs is None:
-        # Get all configurations.
-        native.eglGetConfigs(display, configs, max_configs, actual_count)
-    else:
-        # Get configurations that match the required attributes.
-        if type(attribs) is not AttribList:
-            attribs = AttribList(ConfigAttribs, attribs)
-
-        native.eglChooseConfig(display, attribs, configs, max_configs,
-                               actual_count)
-
-    return tuple(Config(cfg, display)
-                 for cfg in configs[:actual_count.contents.value])
-
+from . import egl
+from .attribs import attrib_list
+from .enums import ConfigCaveat, SurfaceTypeFlag, TransparentType
+from .context import Context
+from .surface import Surface
 
 class Config:
-    '''A set of EGL configuration options.
+    """A set of EGL configuration options."""
+    def __init__(self, _display: Display, handle: Any):
+        self._display = display
+        self._as_parameter_ = handle
 
-    Instance attributes:
-        config_id -- The unique identifier for this configuration.
-        chandle -- The foreign object handle for this configuration.
-        display -- The EGL display to which this configuration belongs.
-        alpha_mask_size -- The size in bits of the alpha mask buffer.
-        bind_textures -- Texture types that this configuration allows
-            binding to.
-        caveat -- A caveat regarding speed or conformance when using
-            this configuration.
-        conformant_apis -- A bit mask specifying the APIs to which this
-            configuration claims conformance.
-        color_buffer -- A dict of the color buffer type and bit sizes
-            in this configuration.
-        depth_buffer_size -- The size in bits of the depth buffer.
-        frame_buffer_level -- The level at which surfaces are created
-            in the frame buffer.
-        multisample -- A dict giving the number of multisample buffers
-            available and the number of samples per pixel. Note that the
-            EGL specification limits the former value to 0 or 1.
-        native_renderable -- Whether or not this configuration allows
-            rendering to its surfaces from the native system.
-        native_visual -- A 2-tuple of the ID and type of the native
-            visual associated with this configuration, if any.
-        pbuffer_limits -- The maximum width, height, and total number of
-            pixels accepted by the pbuffer (pixel buffer).
-        renderable_contexts -- A bit mask specifying which client APIs
-            can render to contexts in this configuration.
-        stencil_buffer_size -- The size in bits of the stencil buffer.
-        surface_types -- A bit mask specifying which EGL surface type
-            attributes are supported by this configuration.
-        swap_intervals -- The range of values accepted for the number of
-            swap intervals between buffer swaps. A 2-tuple in the form
-            (min, max + 1).
-        transparent_pixels -- A dict specifying which type of
-            transparency this configuration supports, if any, and what
-            the relevant transparency values are if it does.
+    def create_context(self, share_context: Optional[Context]=None,
+                       attribs: Optional[dict[ContextAttrib, Any]]=None
+                       ) -> Context:
+        """Create a rendering context that uses this configuration."""
+        return Context(self._display,
+                       egl.eglCreateContext(self._display, self,
+                                            EGL_NO_CONTEXT if share_context
+                                            is None else share_context,
+                                            attrib_list(attribs)))
 
-    '''
-    def __init__(self, chandle, display):
-        '''Initialise the configuration.
+    def create_pbuffer_surface(self,
+                               attribs: Optional[dict[SurfaceAttrib,
+                                                      Any]]=None) -> Surface:
+        """Create a pbuffer (off-screen) rendering surface."""
+        return Surface(self._display,
+                       egl.eglCreatePbufferSurface(self._display, self,
+                                                   attrib_list(attribs)))
 
-        Keyword arguments:
-            chandle -- As the instance attribute. This is treated as an
-                opaque value and should be passed unchanged from the
-                foreign function that provided this configuration.
-            display -- As the instance attribute.
+    def create_pixmap_surface(self, pixmap: int,
+                              attribs: Optional[dict[SurfaceAttrib,
+                                                     Any]]=None) -> Surface:
+        """Create a pixmap (off-screen) rendering surface."""
+        return Surface(self._display,
+                       egl.eglCreatePixmapSurface(self._display, self, pixmap,
+                                                  attrib_list(attribs)))
 
-        '''
-        self.chandle = chandle
-        self.display = display
+    def create_window_surface(self, win: int,
+                              attribs: Optional[dict[SurfaceAttrib, Any]]=None
+                              ) -> Surface:
+        """Create a window (on-screen) rendering surface."""
+        return Surface(self._display,
+                       egl.eglCreateWindowSurface(self._display, self, win,
+                                                  attrib_list(attribs)))
+
+    def get_config_attrib(self, attribute: ConfigAttrib) -> int:
+        """Get an attribute of this configuration.
+
+        Users will generally not need this function, as the available
+        attributes may be queried using properties instead.
+
+        """
+        return egl.eglGetConfigAttrib(self._display, self, attribute)
 
     @property
-    def _as_parameter_(self):
-        '''Get the config reference for use by foreign functions.'''
-        return self.chandle
-
-    def _attr(self, attr):
-        '''Get the value of a configuration attribute.
-
-        Keyword arguments:
-            attr -- The value identifying the desired attribute. Best
-                supplied as a symbolic constant from ConfigAttribs.
-
-        Returns:
-            An integer, boolean, or bit mask value, as appropriate to
-            the attribute in question, or None if the value indicates
-            the symbolic constant NONE, or DONT_CARE if that value is
-            allowed and indicated.
-
-        '''
-        # Call the foreign function, which stores its result in a pointer.
-        result = native.make_int_p()
-        native.eglGetConfigAttrib(self.display, self, attr, result)
-
-        # Dereference the pointer and convert to an appropriate type.
-        return attr_convert(attr, result.contents.value, ConfigAttribs)
+    def alpha_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_ALPHA_SIZE)
 
     @property
-    def alpha_mask_size(self):
-        '''Get the size in bits of the alpha mask buffer.'''
-        return self._attr(ConfigAttribs.ALPHA_MASK_SIZE)
+    def blue_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_BLUE_SIZE)
 
     @property
-    def bind_textures(self):
-        '''Get texture types that this configuration allows binding to.'''
-        texs = []
-        if self._attr(ConfigAttribs.BIND_TO_TEXTURE_RGB):
-            texs.append('RGB')
-        if self._attr(ConfigAttribs.BIND_TO_TEXTURE_RGBA):
-            texs.append('RGBA')
-        return tuple(texs)
+    def buffer_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_BUFFER_SIZE)
 
     @property
-    def caveat(self):
-        '''Get the rendering caveat for this configuration, if any.
-
-        Note that the caveat of non-conformance refers only to OpenGL ES
-        and is superseded by the conformant_apis attribute, which should
-        be relied upon instead.
-
-        '''
-        cav = self._attr(ConfigAttribs.CONFIG_CAVEAT)
-
-        if cav == Caveats.SLOW:
-            return 'slow'
-        elif cav == Caveats.NONCONFORMANT:
-            return 'non-conformant'
-        else:
-            # Could be None, DONT_CARE, or unrecognised.
-            return cav
+    def config_caveat(self) -> Optional[ConfigCaveat]:
+        caveat = ConfigCaveat(egl.eglGetConfigAttrib(self._display, self,
+                                                     egl.EGL_CONFIG_CAVEAT))
+        return (None if caveat == ConfigCaveat.NONE else caveat)
 
     @property
-    def conformant_apis(self):
-        '''List client APIs to which this configuration is conformant.
-
-        The claim of conformance is made by the EGL implementation
-        itself, and should be trusted or not trusted accordingly.
-
-        '''
-        return self._attr(ConfigAttribs.CONFORMANT)._flags_set
+    def config_id(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_CONFIG_ID)
 
     @property
-    def config_id(self):
-        '''Get the unique identifier for this configuration.'''
-        return self._attr(ConfigAttribs.CONFIG_ID)
+    def depth_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_DEPTH_SIZE)
 
     @property
-    def color_buffer(self):
-        '''Get the color buffer attributes of this configuration.'''
-        btype = self._attr(ConfigAttribs.COLOR_BUFFER_TYPE)
-        buffer_info = {'size': self._attr(ConfigAttribs.BUFFER_SIZE),
-                       'alpha_size': self._attr(ConfigAttribs.ALPHA_SIZE)}
-        if btype == CBufferTypes.RGB:
-            buffer_info['type'] = 'RGB'
-            for key, attr in (('r', ConfigAttribs.RED_SIZE),
-                              ('g', ConfigAttribs.GREEN_SIZE),
-                              ('b', ConfigAttribs.BLUE_SIZE)):
-                buffer_info[key] = self._attr(attr)
-        elif btype == CBufferTypes.LUMINANCE:
-            buffer_info['type'] = 'luminance'
-            buffer_info['luminance'] = self._attr(ConfigAttribs.LUMINANCE_SIZE)
-        else:
-            buffer_info['type'] = 'unknown'
-
-        return buffer_info
+    def green_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_GREEN_SIZE)
 
     @property
-    def depth_buffer_size(self):
-        '''Get the size in bits of the depth buffer.'''
-        return self._attr(ConfigAttribs.DEPTH_SIZE)
+    def max_pbuffer_height(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_MAX_PBUFFER_HEIGHT)
 
     @property
-    def frame_buffer_level(self):
-        '''Get the frame buffer level at which new surfaces are created.
-
-        The default level is 0. Other levels represent overlays and
-        underlays, the exact behaviour of which depends on the native
-        windowing system.
-
-        '''
-        return self._attr(ConfigAttribs.LEVEL)
+    def max_pbuffer_pixels(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_MAX_PBUFFER_PIXELS)
 
     @property
-    def multisample(self):
-        '''Get details of the multisample buffer in this configuration.'''
-        return {'buffers': self._attr(ConfigAttribs.SAMPLE_BUFFERS),
-                'samples': self._attr(ConfigAttribs.SAMPLES)}
+    def max_pbuffer_width(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_MAX_PBUFFER_WIDTH)
 
     @property
-    def native_renderable(self):
-        '''Determine whether native calls can render to EGL surfaces.'''
-        return self._attr(ConfigAttribs.NATIVE_RENDERABLE)
+    def native_renderable(self) -> bool:
+        return bool(egl.eglGetConfigAttrib(self._display, self,
+                                           egl.EGL_NATIVE_RENDERABLE))
 
     @property
-    def native_visual(self):
-        '''Get the native visual associated with this configuration.'''
-        nvid, nvtype = (self._attr(attr)
-                        for attr in (ConfigAttribs.NATIVE_VISUAL_ID,
-                                     ConfigAttribs.NATIVE_VISUAL_TYPE))
-        return {'id': nvid,
-                'type': (None if (nvid == 0 and
-                                  nvtype == ConfigAttribs.NONE)
-                                  # Which it should, if nvid == 0.
-                         else nvtype)}
+    def native_visual_id(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                       egl.EGL_NATIVE_VISUAL_ID)
 
     @property
-    def pbuffer_limits(self):
-        '''Get the maximum dimensions of the pbuffer (pixel buffer).'''
-        return {'width': self._attr(ConfigAttribs.MAX_PBUFFER_WIDTH),
-                'height': self._attr(ConfigAttribs.MAX_PBUFFER_HEIGHT),
-                'pixels': self._attr(ConfigAttribs.MAX_PBUFFER_PIXELS)}
+    def native_visual_type(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                       egl.EGL_NATIVE_VISUAL_TYPE)
 
     @property
-    def renderable_contexts(self):
-        '''List client APIs to which this configuration can render.'''
-        return self._attr(ConfigAttribs.RENDERABLE_TYPE)._flags_set
+    def red_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_RED_SIZE)
 
     @property
-    def stencil_buffer_size(self):
-        '''Get the size in bits of the stencil buffer.'''
-        return self._attr(ConfigAttribs.STENCIL_SIZE)
+    def samples(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_SAMPLES)
 
     @property
-    def surface_types(self):
-        '''List surface types to which this configuration can render.'''
-        # TODO: Separate properties to query some or all of these flags?
-        # (Including the new flags in ext.khr.locksurface)
-        return self._attr(ConfigAttribs.SURFACE_TYPE)._flags_set
+    def sample_buffers(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_SAMPLE_BUFFERS)
 
     @property
-    def swap_intervals(self):
-        '''Get the limits on swap intervals between buffer swaps.'''
-        return (self._attr(ConfigAttribs.MIN_SWAP_INTERVAL),
-                # Upper limit given as max + 1, as normal for ranges in Python.
-                self._attr(ConfigAttribs.MAX_SWAP_INTERVAL) + 1)
+    def stencil_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_STENCIL_SIZE)
 
     @property
-    def transparent_pixels(self):
-        '''Get the transparent pixel support of this configuration.'''
-        ttype = self._attr(ConfigAttribs.TRANSPARENT_TYPE)
-        return (None if (ttype is None or ttype == TransparentTypes.NONE) else
-                'RGB' if ttype == TransparentTypes.RGB else
-                'unknown',
-                {'r': self._attr(ConfigAttribs.TRANSPARENT_RED_VALUE),
-                 'g': self._attr(ConfigAttribs.TRANSPARENT_GREEN_VALUE),
-                 'b': self._attr(ConfigAttribs.TRANSPARENT_BLUE_VALUE)})
+    def surface_type(self) -> SurfaceTypeFlag:
+        return SurfaceTypeFlag(egl.eglGetConfigAttrib(self._display, self,
+                                                      egl.EGL_SURFACE_TYPE))
+
+    @property
+    def transparent_blue_value(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_TRANSPARENT_BLUE_VALUE)
+
+    @property
+    def transparent_green_value(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_TRANSPARENT_GREEN_VALUE)
+
+    @property
+    def transparent_red_value(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_TRANSPARENT_RED_VALUE)
+
+    @property
+    def transparent_type(self) -> Optional[TransparentType]:
+        ttype = TransparentType(egl.eglGetConfigAttrib(
+                                    self._display, self,
+                                    egl.EGL_TRANSPARENT_TYPE))
+        return (None if ttype == TransparentType.NONE else ttype)
+
+
+if egl.egl_version >= (1, 1):
+    def bind_to_texture_rgb(self) -> bool:
+        return bool(egl.eglGetConfigAttrib(self._display, self,
+                                           egl.EGL_BIND_TO_TEXTURE_RGB))
+    config.bind_to_texture_rgb = property(bind_to_texture_rgb)
+
+    def bind_to_texture_rgba(self) -> bool:
+        return bool(egl.eglGetConfigAttrib(self._display, self,
+                                           egl.EGL_BIND_TO_TEXTURE_RGBA))
+    config.bind_to_texture_rgba = property(bind_to_texture_rgba)
+
+    def max_swap_interval(self) -> bool:
+        return bool(egl.eglGetConfigAttrib(self._display, self,
+                                           egl.EGL_MAX_SWAP_INTERVAL))
+    config.max_swap_interval = property(max_swap_interval)
+
+    def min_swap_interval(self) -> bool:
+        return bool(egl.eglGetConfigAttrib(self._display, self,
+                                           egl.EGL_MIN_SWAP_INTERVAL))
+    config.min_swap_interval = property(min_swap_interval)
+
+
+if egl.egl_version >= (1, 2):
+    from .enums import ClientAPIFlag, ClientBufferType, ColorBufferType
+
+    def create_pbuffer_from_client_buffer(self, buftype: ClientBufferType,
+                                          buffer: Any,
+                                          attribs: Optional[dict[SurfaceAttrib,
+                                                                 Any]]=None
+                                          ) -> Surface:
+        """Create a pbuffer (off-screen) surface from a client buffer."""
+        return Surface(self._display,
+                       egl.eglCreatePbufferFromClientBuffer(
+                           self._display, buftype, buffer, self,
+                           attrib_list(attribs)))
+    Config.create_pbuffer_from_client_buffer = \
+        create_pbuffer_from_client_buffer
+
+    def alpha_mask_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_ALPHA_MASK_SIZE)
+    Config.alpha_mask_size = property(alpha_mask_size)
+
+    def color_buffer_type(self) -> ColorBufferType:
+        return ColorBufferType(egl.eglGetConfigAttrib(
+                                   self._display, self,
+                                   egl.EGL_COLOR_BUFFER_TYPE))
+    config.color_buffer_type = property(color_buffer_type)
+
+    def luminance_size(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_LUMINANCE_SIZE)
+    Config.luminance_size = property(luminance_size)
+
+    def renderable_type(self) -> ClientAPIFlag:
+        return ClientAPIFlag(egl.eglGetConfigAttrib(self._display, self,
+                                                    egl.EGL_RENDERABLE_TYPE))
+    config.renderable_type = property(renderable_type)
+
+
+if egl.egl_version >= (1, 3):
+    # ClientAPIFlag already imported under version 1.2, above.
+    def conformant(self) -> ClientAPIFlag:
+        return ClientAPIFlag(egl.eglGetConfigAttrib(self._display, self,
+                                                    egl.EGL_CONFORMANT))
+    config.conformant = property(conformant)
+
+
+if egl.egl_version >= (1, 5):
+    def create_platform_pixmap_surface(self, native_pixmap: int,
+                                       attribs: Optional[dict[SurfaceAttrib,
+                                                              Any]]=None
+                                       ) -> Surface:
+        """Create a pixmap (off-screen) rendering surface."""
+        return Surface(self._display,
+                       egl.eglCreatePlatformPixmapSurface(
+                           self._display, self, native_pixmap,
+                           attrib_list(attribs, new_type=True)))
+    Config.create_platform_pixmap_surface = create_platform_pixmap_surface
+
+    def create_platform_window_surface(self, native_window: int,
+                                       attribs: Optional[dict[SurfaceAttrib,
+                                                              Any]]=None
+                                       ) -> Surface:
+        """Create a window (on-screen) rendering surface."""
+        return Surface(self._display,
+                       egl.eglCreatePlatformWindowSurface(
+                           self._display, self, native_window,
+                           attrib_list(attribs, new_type=True)))
+    Config.create_platform_window_surface = create_platform_window_surface

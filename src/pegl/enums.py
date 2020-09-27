@@ -21,16 +21,30 @@
 
 # Standard library imports.
 from enum import IntEnum, IntFlag
+# TODO: Write your own extensible enums instead. With blackjack! And hex repr!
 
 # Local imports.
 from . import egl
 
-__all__ = ['ConfigAttrib', 'NativeEngine', 'SurfaceTypeFlag']
+__all__ = ['ConfigAttrib', 'ConfigCaveat', 'NativeEngine', 'SurfaceTypeFlag',
+           'TransparentType']
 
 # Enumerations available unchanged from EGL 1.0.
+class ConfigCaveat(IntEnum):
+    NONE = egl.EGL_NONE
+    NON_CONFORMANT = egl.EGL_NON_CONFORMANT_CONFIG
+    NON_CONFORMANT_CONFIG = egl.EGL_NON_CONFORMANT_CONFIG
+    SLOW = egl.EGL_SLOW_CONFIG
+    SLOW_CONFIG = egl.EGL_SLOW_CONFIG
+
 class NativeEngine(IntEnum):
     CORE = egl.EGL_CORE_NATIVE_ENGINE
     CORE_NATIVE_ENGINE = egl.EGL_CORE_NATIVE_ENGINE
+
+class TransparentType(IntEnum):
+    NONE = egl.EGL_NONE
+    RGB = egl.EGL_TRANSPARENT_RGB
+    TRANSPARENT_RGB = egl.EGL_TRANSPARENT_RGB
 
 # Data for enumerations that expand in later versions.
 config_attrib = [('ALPHA_SIZE', egl.EGL_ALPHA_SIZE),
@@ -64,6 +78,8 @@ surface_type_flag = [('PBUFFER', egl.EGL_PBUFFER_BIT),
                      ('WINDOW', egl.EGL_WINDOW_BIT),
                      ('WINDOW_BIT', egl.EGL_WINDOW_BIT)]
 
+client_api_flag = None
+
 # Additional enumerations and data by version.
 if egl.egl_version >= (1, 1):
     config_attrib.extend([('BIND_TO_TEXTURE_RGB', egl.EGL_BIND_TO_TEXTURE_RGB),
@@ -73,10 +89,18 @@ if egl.egl_version >= (1, 1):
                           ('MIN_SWAP_INTERVAL', egl.EGL_MIN_SWAP_INTERVAL)])
 
 if egl.egl_version >= (1, 2):
+    client_api_flag = [('OPENGL_ES', egl.EGL_OPENGL_ES_BIT),
+                       ('OPENGL_ES_BIT', egl.EGL_OPENGL_ES_BIT),
+                       ('OPENVG', egl.EGL_OPENVG_BIT),
+                       ('OPENVG_BIT', egl.EGL_OPENVG_BIT)]
+
     config_attrib.extend([('ALPHA_MASK_SIZE', egl.EGL_ALPHA_MASK_SIZE),
                           ('COLOR_BUFFER_TYPE', egl.EGL_COLOR_BUFFER_TYPE),
                           ('LUMINANCE_SIZE', egl.EGL_LUMINANCE_SIZE),
                           ('RENDERABLE_TYPE', egl.EGL_RENDERABLE_TYPE)])
+
+    class ClientBufferType(IntEnum):
+        OPENVG_IMAGE = egl.EGL_OPENVG_IMAGE
 
     class ColorBufferType(IntEnum):
         RGB = egl.EGL_RGB_BUFFER
@@ -84,7 +108,7 @@ if egl.egl_version >= (1, 2):
         LUMINANCE = egl.EGL_LUMINANCE_BUFFER
         LUMINANCE_BUFFER = egl.EGL_LUMINANCE_BUFFER
 
-    __all__.extend(['ColorBufferType'])
+    __all__.extend(['ClientAPIFlag', 'ClientBufferType', 'ColorBufferType'])
 
 if egl.egl_version >= (1, 3):
     config_attrib.extend([('CONFORMANT', egl.EGL_CONFORMANT),
@@ -100,6 +124,9 @@ if egl.egl_version >= (1, 3):
                               ('VG_COLORSPACE_LINEAR_BIT',
                                egl.EGL_VG_COLORSPACE_LINEAR_BIT)])
 
+    client_api_flag.extend([('OPENGL_ES2', egl.EGL_OPENGL_ES2_BIT),
+                            ('OPENGL_ES2_BIT', egl.EGL_OPENGL_ES2_BIT)])
+
 if egl.egl_version >= (1, 4):
     surface_type_flag.extend([('MULTISAMPLE_RESOLVE_BOX',
                                egl.EGL_MULTISAMPLE_RESOLVE_BOX_BIT),
@@ -110,7 +137,13 @@ if egl.egl_version >= (1, 4):
                               ('SWAP_BEHAVIOR_PRESERVED_BIT',
                                egl.EGL_SWAP_BEHAVIOR_PRESERVED_BIT)])
 
+    client_api_flag.extend([('OPENGL', egl.EGL_OPENGL_BIT),
+                            ('OPENGL_BIT', egl.EGL_OPENGL_BIT)])
+
 if egl.egl_version >= (1, 5):
+    client_api_flag.extend([('OPENGL_ES3', egl.EGL_OPENGL_ES3_BIT),
+                            ('OPENGL_ES3_BIT', egl.EGL_OPENGL_ES3_BIT)])
+
     class ImageAttrib(IntEnum):
         GL_TEXTURE_LEVEL = egl.EGL_GL_TEXTURE_LEVEL
         GL_TEXTURE_ZOFFSET = egl.EGL_GL_TEXTURE_ZOFFSET
@@ -166,3 +199,6 @@ ConfigAttrib = IntEnum('ConfigAttrib', config_attrib, module=__name__)
 
 SurfaceTypeFlag = IntFlag('SurfaceTypeFlag', surface_type_flag,
                           module=__name__)
+
+if client_api_flag is not None:
+    ClientAPIFlag = IntFlag('ClientAPIFlag', client_api_flag, module=__name__)
