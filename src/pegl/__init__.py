@@ -24,6 +24,18 @@ __all__ = ['egl', 'egl_version']
 # Import module objects to the package namespace.
 from .egl import egl_version
 
+from .attribs import *
+from .attribs import __all__ as attribs_all
+__all__.extend(attribs_all)
+
+from .config import *
+from .config import __all__ as config_all
+__all__.extend(config_all)
+
+from .context import *
+from .context import __all__ as context_all
+__all__.extend(context_all)
+
 from .display import *
 from .display import __all__ as display_all
 __all__.extend(display_all)
@@ -39,3 +51,11 @@ __all__.extend(errors_all)
 from .image import *
 from .image import __all__ as image_all
 __all__.extend(image_all)
+
+from .surface import *
+from .surface import __all__ as surface_all
+__all__.extend(surface_all)
+
+from .sync import *
+from .sync import __all__ as sync_all
+__all__.extend(sync_all)

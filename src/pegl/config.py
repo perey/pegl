@@ -21,21 +21,31 @@
 
 from __future__ import annotations
 
+__all__ = ['Config']
+
 # Standard library imports.
 from typing import Any, Optional
 
 # Local imports.
 from . import egl
 from .attribs import attrib_list
+from ._caching import Cached
 from .enums import ConfigCaveat, SurfaceTypeFlag, TransparentType
 from .context import Context
 from .surface import Surface
 
-class Config:
+# TODO: The value of an EGLConfig is not the same as its ID, as retrieved by
+# config_id (on the config or on a surface created from it). This complicates
+# caching quite a bit... And it's entirely possible that it affects other
+# cached types as well!
+
+class Config(Cached):
     """A set of EGL configuration options."""
-    def __init__(self, _display: Display, handle: Any):
+    def __init__(self, display: Display, handle: Any):
         self._display = display
         self._as_parameter_ = handle
+
+        self.__class__._add_to_cache(self)
 
     def create_context(self, share_context: Optional[Context]=None,
                        attribs: Optional[dict[ContextAttrib, Any]]=None
@@ -43,7 +53,7 @@ class Config:
         """Create a rendering context that uses this configuration."""
         return Context(self._display,
                        egl.eglCreateContext(self._display, self,
-                                            EGL_NO_CONTEXT if share_context
+                                            egl.EGL_NO_CONTEXT if share_context
                                             is None else share_context,
                                             attrib_list(attribs)))
 
@@ -185,6 +195,14 @@ class Config:
                                     egl.EGL_TRANSPARENT_TYPE))
         return (None if ttype == TransparentType.NONE else ttype)
 
+
+# These are defined here to avoid a circular dependency issue, where the config
+# module depends on the context or surface module, and vice versa.
+def config(self) -> Config:
+    handle = self.config_id
+    return Config._new_or_existing(handle, self._display, handle)
+Context.config = property(config)
+Surface.config = property(config)
 
 if egl.egl_version >= (1, 1):
     def bind_to_texture_rgb(self) -> bool:

@@ -28,7 +28,7 @@ from itertools import chain
 from typing import Any, Optional
 
 # Local imports.
-from .egl import EGL_NONE
+from .egl import EGL_DONT_CARE, EGL_NONE
 from .egl._common import EGLAttrib, EGLint
 
 def attrib_list(attribs: Optional[dict[Any, Any]], new_type=False):
@@ -54,4 +54,4 @@ def attrib_list(attribs: Optional[dict[Any, Any]], new_type=False):
 
         return (ctype * length)(seq)
 
-DONT_CARE = egl.EGL_DONT_CARE
+DONT_CARE = EGL_DONT_CARE
