@@ -31,7 +31,6 @@ from typing import Any, Optional
 from . import egl
 from .attribs import attrib_list
 from ._caching import Cached
-from .enums import ConfigAttrib
 from .errors import BadDisplayError
 from .config import Config
 from .context import Context
@@ -65,6 +64,7 @@ class Display(Cached):
         self.__class__._add_to_cache(self)
 
         # Forwards compatibility.
+        self._swap_interval = 1 # Default per EGL spec.
         self._attribs = {}
 
         if init:
@@ -190,9 +190,12 @@ Context.release_current = classmethod(release_current)
 
 
 if egl.egl_version >= (1, 1):
+    def get_swap_interval(self) -> int:
+        return self._swap_interval
     def set_swap_interval(self, interval: int) -> None:
         egl.eglSwapInterval(self, interval)
-    Display.swap_interval = property(fset=set_swap_interval)
+        self._swap_interval = interval
+    Display.swap_interval = property(get_swap_interval, set_swap_interval)
 
   
 if egl.egl_version >= (1, 2):

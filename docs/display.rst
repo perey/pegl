@@ -211,19 +211,20 @@ The Display class
         :property:
 
         The minimum interval between buffer swaps, in video frames.
-        **Write**-only.
-        
-        .. todo::
-            Store the last set value (starting with the default), and make
-            this read/write?
 
         Note that while this is a property of the display, there must be a
         currently bound context and surface in the calling thread, and the
         maximum and minimum values for this property are defined by the
         configuration that was used to create that context. Values outside that
         range are not an error, but are silently clamped.
+        
+        A value of 0 means that rendering operations will be shown immediately.
 
-        The underlying EGL function is :eglfunc:`eglSwapInterval`.
+        The underlying EGL function for the setter is
+        :eglfunc:`eglSwapInterval`. When getting this property, its value is
+        not queried from the EGL implementation; instead, it is set to the
+        default value of 1 to begin with, and is then recorded whenever the
+        property is set.
 
         .. availability:: EGL 1.1
 
