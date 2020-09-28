@@ -92,4 +92,5 @@ eglSurfaceAttrib = _load_function('eglSurfaceAttrib', EGLBoolean,
 
 eglSwapInterval = _load_function('eglSwapInterval', EGLBoolean,
                                  (EGLDisplay, Arg.IN, 'dpy'),
-                                 (EGLint, Arg.IN, 'interval'))
+                                 (EGLint, Arg.IN, 'interval'),
+                                 error_on=False)
