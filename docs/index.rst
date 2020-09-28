@@ -15,6 +15,7 @@ Contents
    context
    sync
    image
+   enums
 
 Indices and tables
 ==================

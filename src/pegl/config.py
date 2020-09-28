@@ -121,6 +121,10 @@ class Config(Cached):
         return egl.eglGetConfigAttrib(self._display, self, egl.EGL_GREEN_SIZE)
 
     @property
+    def level(self) -> int:
+        return egl.eglGetConfigAttrib(self._display, self, egl.EGL_LEVEL)
+
+    @property
     def max_pbuffer_height(self) -> int:
         return egl.eglGetConfigAttrib(self._display, self,
                                       egl.EGL_MAX_PBUFFER_HEIGHT)
@@ -146,7 +150,7 @@ class Config(Cached):
                                        egl.EGL_NATIVE_VISUAL_ID)
 
     @property
-    def native_visual_type(self) -> int:
+    def native_visual_type(self) -> Any:
         return egl.eglGetConfigAttrib(self._display, self,
                                        egl.EGL_NATIVE_VISUAL_TYPE)
 

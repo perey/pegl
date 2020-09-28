@@ -219,7 +219,7 @@ if egl.egl_version >= (1, 2):
 if egl.egl_version >= (1, 3):
     for name, value in [('OPENGL_ES2', egl.EGL_OPENGL_ES2_BIT),
                         ('OPENGL_ES2_BIT', egl.EGL_OPENGL_ES2_BIT)]:
-        extend_enum(ClientAPI, name, value)
+        extend_enum(ClientAPIFlag, name, value)
 
     for name, value in [('CONFORMANT', egl.EGL_CONFORMANT),
                         ('MATCH_NATIVE_PIXMAP', egl.EGL_MATCH_NATIVE_PIXMAP)]:
@@ -227,7 +227,10 @@ if egl.egl_version >= (1, 3):
 
     for name, value in [('CLIENT_VERSION', egl.EGL_CONTEXT_CLIENT_VERSION),
                         ('CONTEXT_CLIENT_VERSION',
-                         egl.EGL_CONTEXT_CLIENT_VERSION)]:
+                         egl.EGL_CONTEXT_CLIENT_VERSION),
+                        ('MAJOR_VERSION', egl.EGL_CONTEXT_MAJOR_VERSION),
+                        ('CONTEXT_MAJOR_VERSION',
+                         egl.EGL_CONTEXT_MAJOR_VERSION)]:
         extend_enum(ContextAttrib, name, value)
 
     for name, value in [('VG_ALPHA_FORMAT', egl.EGL_VG_ALPHA_FORMAT),
@@ -297,10 +300,7 @@ if egl.egl_version >= (1, 5):
                         ('OPENGL_ES3_BIT', egl.EGL_OPENGL_ES3_BIT)]:
         extend_enum(ClientAPIFlag, name, value)
 
-    for name, value in [('MAJOR_VERSION', egl.EGL_CONTEXT_MAJOR_VERSION),
-                        ('CONTEXT_MAJOR_VERSION',
-                         egl.EGL_CONTEXT_MAJOR_VERSION),
-                        ('MINOR_VERSION', egl.EGL_CONTEXT_MINOR_VERSION),
+    for name, value in [('MINOR_VERSION', egl.EGL_CONTEXT_MINOR_VERSION),
                         ('CONTEXT_MINOR_VERSION',
                          egl.EGL_CONTEXT_MINOR_VERSION),
                         ('OPENGL_PROFILE',
@@ -365,7 +365,7 @@ if egl.egl_version >= (1, 5):
     class Platform(IntEnum):
         pass
 
-    class PlatformAttrib(IntEnum):
+    class DisplayAttrib(IntEnum):
         pass
 
     class ResetNotificationStrategy(IntEnum):

@@ -1,29 +1,32 @@
-===============
-Display Objects
-===============
-
-.. py:module:: pegl.display
-
-This module provides the :py:class:`Display` class. Instances of this class
-not only represent a (physical or virtual) display device, but also provide
-the environment for all other EGL objects and most other operations. The
-majority of EGL functionality is provided through methods on
-:py:class:`Display` instances or their attributes.
-
+========
 Displays
 ========
 
+.. py:module:: pegl.display
+
+In EGL, a display both represents a (physical or virtual) display device,
+and provides the environment for all other EGL objects and most other
+operations. The majority of EGL functionality is provided through methods on
+:py:class:`Display` instances or their attributes.
+
+The class and function listed below are defined in the
+:py:mod:`pegl.display` module, but are also imported to the top-level
+:py:mod:`pegl` namespace.
+
+The Display class
+=================
+
 .. py:class:: Display(display_id: Optional[int]=None, init=True)
 
-    A display object is both a representation of a (physical or virtual)
-    display, and an environment for other objects.
+    A display is both a representation of a (physical or virtual) display, and
+    an environment for other EGL objects.
 
     The ``display_id`` argument is an optional, platform-specific handle to
     a native display object (a ``wl_display`` on Wayland, a ``HDC`` on Windows,
     etc.), handled as a ``void *`` in C and as an ``int`` in Python. If it is
-    omitted or None, the default EGL display object is used.
+    omitted or ``None``, the default EGL display is used.
 
-    If ``init`` is True (the default), the display object is also initialised,
+    If ``init`` is ``True`` (the default), the display is also initialized,
     just as if its :py:meth:`initialize` method had been called.
 
     Instances of this class are cached until their destructor is called;
@@ -32,16 +35,28 @@ Displays
     to the given ``display_id``, then the special object :py:obj:`NoDisplay`
     is returned.
 
-    The EGL functions underlying the constructor are ``eglGetDisplay`` and,
-    if the ``init`` argument is True, ``eglInitialize``. The destructor calls ``eglTerminate``.
+    .. todo::
+        Actually, that’s not true. Displays are cached by their ``EGLDisplay``
+        handle, not by the ``display_id`` argument. While EGL will return the
+        same handle for the same display_id, a new :py:class:`Display` object
+        will be created (using the same handle). The two will compare equal,
+        though! Relatedly, :py:obj:`NoDisplay` isn’t returned; a
+        :py:class:`Display` instance that compares equal to it is.
 
-    .. py:method:: get_platform_display(platform: Platform,
-                                        native_display: int,
-                                        init=True) -> Display
+    The EGL functions underlying the constructor are :eglfunc:`eglGetDisplay`
+    and, if the ``init`` argument is ``True``, :eglfunc:`eglInitialize`. The
+    destructor calls :eglfunc:`eglTerminate` and, if on EGL 1.2 or later,
+    :eglfunc:`eglReleaseThread`.
 
+    .. availability::
+        EGL 1.0. Passing a ``display_id`` of ``None`` to get a default display
+        is available in EGL 1.4.
+
+    .. py:method::
+        get_platform_display(platform: pegl.enums.Platform, native_display: int, attribs: Optional[dict[pegl.enums.DisplayAttrib, Any]]=None, init=True) -> Display
         :classmethod:
 
-        An alternate constructor for a display object that takes a platform
+        An alternate constructor for a display that takes a platform
         identifier, and allows platform-specific extensions to define what
         the ``native_display`` argument represents. It is generically handled
         as a ``void *`` in C and as an ``int`` in Python, just like the
@@ -50,9 +65,8 @@ Displays
         This method is only available in EGL 1.5, but is the preferred
         constructor when that version is supported.
 
-        If ``init`` is True (the default), the display object is also
-        initialised, just as if its :py:meth:`initialize` method had been
-        called.
+        If ``init`` is ``True`` (the default), the display is also initialized,
+        just as if its :py:meth:`initialize` method had been called.
 
         As with the default constructor, instances created by this function are
         cached until their destructor is called, and calling the constructor
@@ -61,160 +75,216 @@ Displays
         corresponding to the given ``native_display``, then the special object
         :py:obj:`NoDisplay` is returned.
 
-        The underlying EGL functions are ``eglGetPlatformDisplay`` and,
-        if the ``init`` argument is True, ``eglInitialize``.
+        .. todo::
+            And as with the default constructor, that’s not actually true.
 
-    .. py:method:: choose_config(attribs: Dict[ConfigAttrib, Any],
-                                 num_configs: Optional[int]=None)
-                       -> Tuple[Config, ...]
+        The underlying EGL functions are :eglfunc:`eglGetPlatformDisplay` and,
+        if the ``init`` argument is True, :eglfunc:`eglInitialize`.
 
-        Get a list of configurations available on this display object that
-        match the requested attributes.
+        .. availability:: EGL 1.5
 
-        If the optional ``num_configs`` argument is supplied and is not None,
-        then it sets the maximum number of configurations that will be
-        returned. Otherwise, all matching configurations will be returned, as
-        if the value of ``max_configs`` was first retrieved using
+    .. py:method::
+        choose_config(attribs: dict[pegl.enums.ConfigAttrib, Any], num_config: Optional[int]=None) -> tuple[pegl.config.Config, ...]
+
+        Get a list of configurations available on this display that match the
+        requested attributes.
+
+        If the optional ``num_config`` argument is supplied and is not
+        ``None``, then it sets the maximum number of configurations that will
+        be returned. Otherwise, all matching configurations will be returned,
+        as if the value of ``num_config`` was first retrieved using
         :py:meth:`get_config_count`.
 
-        The underlying EGL function is ``eglChooseConfigs``.
+        The underlying EGL function is :eglfunc:`eglChooseConfig`.
+
+        .. availability:: EGL 1.0
 
     .. py:method:: get_config_count() -> int
 
-        Get the number of configurations available on this display object.
+        Get the number of configurations available on this display.
 
-        The underlying EGL function is ``eglGetConfigs`` with a null
+        The underlying EGL function is :eglfunc:`eglGetConfigs` with a null
         ``configs`` argument.
 
-    .. py:method:: get_configs(max_configs: Optional[int]=None)
-                       -> Tuple[Config, ...]
+        .. availability:: EGL 1.0
 
-        Get a list of configurations available on this display object.
+    .. py:method::
+        get_configs(num_config: Optional[int]=None) -> tuple[pegl.config.Config, ...]
 
-        If the optional ``num_configs`` argument is supplied and is not None,
-        then it sets the maximum number of configurations that will be
-        returned. Otherwise, all configurations will be returned, as if
-        the value of ``max_configs`` was first retrieved using
+        Get a list of configurations available on this display.
+
+        If the optional ``num_config`` argument is supplied and is not
+        ``None``, then it sets the maximum number of configurations that will
+        be returned. Otherwise, all configurations will be returned, as if
+        the value of ``num_config`` was first retrieved using
         :py:meth:`get_config_count`.
 
-        The underlying EGL function is ``eglGetConfigs``.
+        The underlying EGL function is :eglfunc:`eglGetConfigs`.
 
-    .. py:method:: create_image(target: ImageTarget, buffer: int,
-                                attribs: Optional[Dict[ImageAttrib, Any]]=None)
-                       -> Image
+        .. availability:: EGL 1.0
+
+    .. py:method::
+        create_image(target: pegl.enums.ImageTarget, buffer: int, attribs: Optional[dict[pegl.enums.ImageAttrib, Any]]=None) -> pegl.image.Image
 
         Create an image object from the given buffer. This creates an image
         without reference to a context (which would indicate the relevant
         client API). To create an image using a context, call the
-        py:meth:`Context.create_image` method of that context instead.
+        :py:meth:`~pegl.context.Context.create_image` method of that context
+        instead.
+
+        Note that there are no targets defined in the core specification that
+        allow image creation without a context. This method is provided to
+        support extension use.
 
         The ``buffer`` argument is a handle to a client buffer. The actual
         type may vary, but it is fundamentally treated as a ``void *`` in C,
         and as an ``int`` in Python.
 
-        This method is only available in EGL 1.5. Note that no targets
-        defined in the core specification allow image creation without a
-        context. This method is provided to support extension use.
+        The underlying EGL function is :eglfunc:`eglCreateImage`, with a
+        ``ctx`` argument of ``EGL_NO_CONTEXT``.
 
-        The underlying EGL function is ``eglCreateImage``, with a ``ctx``
-        argument of ``EGL_NO_CONTEXT``.
+        .. availability:: EGL 1.5
 
-    .. py:method:: create_sync(synctype: SyncType,
-                               attribs: Optional[Dict[SyncAttrib, Any]])
-                       -> Sync
+    .. py:method::
+        create_sync(synctype: pegl.enums.SyncType, attribs: Optional[dict[pegl.enums.SyncAttrib, Any]]) -> pegl.sync.Sync
 
         Create a sync object with the given attributes. Available types are
         the fence sync (which takes no attributes) and the OpenCL event sync
         (which needs an OpenCL event handle).
 
-        This method is only available in EGL 1.5.
+        The underlying function is :eglfunc:`eglCreateSync`.
 
-        The underlying function is ``eglCreateSync``.
+        .. availability:: EGL 1.5
 
-    .. py:method:: initialize() -> None
+    .. py:method:: initialize() -> tuple[int, int]
 
-        Initialise this display object, and by extension, the EGL environment
-        that it provides. Initialisation is done by the constructor unless
-        the ``init`` argument was False. Calling this function again is
-        allowed, but has no effect.
+        Initialize this display, and by extension, the EGL environment that it
+        provides. Initialization is done by the constructor unless the ``init``
+        argument was ``False``. Calling this function again is allowed, but has
+        no effect.
 
-        The display object's py:meth:`version` property is updated when this
-        method is called (or when the constructor initialises the object). It
-        is None when the display object has not been initialised.
+        The version number of the EGL implementation is returned as a tuple
+        ``(major, minor)``. The same information is available from the
+        :py:attr:`version` property.
 
-        The underlying EGL function is ``eglInitialize``.
+        The underlying EGL function is :eglfunc:`eglInitialize`.
+
+        .. availability:: EGL 1.0
 
     .. py:method:: terminate() -> None
 
         Terminate all resources associated with this display. The display
-        itself remains valid, but it must be re-initialised by calling its
+        itself remains valid, but it must be re-initialized by calling its
         :py:meth:`initialize` method.
 
-        The underlying EGL function is ``eglTerminate``.
+        The underlying EGL function is :eglfunc:`eglTerminate`.
 
-    .. py:method:: attribs -> Dict[Attrib, int]
+        .. availability:: EGL 1.0
 
+    .. py:method:: attribs() -> dict[pegl.enums.DisplayAttrib, int]
         :property:
 
-        A read-only property giving a (possibly empty) mapping of attributes to
-        values. This is populated by the alternate constructor
-        :py:meth:`get_platform_display` and is empty if the display object was
-        not created by that function.
+        A (possibly empty) mapping of attributes to values. Read-only.
+        
+        This is populated by the alternate constructor
+        :py:meth:`get_platform_display` and is empty if the display was not
+        created by that function.
 
-    .. py:method:: client_apis -> str
+        .. availability::
+            Provided on all versions, but only populated on EGL 1.5 when
+            :py:meth:`get_platform_display` is used.
 
+    .. py:method:: client_apis() -> str
         :property:
 
-        A read-only property giving a space-separated list of client APIs
-        supported by the EGL implementation on this display. It will always
-        include at least one of ``OpenGL``, ``OpenGL_ES``, or ``OpenVG``.
+        A space-separated list of client APIs supported by the EGL
+        implementation on this display. Read-only.
+        
+        The supported APIs will always include at least one of ``OpenGL``,
+        ``OpenGL_ES``, or ``OpenVG``.
 
-        The underlying EGL function is ``eglQueryString`` with ``name``
+        The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
         ``EGL_CLIENT_APIS``.
 
-    .. py:method:: extensions -> str
+        .. availability:: EGL 1.2
 
+    .. py:method:: extensions() -> str
         :property:
 
-        A read-only property giving a space-separated list of EGL extensions
-        supported by the EGL implementation on this display.
+        A space-separated list of EGL extensions supported by the EGL
+        implementation on this display. Read-only.
 
-        The underlying EGL function is ``eglQueryString`` with ``name``
+        The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
         ``EGL_EXTENSIONS``.
 
-    .. py:method:: swap_interval -> int
+        .. availability:: EGL 1.0
 
+    .. py:method:: swap_interval() -> int
         :property:
 
-        A write-only property that sets the (minimum) interval between buffer
-        swaps, in video frames. Note that while this is a property of the
-        display, there must be a currently bound context and surface in the
-        calling thread, and the maximum and minimum values for this property
-        are defined by the configuration that was used to create that context.
-        Values outside that range are not an error, but are silently clamped.
+        The minimum interval between buffer swaps, in video frames.
+        **Write**-only.
+        
+        .. todo::
+            Store the last set value (starting with the default), and make
+            this read/write?
 
-        The underlying EGL function is ``eglSwapInterval``.
+        Note that while this is a property of the display, there must be a
+        currently bound context and surface in the calling thread, and the
+        maximum and minimum values for this property are defined by the
+        configuration that was used to create that context. Values outside that
+        range are not an error, but are silently clamped.
 
-    .. py:method:: version -> Tuple(int, int, str)
+        The underlying EGL function is :eglfunc:`eglSwapInterval`.
 
+        .. availability:: EGL 1.1
+
+    .. py:method:: vendor() -> str
         :property:
 
-        A read-only property giving the major and minor version numbers, and
-        any vendor-specific information, for the EGL implementation from which
-        this display was obtained.
+        The vendor information for the EGL implementation. Read-only.
 
-        The underlying EGL function is ``eglQueryString`` with ``name``
+        The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
+        ``EGL_VENDOR``.
+
+        .. availability:: EGL 1.0
+
+    .. py:method:: version() -> tuple[int, int, str]
+        :property:
+
+        The major and minor version numbers, and any vendor-specific version
+        information, for the EGL implementation. Read-only.
+
+        The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
         ``EGL_VERSION``.
 
-.. py:object:: NoDisplay(Display)
+        .. availability:: EGL 1.0
+
+    .. py:method:: version_string() -> str
+        :property:
+
+        The version information for the EGL implementation from which this display was obtained. Read-only.
+        
+        This is the same information as the :py:attr:`version` property, but
+        this property does not attempt to parse the string.
+
+        The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
+        ``EGL_VERSION``.
+
+        .. availability:: EGL 1.0
+
+.. py:data:: NoDisplay(Display)
 
     An instance of :py:class:`Display` that is not bound to any physical or
     virtual display. It can be used to query aspects of the EGL implementation,
-    and is also returned when an attempt to create a display object cannot be
-    matched to an available display.
+    and is also returned when an attempt to create a :py:class:`Display`
+    instance cannot be matched to an available display.
 
-    The :py:meth:`extensions` and :py:meth:`version` properties are available
-    on this instance, but other properties and methods are not.
+    The :py:attr:`~Display.extensions` and :py:attr:`~Display.version`
+    properties are valid on this instance, but other properties and methods
+    are not.
+
+    .. availability:: EGL 1.0
 
 Other functions
 ===============
@@ -226,11 +296,10 @@ on a per-thread level).
 .. py:function:: release_thread() -> None
 
     Clear all per-thread state held by EGL for the current thread. This should
-    generally be called after a :py:class:`Display` object is finalised, to
+    generally be called after a :py:class:`Display` object is finalized, to
     complete the clean-up of allocated resources. It may also be called at
     other times.
 
-    TODO: The older version of pegl included this in the Display destructor.
-    Shall I put it back in?
+    The underlying EGL function is :eglfunc:`eglReleaseThread`.
 
-    The underlying EGL function is ``eglReleaseThread``.
+    .. availability:: EGL 1.2

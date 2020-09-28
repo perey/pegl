@@ -77,6 +77,11 @@ class Context(Cached, metaclass=ContextMeta):
             pass
 
     @classmethod
+    def get_current_display(cls) -> Display:
+        # Implemented in pegl.display to avoid dependency problems.
+        raise NotImplementedError
+
+    @classmethod
     def get_current_surface(cls, readdraw: ReadOrDraw) -> Optional[Surface]:
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
@@ -117,12 +122,6 @@ class Context(Cached, metaclass=ContextMeta):
         return egl.eglQueryContext(self._display, self, egl.EGL_CONFIG_ID)
 
 
-if egl.egl_version >= (1, 1):
-    def set_swap_interval(self, interval: int) -> None:
-        egl.eglSwapInterval(self._display, interval)
-    Context.swap_interval = property(fset=set_swap_interval)
-
-
 if egl.egl_version >= (1, 2):
     def bind_api(api: ClientAPI) -> None:
         """Bind a client API as the current renderer in this thread."""
@@ -132,6 +131,8 @@ if egl.egl_version >= (1, 2):
         """Get the client API that is bound for this thread."""
         api = ClientAPI(egl.eglQueryAPI())
         return (None if api == ClientAPI.NONE else api)
+
+    __all__.extend(['bind_api', 'query_api'])
 
     def client_type(self) -> ClientAPI:
         return ClientAPI(egl.eglQueryContext(self._display, self,
