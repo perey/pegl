@@ -24,7 +24,6 @@ from __future__ import annotations
 __all__ = ['Display', 'NoDisplay']
 
 # Standard library imports.
-import ctypes
 from typing import Any, Optional
 
 # Local imports.
@@ -57,8 +56,7 @@ class Display(Cached):
             if egl.egl_version < (1, 4):
                 raise ValueError('default display not available before EGL '
                                  '1.4')
-            else:
-                display_id = egl.EGL_DEFAULT_DISPLAY
+            display_id = egl.EGL_DEFAULT_DISPLAY
 
         self._as_parameter_ = egl.eglGetDisplay(display_id)
         self.__class__._add_to_cache(self)
@@ -95,7 +93,7 @@ class Display(Cached):
 
     def __eq__(self, other: Any) -> bool:
         try:
-            return (other._as_parameter_ == self._as_parameter_)
+            return other._as_parameter_ == self._as_parameter_
         except AttributeError:
             return False
 
@@ -140,24 +138,29 @@ class Display(Cached):
 
     @property
     def attribs(self) -> dict[DisplayAttrib, Any]:
+        """The attributes used to create this display, if any."""
         return self._attribs
 
     @property
     def extensions(self) -> str:
+        """The EGL extensions supported by this display."""
         return egl.eglQueryString(self, egl.EGL_EXTENSIONS).decode()
 
     @property
     def vendor(self) -> str:
+        """The vendor information for the EGL implementation."""
         return egl.eglQueryString(self, egl.EGL_VENDOR).decode()
 
     @property
     def version(self) -> tuple[int, int, str]:
+        """The version information for the EGL implementation."""
         vnum, vendor_info = self.version_string.split(maxsplit=1)
         major, minor = vnum.split('.', maxsplit=1)
         return int(major), int(minor), vendor_info
 
     @property
     def version_string(self) -> str:
+        """The version information string for the EGL implementation."""
         return egl.eglQueryString(self, egl.EGL_VERSION).decode()
 
 
@@ -167,6 +170,7 @@ NoDisplay = Display(handle=egl.EGL_NO_DISPLAY)
 # These are defined here to avoid a circular dependency issue, where the
 # display module depends on the config module, config depends on context, and
 # context depends on display.
+@classmethod
 def get_current_surface(cls, readdraw: ReadOrDraw) -> Optional[Surface]:
     """Get a surface bound to the current context.
 
@@ -180,28 +184,34 @@ def get_current_surface(cls, readdraw: ReadOrDraw) -> Optional[Surface]:
     return (None if handle == egl.EGL_NO_SURFACE else
             Surface._new_or_existing(handle, Display.get_current_display(),
                                      handle))
-Context.get_current_surface = classmethod(get_current_surface)
+Context.get_current_surface = get_current_surface
 
+@classmethod
 def release_current(cls) -> None:
     """Release the current context for the calling thread."""
     egl.eglMakeCurrent(Display.get_current_display(), egl.EGL_NO_SURFACE,
                        egl.EGL_NO_SURFACE, egl.EGL_NO_CONTEXT)
-Context.release_current = classmethod(release_current)
+Context.release_current = release_current
 
 
 if egl.egl_version >= (1, 1):
-    def get_swap_interval(self) -> int:
+    @property
+    def swap_interval(self) -> int:
+        """The number of video frames to wait between buffer swaps."""
         return self._swap_interval
-    def set_swap_interval(self, interval: int) -> None:
+    @swap_interval.setter
+    def swap_interval(self, interval: int) -> None:
         egl.eglSwapInterval(self, interval)
         self._swap_interval = interval
-    Display.swap_interval = property(get_swap_interval, set_swap_interval)
+    Display.swap_interval = swap_interval
 
-  
+
 if egl.egl_version >= (1, 2):
+    @property
     def client_apis(self) -> str:
+        """The client APIs supported on this display."""
         return egl.eglQueryString(self, egl.EGL_CLIENT_APIS).decode()
-    Display.client_apis = property(client_apis)
+    Display.client_apis = client_apis
 
     def release_thread() -> None:
         """Release EGL resources used in this thread.
@@ -245,7 +255,7 @@ if egl.egl_version >= (1, 5):
             dpy.initialize()
     Display.get_platform_display = classmethod(get_platform_display)
 
-    def create_image(self, target: ImageTarget, buffer, int,
+    def create_image(self, target: ImageTarget, buffer: int,
                      attribs: Optional[dict[ImageAttrib, Any]]=None) -> Image:
         """Create an image from the given buffer.
 
