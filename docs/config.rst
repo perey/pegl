@@ -44,16 +44,12 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglCreateContext`.
 
-        .. availability:: EGL 1.0
-
     .. py:method::
         create_pbuffer_surface(attribs: Optional[dict[pegl.enums.SurfaceAttrib, Any]]=None) -> pegl.surface.Surface
 
         Create a pbuffer (off-screen) surface.
 
         The underlying EGL function is :eglfunc:`eglCreatePbufferSurface`.
-
-        .. availability:: EGL 1.0
 
     .. py:method::
         create_pbuffer_from_client_buffer(buftype: pegl.enums.ClientBufferType, buffer: Any, attribs: Optional[dict[pegl.enums.SurfaceAttrib, Any]]=None) -> pegl.surface.Surface
@@ -76,8 +72,6 @@ The Config class
         ``int`` in Python.
 
         The underlying EGL function is :eglfunc:`eglCreatePixmapSurface`.
-
-        .. availability:: EGL 1.0
 
     .. py:method::
         create_platform_pixmap_surface(native_pixmap: int, attribs: Optional[dict[pegl.enums.SurfaceAttrib, Any]]=None) -> pegl.surface.Surface
@@ -127,8 +121,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglCreateWindowSurface`.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: get_config_attrib(attribute: pegl.enums.ConfigAttrib) -> int
 
         Get the value of one of this configuration’s attributes. Users will not
@@ -137,7 +129,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib`.
 
-        .. availability:: EGL 1.0
 
     .. py:method:: alpha_mask_size() -> int
         :property:
@@ -154,8 +145,6 @@ The Config class
         The number of bits in the color buffer allocated to alpha.
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an ``attribute`` of ``EGL_ALPHA_SIZE``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: bind_to_texture_rgb() -> bool
         :property:
@@ -185,8 +174,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_BLUE_SIZE``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: buffer_size() -> int
         :property:
 
@@ -195,8 +182,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_BUFFER_SIZE``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: color_buffer_type() -> pegl.enums.ColorBufferType
         :property:
@@ -223,8 +208,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_CONFIG_CAVEAT``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: config_id() -> int
         :property:
 
@@ -232,8 +215,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_CONFIG_ID``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: conformant() -> pegl.enums.ClientAPIFlag
         :property:
@@ -254,8 +235,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_DEPTH_SIZE``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: green_size() -> int
         :property:
 
@@ -264,8 +243,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_GREEN_SIZE``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: level() -> int
         :property:
 
@@ -273,8 +250,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_LEVEL``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: luminance_size() -> int
         :property:
@@ -294,8 +269,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_MAX_PBUFFER_HEIGHT``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: max_pbuffer_pixels() -> int
         :property:
 
@@ -304,8 +277,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_MAX_PBUFFER_PIXELS``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: max_pbuffer_width() -> int
         :property:
 
@@ -313,8 +284,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_MAX_PBUFFER_WIDTH``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: max_swap_interval() -> int
         :property:
@@ -344,8 +313,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_NATIVE_RENDERABLE``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: native_visual_id() -> int
         :property:
 
@@ -353,8 +320,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_NATIVE_VISUAL_ID``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: native_visual_type() -> Any
         :property:
@@ -371,8 +336,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_RED_SIZE``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: renderable_type() -> ClientAPIFlag
         :property:
@@ -392,8 +355,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_SAMPLES``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: sample_buffers() -> int
         :property:
 
@@ -401,8 +362,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_SAMPLE_BUFFERS``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: stencil_size() -> int
         :property:
@@ -412,8 +371,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_STENCIL_SIZE``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: surface_type() -> pegl.enums.SurfaceTypeFlag
         :property:
 
@@ -421,8 +378,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_SURFACE_TYPE``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: transparent_blue_value() -> int
         :property:
@@ -432,8 +387,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_TRANSPARENT_BLUE_VALUE``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: transparent_green_value() -> int
         :property:
 
@@ -442,8 +395,6 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_TRANSPARENT_GREEN_VALUE``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: transparent_red_value() -> int
         :property:
 
@@ -451,8 +402,6 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_TRANSPARENT_RED_VALUE``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: transparent_type() -> Optional[pegl.enums.TransparentType]
         :property:
@@ -463,5 +412,3 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_TRANSPARENT_TYPE``.
-
-        .. availability:: EGL 1.0

@@ -60,8 +60,6 @@ The Surface class
 
         The underlying EGL function is :eglfunc:`eglCopyBuffers`.
 
-        .. availability:: EGL 1.0
-
     .. py:method::
         release_tex_image(buffer: pegl.enums.RenderBuffer=pegl.enums.RenderBuffer.BACK) -> None
 
@@ -85,8 +83,6 @@ The Surface class
 
         The underlying EGL function is :eglfunc:`eglSwapBuffers`.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: config() -> pegl.config.Config
         :property:
 
@@ -94,8 +90,6 @@ The Surface class
 
         The underlying EGL function is :eglfunc:`eglQuerySurface` with an
         ``attribute`` value of ``EGL_CONFIG_ID``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: config_id() -> int
         :property:
@@ -108,8 +102,6 @@ The Surface class
         The underlying EGL function is :eglfunc:`eglQuerySurface` with an
         ``attribute`` value of ``EGL_CONFIG_ID``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: height() -> int
         :property:
 
@@ -119,8 +111,6 @@ The Surface class
 
         The underlying EGL function is :eglfunc:`eglQuerySurface` with an
         ``attribute`` value of ``EGL_HEIGHT``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: horizontal_resolution() -> Optional[float]
         :property:
@@ -148,8 +138,6 @@ The Surface class
 
         The underlying EGL function is :eglfunc:`eglQuerySurface` with an
         ``attribute`` value of ``EGL_LARGEST_PBUFFER``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: mipmap_level() -> int
         :property:
@@ -278,5 +266,3 @@ The Surface class
 
         The underlying EGL function is :eglfunc:`eglQuerySurface` with an
         ``attribute`` value of ``EGL_WIDTH``.
-
-        .. availability:: EGL 1.0

@@ -97,16 +97,12 @@ The Display class
 
         The underlying EGL function is :eglfunc:`eglChooseConfig`.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: get_config_count() -> int
 
         Get the number of configurations available on this display.
 
         The underlying EGL function is :eglfunc:`eglGetConfigs` with a null
         ``configs`` argument.
-
-        .. availability:: EGL 1.0
 
     .. py:method::
         get_configs(num_config: Optional[int]=None) -> tuple[pegl.config.Config, ...]
@@ -120,8 +116,6 @@ The Display class
         :py:meth:`get_config_count`.
 
         The underlying EGL function is :eglfunc:`eglGetConfigs`.
-
-        .. availability:: EGL 1.0
 
     .. py:method::
         create_image(target: pegl.enums.ImageTarget, buffer: int, attribs: Optional[dict[pegl.enums.ImageAttrib, Any]]=None) -> pegl.image.Image
@@ -169,8 +163,6 @@ The Display class
 
         The underlying EGL function is :eglfunc:`eglInitialize`.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: terminate() -> None
 
         Terminate all resources associated with this display. The display
@@ -178,8 +170,6 @@ The Display class
         :py:meth:`initialize` method.
 
         The underlying EGL function is :eglfunc:`eglTerminate`.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: attribs() -> dict[pegl.enums.DisplayAttrib, int]
         :property:
@@ -217,8 +207,6 @@ The Display class
         The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
         ``EGL_EXTENSIONS``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: swap_interval() -> int
         :property:
 
@@ -247,8 +235,6 @@ The Display class
         The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
         ``EGL_VENDOR``.
 
-        .. availability:: EGL 1.0
-
     .. py:method:: version() -> tuple[int, int, str]
         :property:
 
@@ -257,8 +243,6 @@ The Display class
 
         The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
         ``EGL_VERSION``.
-
-        .. availability:: EGL 1.0
 
     .. py:method:: version_string() -> str
         :property:
@@ -271,8 +255,6 @@ The Display class
         The underlying EGL function is :eglfunc:`eglQueryString` with ``name``
         ``EGL_VERSION``.
 
-        .. availability:: EGL 1.0
-
 .. py:data:: NoDisplay(Display)
 
     An instance of :py:class:`Display` that is not bound to any physical or
@@ -283,8 +265,6 @@ The Display class
     The :py:attr:`~Display.extensions` and :py:attr:`~Display.version`
     properties are valid on this instance, but other properties and methods
     are not.
-
-    .. availability:: EGL 1.0
 
 Other functions
 ===============
