@@ -3,14 +3,14 @@ Pegl: Python 3 binding for EGL
 ==============================
 
 Pegl is a binding to EGL_, written in native Python 3 through the ctypes_
-library. It provides comprehensive access to EGL_ functions, while offering a
+library. It provides comprehensive access to EGL functions, while offering a
 Pythonic API.
 
-EGL_ is a specification from the Khronos Group that provides an
-intermediate layer between other Khronos specifications (OpenGL, OpenGL
-ES, OpenVG), called "client APIs", and the native graphics system. EGL_
-can supply an implicit rendering context for each of the client APIs,
-as well as features like surfaces and buffering.
+EGL is a specification from the Khronos Group that provides an intermediate
+layer between other Khronos specifications (OpenGL, OpenGL ES, OpenVG), called
+“client APIs”, and the native graphics system. EGL can supply an implicit
+rendering context for each of the client APIs, as well as features like
+surfaces and buffering.
 
 Pegl wraps EGL_ version 1.5, and is backwards compatible with previous versions
 of the specification.
@@ -37,7 +37,7 @@ fairly low-level, and the API is not guaranteed to be stable.
 
 Once the basic Pegl functionality is tested and considered usable, I will aim
 to improve the API, so that an EGL environment can be set up with a minimum of
-code. When I'm happy with the results, version numbers will be bumped up to
+code. When I’m happy with the results, version numbers will be bumped up to
 1.x, with a corresponding assurance of API stability.
 
 License
