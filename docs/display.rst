@@ -280,6 +280,12 @@ The Display class
     properties are valid on this instance, but other properties and methods
     are not.
 
+    .. availability::
+        EGL 1.0. Getting the :py:attr:`~Display.extensions` property is first
+        allowed in extensions to EGL 1.4, and is core in EGL 1.5. Getting the
+        :py:attr:`~Display.version` property was allowed in a revision of EGL
+        1.5.
+
 Other functions
 ===============
 
