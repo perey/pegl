@@ -397,5 +397,5 @@ if egl.egl_version >= (1, 5):
         SYNC_CL_EVENT = egl.EGL_SYNC_CL_EVENT
 
     __all__.extend(['GLColorspace', 'ImageAttrib', 'ImageTarget', 'Platform',
-                    'PlatformAttrib', 'SyncAttrib', 'SyncCondition',
+                    'DisplayAttrib', 'SyncAttrib', 'SyncCondition',
                     'SyncFlag', 'SyncResult', 'SyncType'])
