@@ -51,6 +51,19 @@ The Display class
     .. availability::
         EGL 1.0. Passing a ``display_id`` of ``None`` to get a default display
         is available in EGL 1.4.
+    
+    .. py:method:: get_current_display() -> Display
+        :classmethod:
+
+        Get the display to which the current context for the calling thread
+        belongs, or :py:obj:`NoDisplay` if no context is bound.
+
+        .. todo::
+            Having this here, not on :py:class:`pegl.Context`, is an inconsistency. But my quick-and-dirty move broke all the places
+            that call it. I’ll need to consider them and the dependency
+            structure more carefully.
+
+        The underlying EGL function is :eglfunc:`eglGetCurrentDisplay`.
 
     .. py:method::
         get_platform_display(platform: pegl.enums.Platform, native_display: int, attribs: Optional[dict[pegl.enums.DisplayAttrib, Any]]=None, init=True) -> Display

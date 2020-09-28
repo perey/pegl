@@ -43,14 +43,6 @@ The Context class
         The underlying EGL function is :eglfunc:`eglGetCurrentContext`.
 
         .. availability:: EGL 1.4
-    
-    .. py:method:: get_current_display() -> Display
-        :classmethod:
-
-        Get the display to which the current context for the calling thread
-        belongs, or :py:obj:`NoDisplay` if no context is bound.
-
-        The underlying EGL function is :eglfunc:`eglGetCurrentDisplay`.
 
     .. py:method::
         get_current_surface(readdraw: pegl.enums.ReadOrDraw) -> Optional[pegl.surface.Surface]

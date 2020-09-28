@@ -77,11 +77,6 @@ class Context(Cached, metaclass=ContextMeta):
             pass
 
     @classmethod
-    def get_current_display(cls) -> Display:
-        # Implemented in pegl.display to avoid dependency problems.
-        raise NotImplementedError
-
-    @classmethod
     def get_current_surface(cls, readdraw: ReadOrDraw) -> Optional[Surface]:
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError

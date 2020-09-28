@@ -99,6 +99,12 @@ class Display(Cached):
         except AttributeError:
             return False
 
+    @classmethod
+    def get_current_display(cls) -> Display:
+        """Get the display for the current context on the calling thread."""
+        handle = egl.eglGetCurrentDisplay()
+        return cls._new_or_existing(handle, handle)
+
     def choose_config(self, attribs: dict[ConfigAttrib, Any],
                       num_config: Optional[int]=None) -> tuple[Config, ...]:
         """Get available configurations that match given attributes."""
@@ -161,12 +167,6 @@ NoDisplay = Display(handle=egl.EGL_NO_DISPLAY)
 # These are defined here to avoid a circular dependency issue, where the
 # display module depends on the config module, config depends on context, and
 # context depends on display.
-def get_current_display(cls) -> Display:
-    """Get the display for the current context on the calling thread."""
-    handle = egl.eglGetCurrentDisplay()
-    return Display._new_or_existing(handle, handle)
-Context.get_current_display = classmethod(get_current_display)
-
 def get_current_surface(cls, readdraw: ReadOrDraw) -> Optional[Surface]:
     """Get a surface bound to the current context.
 
