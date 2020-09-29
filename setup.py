@@ -37,7 +37,7 @@ package_path = Path(package_dir)
 
 def get_version(package_path, filename='__init__.py'):
     '''Find the __version__ attribute of the specified package.'''
-    with open(package_path / filename)) as f:
+    with open(package_path / filename) as f:
         for line in f:
             match = version_re.search(line)
             if match:
