@@ -22,6 +22,7 @@ __version__ = '0.2a1'
 __all__ = ['egl', 'egl_version']
 
 # Import module objects to the package namespace.
+# pylint: disable=wrong-import-position
 from .egl import egl_version
 
 from .attribs import *
