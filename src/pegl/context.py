@@ -19,19 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 __all__ = ['bind_api', 'query_api', 'Context']
-
-# Standard library imports.
-from typing import Any, Optional
 
 # Local imports.
 from . import egl
 from ._caching import Cached
-from .enums import ClientAPI, ReadOrDraw, RenderBuffer
+from .enums import ReadOrDraw
 from .errors import BadContextError
-from .surface import Surface
 
 
 # Inherit from type(Cached) to avoid metaclass conflicts.
@@ -41,17 +35,17 @@ class ContextMeta(type(Cached)):
     # pegl.display module, since its implementation needs the Display
     # class.
     @property
-    def current_draw_surface(cls) -> Optional[Surface]:
+    def current_draw_surface(cls):
         return cls.get_current_surface(ReadOrDraw.DRAW)
 
     @property
-    def current_read_surface(cls) -> Optional[Surface]:
+    def current_read_surface(cls):
         return cls.get_current_surface(ReadOrDraw.READ)
 
 
 class Context(Cached, metaclass=ContextMeta):
     """An EGL rendering context."""
-    def __init__(self, display: Display, handle: Any):
+    def __init__(self, display, handle):
         self._display = display
         self._as_parameter_ = handle
 
@@ -77,7 +71,7 @@ class Context(Cached, metaclass=ContextMeta):
             pass
 
     @classmethod
-    def get_current_surface(cls, readdraw: ReadOrDraw) -> Optional[Surface]:
+    def get_current_surface(cls, readdraww):
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
 
@@ -86,8 +80,7 @@ class Context(Cached, metaclass=ContextMeta):
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
 
-    def make_current(self, draw: Optional[Surface]=None,
-                     read: Optional[Surface]=None) -> None:
+    def make_current(self, draw=None, read=None) -> None:
         """Make this context current for the calling thread.
 
         A single surface may be specified for both drawing and reading
@@ -118,23 +111,25 @@ class Context(Cached, metaclass=ContextMeta):
 
 
 if egl.egl_version >= (1, 2):
-    def bind_api(api: ClientAPI) -> None:
+    from .enums import ClientAPI, RenderBuffer
+
+    def bind_api(api) -> None:
         """Bind a client API as the current renderer in this thread."""
         egl.eglBindAPI(api)
 
-    def query_api() -> Optional[ClientAPI]:
+    def query_api():
         """Get the client API that is bound for this thread."""
         api = ClientAPI(egl.eglQueryAPI())
         return (None if api == ClientAPI.NONE else api)
 
     __all__.extend(['bind_api', 'query_api'])
 
-    def client_type(self) -> ClientAPI:
+    def client_type(self):
         return ClientAPI(egl.eglQueryContext(self._display, self,
                                              egl.EGL_CONTEXT_CLIENT_TYPE))
     Context.client_type = property(client_type)
 
-    def render_buffer(self) -> Optional[RenderBuffer]:
+    def render_buffer(self):
         buffer = RenderBuffer(egl.eglQueryContext(self._display, self,
                                                   egl.EGL_RENDER_BUFFER))
         return (None if buffer == RenderBuffer.NONE else buffer)
@@ -142,7 +137,7 @@ if egl.egl_version >= (1, 2):
 
 
 if egl.egl_version >= (1, 3):
-    def client_version(self) -> int:
+    def client_version(self):
         return egl.eglQueryContext(self._display, self,
                                    egl.EGL_CONTEXT_CLIENT_VERSION)
     Context.client_version = property(client_version)
@@ -153,7 +148,7 @@ if egl.egl_version >= (1, 3):
 
 
 if egl.egl_version >= (1, 4):
-    def get_current_context(cls) -> Optional[Context]:
+    def get_current_context(cls):
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
     Context.get_current_context = classmethod(get_current_context)
@@ -162,8 +157,7 @@ if egl.egl_version >= (1, 4):
 if egl.egl_version >= (1, 5):
     from .image import Image
 
-    def create_image(self, target: ImageTarget, buffer, int,
-                     attribs: Optional[dict[ImageAttrib, Any]]=None) -> Image:
+    def create_image(self, target, buffer, attribs=None):
         """Create an image from the given buffer."""
         return Image(self._display, egl.eglCreateImage(
                                         self._display, self, target, buffer,
