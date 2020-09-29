@@ -47,7 +47,8 @@ __all__ = ['_load_function', 'Arg', 'EGLBoolean', 'EGLConfig', 'EGLConfig_p',
            'EGLContext', 'EGLDisplay', 'EGLNativeDisplayType',
            'EGLNativePixmapType', 'EGLNativeWindowType', 'EGLSurface',
            'EGLint', 'EGLint_p', 'EGLClientBuffer', 'EGLenum', 'EGLAttrib',
-           'EGLAttrib_p', 'EGLImage', 'EGLSync', 'EGLTime']
+           'EGLAttrib_p', 'EGLImage', 'EGLSync', 'EGLTime', 'eglGetError',
+           'eglGetProcAddress']
 
 # Standard library imports.
 import ctypes
