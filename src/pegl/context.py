@@ -127,31 +127,31 @@ if egl.egl_version >= (1, 2):
     def client_type(self):
         return ClientAPI(egl.eglQueryContext(self._display, self,
                                              egl.EGL_CONTEXT_CLIENT_TYPE))
-    Context.client_type = property(client_type)
+    setattr(Context, 'client_type', property(client_type))
 
     def render_buffer(self):
         buffer = RenderBuffer(egl.eglQueryContext(self._display, self,
                                                   egl.EGL_RENDER_BUFFER))
         return (None if buffer == RenderBuffer.NONE else buffer)
-    Context.render_buffer = property(render_buffer)
+    setattr(Context, 'render_buffer', property(render_buffer))
 
 
 if egl.egl_version >= (1, 3):
     def client_version(self):
         return egl.eglQueryContext(self._display, self,
                                    egl.EGL_CONTEXT_CLIENT_VERSION)
-    Context.client_version = property(client_version)
+    setattr(Context, 'client_version', property(client_version))
     # Alias for consistency with context creation, where as of EGL 1.5,
     # CLIENT_VERSION is renamed to MAJOR_VERSION and MINOR_VERSION is
     # provided alongside.
-    Context.major_version = property(client_version)
+    setattr(Context, 'major_version', property(client_version))
 
 
 if egl.egl_version >= (1, 4):
     def get_current_context(cls):
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
-    Context.get_current_context = classmethod(get_current_context)
+    setattr(Context, 'get_current_context', classmethod(get_current_context))
 
 
 if egl.egl_version >= (1, 5):
@@ -162,4 +162,4 @@ if egl.egl_version >= (1, 5):
         return Image(self._display, egl.eglCreateImage(
                                         self._display, self, target, buffer,
                                         attrib_list(attribs, new_type=True)))
-    Context.create_image = create_image
+    setattr(Context, 'create_image', create_image)

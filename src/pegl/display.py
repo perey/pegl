@@ -175,13 +175,13 @@ def get_current_surface(cls, readdraw): # pylint: disable=unused-argument
     return (None if handle == egl.EGL_NO_SURFACE else
             Surface._new_or_existing(handle, Display.get_current_display(),
                                      handle))
-Context.get_current_surface = classmethod(get_current_surface)
+setattr(Context, 'get_current_surface', classmethod(get_current_surface))
 
 def release_current(cls): # pylint: disable=unused-argument
     """Release the current context for the calling thread."""
     egl.eglMakeCurrent(Display.get_current_display(), egl.EGL_NO_SURFACE,
                        egl.EGL_NO_SURFACE, egl.EGL_NO_CONTEXT)
-Context.release_current = classmethod(release_current)
+setattr(Context, 'release_current', classmethod(release_current))
 
 
 if egl.egl_version >= (1, 1):
@@ -191,14 +191,15 @@ if egl.egl_version >= (1, 1):
     def set_swap_interval(self, interval): # pylint: disable=missing-function-docstring
         egl.eglSwapInterval(self, interval)
         self._swap_interval = interval
-    Display.swap_interval = property(get_swap_interval, set_swap_interval)
+    setattr(Display, 'swap_interval', property(get_swap_interval,
+                                               set_swap_interval))
 
 
 if egl.egl_version >= (1, 2):
     def client_apis(self):
         """The client APIs supported on this display."""
         return egl.eglQueryString(self, egl.EGL_CLIENT_APIS).decode()
-    Display.client_apis = property(client_apis)
+    setattr(Display, 'client_apis', property(client_apis))
 
     def release_thread():
         """Release EGL resources used in this thread.
@@ -222,7 +223,7 @@ if egl.egl_version >= (1, 4):
         return (None if handle == egl.EGL_NO_CONTEXT else
                 cls._new_or_existing(handle, Display.get_current_display(),
                                      handle))
-    Context.get_current_context = classmethod(get_current_context)
+    setattr(Context, 'get_current_context', classmethod(get_current_context))
 
 
 if egl.egl_version >= (1, 5):
@@ -239,7 +240,7 @@ if egl.egl_version >= (1, 5):
 
         if init:
             dpy.initialize()
-    Display.get_platform_display = classmethod(get_platform_display)
+    setattr(Display, 'get_platform_display', classmethod(get_platform_display))
 
     def create_image(self, target, buffer, attribs=None):
         """Create an image from the given buffer.
@@ -253,11 +254,11 @@ if egl.egl_version >= (1, 5):
                      egl.eglCreateImage(self, egl.EGL_NO_CONTEXT, target,
                                         buffer,
                                         attrib_list(attribs, new_type=True)))
-    Display.create_image = create_image
+    setattr(Display, 'create_image', create_image)
 
     def create_sync(self, synctype, attribs=None):
         """Create a sync object."""
         return Sync(self,
                     egl.eglCreateSync(self, synctype,
                                       attrib_list(attribs, new_type=True)))
-    Display.create_sync = create_sync
+    setattr(Display, 'create_sync', create_sync)

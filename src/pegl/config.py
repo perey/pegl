@@ -217,39 +217,35 @@ class Config(Cached):
 def config(self): # pylint: disable=missing-function-docstring
     handle = self.config_id
     return Config._new_or_existing(handle, self._display, handle)
-Context.config = property(config, doc='The config object used to create this '
-                          'context.')
-Surface.config = property(config, doc='The config object used to create this '
-                          'surface.')
+setattr(Context, 'config',
+        property(config, doc='The config object used to create this context.'))
+setattr(Surface, 'config',
+        property(config, doc='The config object used to create this surface.'))
 
 if egl.egl_version >= (1, 1):
-    @property
     def bind_to_texture_rgb(self):
         """Whether or not RGB textures can be bound."""
         return bool(egl.eglGetConfigAttrib(self._display, self,
                                            egl.EGL_BIND_TO_TEXTURE_RGB))
-    Config.bind_to_texture_rgb = bind_to_texture_rgb
+    setattr(Config, 'bind_to_texture_rgb', property(bind_to_texture_rgb))
 
-    @property
     def bind_to_texture_rgba(self):
         """Whether or not RGBA textures can be bound."""
         return bool(egl.eglGetConfigAttrib(self._display, self,
                                            egl.EGL_BIND_TO_TEXTURE_RGBA))
-    Config.bind_to_texture_rgba = bind_to_texture_rgba
+    setattr(Config, 'bind_to_texture_rgba', property(bind_to_texture_rgba))
 
-    @property
     def max_swap_interval(self):
         """The maximum number of video frames between buffer swaps."""
         return bool(egl.eglGetConfigAttrib(self._display, self,
                                            egl.EGL_MAX_SWAP_INTERVAL))
-    Config.max_swap_interval = max_swap_interval
+    setattr(Config, 'max_swap_interval', property(max_swap_interval))
 
-    @property
     def min_swap_interval(self):
         """The minimum number of video frames between buffer swaps."""
         return bool(egl.eglGetConfigAttrib(self._display, self,
                                            egl.EGL_MIN_SWAP_INTERVAL))
-    Config.min_swap_interval = min_swap_interval
+    setattr(Config, 'min_swap_interval', property(min_swap_interval))
 
 
 if egl.egl_version >= (1, 2):
@@ -261,23 +257,21 @@ if egl.egl_version >= (1, 2):
                        egl.eglCreatePbufferFromClientBuffer(
                            self._display, buftype, buffer, self,
                            attrib_list(attribs)))
-    Config.create_pbuffer_from_client_buffer = \
-        create_pbuffer_from_client_buffer
+    setattr(Config, 'create_pbuffer_from_client_buffer',
+            create_pbuffer_from_client_buffer)
 
-    @property
     def alpha_mask_size(self):
         """The number of bits in the alpha mask buffer."""
         return egl.eglGetConfigAttrib(self._display, self,
                                       egl.EGL_ALPHA_MASK_SIZE)
-    Config.alpha_mask_size = alpha_mask_size
+    setattr(Config, 'alpha_mask_size', property(alpha_mask_size))
 
-    @property
     def color_buffer_type(self):
         """The type of color buffer."""
         return ColorBufferType(egl.eglGetConfigAttrib(
                                    self._display, self,
                                    egl.EGL_COLOR_BUFFER_TYPE))
-    Config.color_buffer_type = color_buffer_type
+    setattr(Config, 'color_buffer_type', property(color_buffer_type))
 
     @property
     def luminance_size(self):
@@ -286,22 +280,20 @@ if egl.egl_version >= (1, 2):
                                       egl.EGL_LUMINANCE_SIZE)
     Config.luminance_size = luminance_size
 
-    @property
     def renderable_type(self):
         """The supported client API(s)."""
         return ClientAPIFlag(egl.eglGetConfigAttrib(self._display, self,
                                                     egl.EGL_RENDERABLE_TYPE))
-    Config.renderable_type = renderable_type
+    setattr(Config, 'renderable_type', property(renderable_type))
 
 
 if egl.egl_version >= (1, 3):
     # ClientAPIFlag already imported under version 1.2, above.
-    @property
     def conformant(self):
         """Client APIs for which conformance requirements are met."""
         return ClientAPIFlag(egl.eglGetConfigAttrib(self._display, self,
                                                     egl.EGL_CONFORMANT))
-    Config.conformant = conformant
+    setattr(Config, 'conformant', property(conformant))
 
 
 if egl.egl_version >= (1, 5):
@@ -311,7 +303,8 @@ if egl.egl_version >= (1, 5):
                        egl.eglCreatePlatformPixmapSurface(
                            self._display, self, native_pixmap,
                            attrib_list(attribs, new_type=True)))
-    Config.create_platform_pixmap_surface = create_platform_pixmap_surface
+    setattr(Config, 'create_platform_pixmap_surface',
+            create_platform_pixmap_surface)
 
     def create_platform_window_surface(self, native_window, attribs=None):
         """Create a window (on-screen) rendering surface."""
@@ -319,4 +312,5 @@ if egl.egl_version >= (1, 5):
                        egl.eglCreatePlatformWindowSurface(
                            self._display, self, native_window,
                            attrib_list(attribs, new_type=True)))
-    Config.create_platform_window_surface = create_platform_window_surface
+    setattr(Config, 'create_platform_window_surface',
+            create_platform_window_surface)

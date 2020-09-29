@@ -104,7 +104,7 @@ if egl.egl_version >= (1, 1):
 
         """
         egl.eglBindTexImage(self._display, self, buffer)
-    Surface.bind_tex_image = bind_tex_image
+    setattr(Surface, 'bind_tex_image', bind_tex_image)
 
     def release_tex_image(self, buffer=RenderBuffer.BACK):
         """Release a buffer of this surface that was bound as a texture.
@@ -118,31 +118,34 @@ if egl.egl_version >= (1, 1):
 
         """
         egl.eglReleaseTexImage(self._display, self, buffer)
-    Surface.release_tex_image = release_tex_image
+    setattr(Surface, 'release_tex_image', release_tex_image)
 
     def get_mipmap_level(self):
         return egl.eglQuerySurface(self._display, self, egl.EGL_MIPMAP_LEVEL)
     def set_mipmap_level(self, level):
         egl.eglSurfaceAttrib(self._display, self, egl.EGL_MIPMAP_LEVEL, level)
-    Surface.mipmap_level = property(get_mipmap_level, set_mipmap_level)
+    setattr(Surface, 'mipmap_level', property(get_mipmap_level,
+                                              set_mipmap_level))
 
     def mipmap_texture(self):
         return bool(egl.eglQuerySurface(self._display, self,
                                         egl.EGL_MIPMAP_TEXTURE))
-    Surface.mipmap_texture = property(mipmap_texture)
+    setattr(Surface, 'mipmap_texture', property(mipmap_texture))
 
     def render_buffer(self):
         return RenderBuffer(egl.eglQuerySurface(self._display, self,
                                                 egl.EGL_RENDER_BUFFER))
-    Surface.render_buffer = property(render_buffer)
+    setattr(Surface, 'render_buffer', property(render_buffer))
 
     def texture_format(self):
         fmt = egl.eglQuerySurface(self._display, self, egl.EGL_TEXTURE_FORMAT)
         return (None if fmt == egl.EGL_NO_TEXTURE else TextureFormat(fmt))
+    setattr(Surface, 'texture_format', property(texture_format))
 
     def texture_target(self):
         tgt = egl.eglQuerySurface(self._display, self, egl.EGL_TEXTURE_TARGET)
         return (None if tgt == egl.EGL_NO_TEXTURE else TextureTarget(tgt))
+    setattr(Surface, 'texture_target', property(texture_target))
 
 
 if egl.egl_version >= (1, 2):
@@ -153,26 +156,26 @@ if egl.egl_version >= (1, 2):
                                            egl.EGL_HORIZONTAL_RESOLUTION)
         return (None if scaled_value == egl.EGL_UNKNOWN else
                 scaled_value / egl.EGL_DISPLAY_SCALING)
-    Surface.horizontal_resolution = property(horizontal_resolution)
+    setattr(Surface, 'horizontal_resolution', property(horizontal_resolution))
 
     def pixel_aspect_ratio(self):
         scaled_value = egl.eglQuerySurface(self._display, self,
                                            egl.EGL_PIXEL_ASPECT_RATIO)
         return (None if scaled_value == egl.EGL_UNKNOWN else
                 scaled_value / egl.EGL_DISPLAY_SCALING)
-    Surface.pixel_aspect_ratio = property(pixel_aspect_ratio)
+    setattr(Surface, 'pixel_aspect_ratio', property(pixel_aspect_ratio))
 
     def swap_behavior(self):
         return SwapBehavior(egl.eglQuerySurface(self._display, self,
                                                 egl.EGL_SWAP_BEHAVIOR))
-    Surface.swap_behavior = property(swap_behavior)
+    setattr(Surface, 'swap_behavior', property(swap_behavior))
 
     def vertical_resolution(self):
         scaled_value = egl.eglQuerySurface(self._display, self,
                                            egl.EGL_VERTICAL_RESOLUTION)
         return (None if scaled_value == egl.EGL_UNKNOWN else
                 scaled_value / egl.EGL_DISPLAY_SCALING)
-    Surface.vertical_resolution = property(vertical_resolution)
+    setattr(Surface, 'vertical_resolution', property(vertical_resolution))
 
 
 if egl.egl_version >= (1, 4):
@@ -185,5 +188,5 @@ if egl.egl_version >= (1, 4):
     def set_multisample_resolve(self, method):
         egl.eglSurfaceAttrib(self._display, self, egl.EGL_MULTISAMPLE_RESOLVE,
                              method)
-    Surface.multisample_resolve = property(get_multisample_resolve,
-                                           set_multisample_resolve)
+    setattr(Surface, 'multisample_resolve',
+            property(get_multisample_resolve, set_multisample_resolve))
