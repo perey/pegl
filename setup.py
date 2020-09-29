@@ -67,4 +67,6 @@ setup(
                  'Topic :: Software Development :: Libraries'],
     long_description=open('README.rst', 'rt', encoding='utf-8').read(),
     install_requires=['aenum'],
+    test_suite='nose2.collector.collector',
+    tests_require=['nose2'],
 )
