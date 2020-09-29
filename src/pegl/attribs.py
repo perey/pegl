@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''EGL attribute list handling for Pegl.'''
+"""EGL attribute list handling for Pegl."""
 
 # Copyright © 2020 Tim Pederick.
 #
@@ -31,7 +31,7 @@ from typing import Any, Optional
 from .egl import EGL_DONT_CARE, EGL_NONE
 from .egl._common import EGLAttrib, EGLint
 
-def attrib_list(attribs: Optional[dict[Any, Any]], new_type=False):
+def attrib_list(attribs, new_type=False):
     """Convert a Python dict into an EGL attribute list.
 
     Keyword arguments:
