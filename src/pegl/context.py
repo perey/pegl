@@ -76,11 +76,11 @@ class Context(Cached, metaclass=ContextMeta):
         raise NotImplementedError
 
     @classmethod
-    def release_current(cls) -> None:
+    def release_current(cls):
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
 
-    def make_current(self, draw=None, read=None) -> None:
+    def make_current(self, draw=None, read=None):
         """Make this context current for the calling thread.
 
         A single surface may be specified for both drawing and reading
@@ -101,19 +101,19 @@ class Context(Cached, metaclass=ContextMeta):
         egl.eglMakeCurrent(self._display, draw, read, self)
 
     @property
-    def config(self) -> Config:
+    def config(self):
         # Implemented in pegl.config to avoid dependency problems.
         raise NotImplementedError
 
     @property
-    def config_id(self) -> int:
+    def config_id(self):
         return egl.eglQueryContext(self._display, self, egl.EGL_CONFIG_ID)
 
 
 if egl.egl_version >= (1, 2):
     from .enums import ClientAPI, RenderBuffer
 
-    def bind_api(api) -> None:
+    def bind_api(api):
         """Bind a client API as the current renderer in this thread."""
         egl.eglBindAPI(api)
 
