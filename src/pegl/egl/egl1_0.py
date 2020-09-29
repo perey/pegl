@@ -77,7 +77,10 @@ __all__ = ['eglChooseConfig', 'eglCopyBuffers', 'eglCreateContext',
 import ctypes
 
 # Local imports.
-from ._common import *
+from ._common import (_load_function, Arg, EGLBoolean, EGLConfig, EGLConfig_p,
+                      EGLContext, EGLDisplay, EGLNativeDisplayType,
+                      EGLNativePixmapType, EGLNativeWindowType, EGLSurface,
+                      EGLint, EGLint_p, eglGetError, eglGetProcAddress)
 
 # Define EGL 1.0 constants.
 EGL_ALPHA_SIZE                  = 0x3021

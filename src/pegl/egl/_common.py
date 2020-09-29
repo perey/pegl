@@ -54,7 +54,6 @@ __all__ = ['_load_function', 'Arg', 'EGLBoolean', 'EGLConfig', 'EGLConfig_p',
 import ctypes
 from enum import IntFlag
 import logging
-import sys
 from typing import Any, Callable, Sequence
 
 # Local imports.
@@ -70,7 +69,7 @@ from ..errors import KNOWN_ERRORS, EGLError, EGL_SUCCESS
 ##    libclass, libext, fntype = ctypes.CDLL, '.dll', ctypes.CFUNCTYPE
 ##else:
 ##    raise ImportError('Pegl not supported on {}'.format(sys.platform))
-##       
+##
 ##_lib = libclass(libname + libext)
 _lib = ctypes.CDLL('./libEGL.dll') # TODO
 fntype = ctypes.CFUNCTYPE
@@ -109,8 +108,8 @@ eglGetProcAddress = _lib.eglGetProcAddress
 eglGetProcAddress.argtypes = [ctypes.c_char_p]
 eglGetProcAddress.restype = ctypes.c_void_p
 
-# Direction flags for ctypes 'paramflags'
 class Arg(IntFlag):
+    """Direction flags for ctypes 'paramflags'"""
     IN = 1
     OUT = 2
     INOUT = IN | OUT
@@ -152,8 +151,8 @@ def _load_function(func_name: str, restype: Any, *args: Sequence,
         fn = prototype((func_name.encode(), _lib), tuple(paramflags))
     except AttributeError:
         # Failure! Try loading it by address instead.
-        logging.debug(f"Failed to load '{func_name}' by name, trying by "
-                      'address instead')
+        logging.debug('Failed to load %r by name, trying by address instead',
+                      func_name)
         address = eglGetProcAddress(func_name.encode())
         fn = None if address is None else prototype(address)
 
@@ -166,9 +165,9 @@ def _load_function(func_name: str, restype: Any, *args: Sequence,
         # No error checking defined.
         pass
     else:
-        def error_check(result, func, args):
-            logging.debug(f"Called '{func.name}' with args '{args}' and got "
-                          f"result '{result}'")
+        def error_check(result, func, args): # pylint: disable=unused-argument
+            logging.debug('Called %r with args %r and got result %r',
+                          func_name, args, result)
             if result == error_on:
                 error_code = eglGetError()
                 if error_code != EGL_SUCCESS:

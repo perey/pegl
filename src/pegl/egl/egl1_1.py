@@ -52,7 +52,8 @@ __all__ = ['eglBindTexImage', 'eglReleaseTexImage', 'eglSurfaceAttrib',
            'EGL_TEXTURE_RGBA', 'EGL_TEXTURE_TARGET']
 
 # Local imports.
-from ._common import *
+from ._common import (_load_function, Arg, EGLBoolean, EGLDisplay, EGLSurface,
+                      EGLint)
 
 # Define EGL 1.1 constants.
 EGL_BACK_BUFFER                 = 0x3084

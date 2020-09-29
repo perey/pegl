@@ -76,4 +76,4 @@ else:
                 else:
                     __all__.extend(egl1_5_all)
                     egl_version = (1, 5)
-logging.debug('Loaded EGL version {}.{}'.format(*egl_version))
+logging.debug('Loaded EGL version %d.%d', *egl_version)

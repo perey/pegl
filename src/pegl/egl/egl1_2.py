@@ -58,7 +58,8 @@ __all__ = ['eglBindAPI', 'eglQueryAPI', 'eglCreatePbufferFromClientBuffer',
            'EGL_SWAP_BEHAVIOR', 'EGL_UNKNOWN', 'EGL_VERTICAL_RESOLUTION']
 
 # Local imports.
-from ._common import *
+from ._common import (_load_function, Arg, EGLBoolean, EGLConfig, EGLDisplay,
+                      EGLSurface, EGLint, EGLint_p, EGLClientBuffer, EGLenum)
 from .egl1_0 import EGL_NO_SURFACE
 
 # Define EGL 1.2 constants.
@@ -70,7 +71,7 @@ EGL_BUFFER_PRESERVED            = 0x3094
 EGL_BUFFER_DESTROYED            = 0x3095
 EGL_CLIENT_APIS                 = 0x308D
 EGL_COLORSPACE                  = 0x3087
-EGL_COLORSPACE_sRGB             = 0x3089
+EGL_COLORSPACE_sRGB             = 0x3089 # pylint: disable=invalid-name
 EGL_COLORSPACE_LINEAR           = 0x308A
 EGL_COLOR_BUFFER_TYPE           = 0x303F
 EGL_CONTEXT_CLIENT_TYPE         = 0x3097

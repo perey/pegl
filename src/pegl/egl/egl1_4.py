@@ -50,7 +50,7 @@ __all__ = ['eglGetCurrentContext', 'EGL_DEFAULT_DISPLAY',
            'EGL_SWAP_BEHAVIOR_PRESERVED_BIT']
 
 # Local imports.
-from ._common import *
+from ._common import _load_function, EGLContext, EGLNativeDisplayType
 
 # Define EGL 1.4 constants.
 EGL_DEFAULT_DISPLAY             = EGLNativeDisplayType(0)

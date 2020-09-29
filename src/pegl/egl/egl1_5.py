@@ -76,7 +76,9 @@ __all__ = ['eglCreateSync', 'eglDestroySync', 'eglClientWaitSync',
 import ctypes
 
 # Local imports.
-from ._common import *
+from ._common import (_load_function, Arg, EGLBoolean, EGLConfig, EGLContext,
+                      EGLDisplay, EGLSurface, EGLint, EGLClientBuffer, EGLenum,
+                      EGLAttrib_p, EGLImage, EGLSync, EGLTime)
 from .egl1_0 import EGL_FALSE, EGL_NO_DISPLAY, EGL_NO_CONTEXT, EGL_NO_SURFACE
 
 # Define EGL 1.5 constants.
