@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''EGL synchronisation control for Pegl.'''
+"""EGL synchronisation control for Pegl."""
 
 # Copyright © 2012, 2020 Tim Pederick.
 #
@@ -19,49 +19,42 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 __all__ = ['wait_gl', 'wait_native']
-
-# Standard library imports
-from typing import Any, Optional
 
 # Local imports.
 from . import egl
 from .enums import NativeEngine
 
 def wait_gl():
-    '''Instruct native rendering to wait on any OpenGL ES rendering.
+    """Instruct native rendering to wait on any OpenGL ES rendering.
 
     EGL provides this function for backwards compatibility; it is
     defined to be equivalent to saving the bound API, binding the
     OpenGL ES API, calling wait_client(), and then rebinding the
     original API. New code should just use wait_client() instead.
 
-    '''
+    """
     egl.eglWaitGL()
 
-def wait_native(engine: Optional[NativeEngine]=None):
-    '''Instruct client API rendering to wait on any native rendering.
+def wait_native(engine=NativeEngine.CORE):
+    """Instruct client API rendering to wait on any native rendering.
 
     Keyword arguments:
         engine -- An implementation-defined reference to a native
             rendering engine. If omitted, the reference points to the
             EGL core native engine.
 
-    '''
-    if engine is None:
-        engine = NativeEngine.CORE
+    """
     egl.eglWaitNative(engine)
 
 if egl.egl_version >= (1, 2):
     def wait_client():
-        '''Instruct native rendering to wait on any client API rendering.
+        """Instruct native rendering to wait on any client API rendering.
 
         This is an EGL-level instruction equivalent to API-specific calls
         such as glFinish().
 
-        '''
+        """
         egl.eglWaitClient()
 
     __all__.extend(['wait_client'])
@@ -71,12 +64,11 @@ if egl.egl_version >= (1, 5):
 
     class Sync:
         """An object that is 'signalled' when a condition is met."""
-        def __init__(self, display: Display, handle: Any):
+        def __init__(self, display, handle):
             self._as_parameter_ = handle
             self._display = display
 
-        def client_wait_sync(self, flags: SyncFlag=SyncFlag.NONE,
-                             timeout: Optional[int]=None) -> SyncResult:
+        def client_wait_sync(self, flags=SyncFlag.NONE, timeout=None):
             """Block the calling thread, waiting on this sync.
 
             Keyword arguments:
@@ -92,22 +84,22 @@ if egl.egl_version >= (1, 5):
             result = egl.eglClientWaitSync(self._display, self, flags, timeout)
             return SyncResult(result)
 
-        def wait_sync(self, flags: SyncFlag=SyncFlag.NONE) -> None:
+        def wait_sync(self, flags=SyncFlag.NONE):
             """Instruct the client API server to wait on this sync."""
             egl.eglWaitSync(self._display, self, flags)
 
         @property
-        def sync_condition(self) -> SyncCondition:
+        def sync_condition(self):
             return SyncCondition(egl.eglGetSyncAttrib(self._display, self,
                                                       egl.EGL_SYNC_CONDITION))
 
         @property
-        def sync_status(self) -> bool:
+        def sync_status(self):
             return bool(egl.eglGetSyncAttrib(self._display, self,
                                              egl.EGL_SYNC_STATUS))
 
         @property
-        def sync_type(self) -> SyncType:
+        def sync_type(self):
             return SyncType(egl.eglGetSyncAttrib(self._display, self,
                                                  egl.EGL_SYNC_TYPE))
 

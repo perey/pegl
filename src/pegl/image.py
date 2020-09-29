@@ -19,12 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 __all__ = []
-
-# Standard library imports.
-from typing import Any
 
 # Local imports.
 from . import egl
@@ -39,7 +34,7 @@ if egl.egl_version >= (1, 5):
         can be shared between multiple client APIs.
 
         """
-        def __init__(self, display: Display, handle: Any):
+        def __init__(self, display, handle):
             self._display = display
             self._as_parameter_ = handle
 

@@ -19,12 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 __all__ = ['Surface']
-
-# Standard library imports.
-from typing import Any, Optional
 
 # Local imports.
 from . import egl
@@ -33,7 +28,7 @@ from .errors import BadSurfaceError
 
 class Surface(Cached):
     """A rendering surface."""
-    def __init__(self, display: Display, handle: Any):
+    def __init__(self, display, handle):
         self._display = display
         self._as_parameter_ = handle
 
@@ -58,11 +53,11 @@ class Surface(Cached):
             # destroy.
             pass
 
-    def copy_buffers(self, target: int) -> None:
+    def copy_buffers(self, target):
         """Copy the color buffer of this surface to a native pixmap."""
         egl.eglCopyBuffers(self._display, self, target)
 
-    def swap_buffers(self, target: int) -> None:
+    def swap_buffers(self, target):
         """Post the surface's back buffer to the window.
 
         This method is valid, but has no effect, on pbuffer, pixmap, and
@@ -72,32 +67,32 @@ class Surface(Cached):
         egl.eglSwapBuffers(self._display, self, target)
 
     @property
-    def config(self) -> Config:
+    def config(self):
         # Implemented in pegl.config to avoid dependency problems.
         raise NotImplementedError
 
     @property
-    def config_id(self) -> int:
+    def config_id(self):
         return egl.eglQuerySurface(self._display, self, egl.EGL_CONFIG_ID)
 
     @property
-    def height(self) -> int:
+    def height(self):
         return egl.eglQuerySurface(self._display, self, egl.EGL_HEIGHT)
 
     @property
-    def largest_pbuffer(self) -> bool:
+    def largest_pbuffer(self):
         return bool(egl.eglQuerySurface(self._display, self,
                                         egl.EGL_LARGEST_PBUFFER))
 
     @property
-    def width(self) -> int:
+    def width(self):
         return egl.eglQuerySurface(self._display, self, egl.EGL_WIDTH)
 
 
 if egl.egl_version >= (1, 1):
     from .enums import RenderBuffer, TextureFormat, TextureTarget
 
-    def bind_tex_image(self, buffer: RenderBuffer=RenderBuffer.BACK) -> None:
+    def bind_tex_image(self, buffer=RenderBuffer.BACK):
         """Bind a buffer of this surface as a texture.
 
         In the core EGL specification, this method is only valid for
@@ -111,8 +106,7 @@ if egl.egl_version >= (1, 1):
         egl.eglBindTexImage(self._display, self, buffer)
     Surface.bind_tex_image = bind_tex_image
 
-    def release_tex_image(self,
-                          buffer: RenderBuffer=RenderBuffer.BACK) -> None:
+    def release_tex_image(self, buffer=RenderBuffer.BACK):
         """Release a buffer of this surface that was bound as a texture.
 
         In the core EGL specification, this method is only valid for
@@ -126,27 +120,27 @@ if egl.egl_version >= (1, 1):
         egl.eglReleaseTexImage(self._display, self, buffer)
     Surface.release_tex_image = release_tex_image
 
-    def get_mipmap_level(self) -> int:
+    def get_mipmap_level(self):
         return egl.eglQuerySurface(self._display, self, egl.EGL_MIPMAP_LEVEL)
-    def set_mipmap_level(self, level: int) -> None:
+    def set_mipmap_level(self, level):
         egl.eglSurfaceAttrib(self._display, self, egl.EGL_MIPMAP_LEVEL, level)
     Surface.mipmap_level = property(get_mipmap_level, set_mipmap_level)
 
-    def mipmap_texture(self) -> bool:
+    def mipmap_texture(self):
         return bool(egl.eglQuerySurface(self._display, self,
                                         egl.EGL_MIPMAP_TEXTURE))
     Surface.mipmap_texture = property(mipmap_texture)
 
-    def render_buffer(self) -> RenderBuffer:
+    def render_buffer(self):
         return RenderBuffer(egl.eglQuerySurface(self._display, self,
                                                 egl.EGL_RENDER_BUFFER))
     Surface.render_buffer = property(render_buffer)
 
-    def texture_format(self) -> Optional[TextureFormat]:
+    def texture_format(self):
         fmt = egl.eglQuerySurface(self._display, self, egl.EGL_TEXTURE_FORMAT)
         return (None if fmt == egl.EGL_NO_TEXTURE else TextureFormat(fmt))
 
-    def texture_target(self) -> Optional[TextureTarget]:
+    def texture_target(self):
         tgt = egl.eglQuerySurface(self._display, self, egl.EGL_TEXTURE_TARGET)
         return (None if tgt == egl.EGL_NO_TEXTURE else TextureTarget(tgt))
 
@@ -154,26 +148,26 @@ if egl.egl_version >= (1, 1):
 if egl.egl_version >= (1, 2):
     from .enums import SwapBehavior
 
-    def horizontal_resolution(self) -> Optional[float]:
+    def horizontal_resolution(self):
         scaled_value = egl.eglQuerySurface(self._display, self,
                                            egl.EGL_HORIZONTAL_RESOLUTION)
         return (None if scaled_value == egl.EGL_UNKNOWN else
                 scaled_value / egl.EGL_DISPLAY_SCALING)
     Surface.horizontal_resolution = property(horizontal_resolution)
 
-    def pixel_aspect_ratio(self) -> Optional[float]:
+    def pixel_aspect_ratio(self):
         scaled_value = egl.eglQuerySurface(self._display, self,
                                            egl.EGL_PIXEL_ASPECT_RATIO)
         return (None if scaled_value == egl.EGL_UNKNOWN else
                 scaled_value / egl.EGL_DISPLAY_SCALING)
     Surface.pixel_aspect_ratio = property(pixel_aspect_ratio)
 
-    def swap_behavior(self) -> SwapBehavior:
+    def swap_behavior(self):
         return SwapBehavior(egl.eglQuerySurface(self._display, self,
                                                 egl.EGL_SWAP_BEHAVIOR))
     Surface.swap_behavior = property(swap_behavior)
 
-    def vertical_resolution(self) -> Optional[float]:
+    def vertical_resolution(self):
         scaled_value = egl.eglQuerySurface(self._display, self,
                                            egl.EGL_VERTICAL_RESOLUTION)
         return (None if scaled_value == egl.EGL_UNKNOWN else
@@ -184,11 +178,11 @@ if egl.egl_version >= (1, 2):
 if egl.egl_version >= (1, 4):
     from .enums import MultisampleResolve
 
-    def get_multisample_resolve(self) -> MultisampleResolve:
-        return MultisampleResolve(egl.eglQuerySurface(
-                                      self._display, self,
-                                      egl.EGL_MULTISAMPLE_RESOLVE))
-    def set_multisample_resolve(self, method: MultisampleResolve) -> None:
+    def get_multisample_resolve(self):
+        return MultisampleResolve(
+            egl.eglQuerySurface(self._display, self,
+                                egl.EGL_MULTISAMPLE_RESOLVE))
+    def set_multisample_resolve(self, method):
         egl.eglSurfaceAttrib(self._display, self, egl.EGL_MULTISAMPLE_RESOLVE,
                              method)
     Surface.multisample_resolve = property(get_multisample_resolve,
