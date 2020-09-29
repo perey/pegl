@@ -65,8 +65,8 @@ class Cached(ABC):
         try:
             instance = cls._cache[key]
         except KeyError:
-            logging.debug(f'Cache miss ({cls.__name__}): {repr(key)}')
+            logging.debug('Cache miss (%s): %r}', cls.__name__, key)
             instance = cls(*args, **kwargs)
         else:
-            logging.debug(f'Cache hit ({cls.__name__}): {repr(key)}')
+            logging.debug('Cache hit (%s): %r}', cls.__name__, key)
         return instance
