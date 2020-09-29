@@ -55,6 +55,9 @@ import unittest
 # Import the module to be tested.
 from pegl import egl
 
+# List known EGL versions.
+known_versions = ((1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5))
+
 # Define EGL types per § 2.1.1
 egl_types = {
     'EGLBoolean': ctypes.c_bool,
@@ -199,15 +202,15 @@ def get_defines(file: TextIO, guard_name: str) -> tuple[
 SKIP_HEADER = False
 egl_header = Path(__file__).parent / 'egl.h'
 
+CONSTANTS = {}
+FUNCTIONS = {}
 try:
     with egl_header.open(mode='rt') as f:
         # Note that this assumes that versions are defined in order.
-        EGL1_0_CONSTANTS, EGL1_0_FUNCTIONS = get_defines(f, 'EGL_VERSION_1_0')
-        EGL1_1_CONSTANTS, EGL1_1_FUNCTIONS = get_defines(f, 'EGL_VERSION_1_1')
-        EGL1_2_CONSTANTS, EGL1_2_FUNCTIONS = get_defines(f, 'EGL_VERSION_1_2')
-        EGL1_3_CONSTANTS, EGL1_3_FUNCTIONS = get_defines(f, 'EGL_VERSION_1_3')
-        EGL1_4_CONSTANTS, EGL1_4_FUNCTIONS = get_defines(f, 'EGL_VERSION_1_4')
-        EGL1_5_CONSTANTS, EGL1_5_FUNCTIONS = get_defines(f, 'EGL_VERSION_1_5')
+        for (major, minor) in known_versions:
+            (CONSTANTS[(major, minor)],
+             FUNCTIONS[(major, minor)]) = get_defines(f, 'EGL_VERSION_'
+                                                      f'{major}_{minor}')
 except FileNotFoundError:
     SKIP_HEADER = True
 
@@ -222,367 +225,93 @@ class TestEGLVersion(unittest.TestCase):
         - It matches a known EGL version
 
         """
-        self.assertIn(egl.egl_version, ((1, 0),
-                                        (1, 1),
-                                        (1, 2),
-                                        (1, 3),
-                                        (1, 4),
-                                        (1, 5)))
+        self.assertIn(egl.egl_version, known_versions)
 
 
 class TestEGLConstants(unittest.TestCase):
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    def test_egl1_0_constants_defined(self):
-        """Check values of EGL 1.0 constants.
-
-        This test passes if:
-
-        - All EGL 1.0 constants are defined
-        - They have the correct values
-
-        """
-        for n, (name, value, is_ctypes_type) in enumerate(EGL1_0_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                egl_constant = getattr(egl, name)
-                if is_ctypes_type:
-                    self.assertEqual(type(egl_constant), type(value), name)
-                    self.assertEqual(egl_constant.value, value.value, name)
-                else:
-                    self.assertEqual(egl_constant, value, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 1), 'EGL version too low')
-    def test_egl1_1_constants_defined(self):
-        """Check values of EGL 1.1 constants.
-
-        This test passes if:
-
-        - All EGL 1.1 constants are defined
-        - They have the correct values
-
-        """
-        for n, (name, value, is_ctypes_type) in enumerate(EGL1_1_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                egl_constant = getattr(egl, name)
-                if is_ctypes_type:
-                    self.assertEqual(type(egl_constant), type(value), name)
-                    self.assertEqual(egl_constant.value, value.value, name)
-                else:
-                    self.assertEqual(egl_constant, value, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 1), 'EGL version too high')
-    def test_egl1_1_constants_omitted(self):
-        """Check that EGL 1.1 constants are not defined.
-
-        This test passes if:
-
-        - No EGL 1.1 constants are defined
-
-        """
-        for n, (name, *_) in enumerate(EGL1_1_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 2), 'EGL version too low')
-    def test_egl1_2_constants_defined(self):
-        """Check values of EGL 1.1 constants.
-
-        This test passes if:
-
-        - All EGL 1.2 constants are defined
-        - They have the correct values
-
-        """
-        for n, (name, value, is_ctypes_type) in enumerate(EGL1_2_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                egl_constant = getattr(egl, name)
-                if is_ctypes_type:
-                    self.assertEqual(type(egl_constant), type(value), name)
-                    self.assertEqual(egl_constant.value, value.value, name)
-                else:
-                    self.assertEqual(egl_constant, value, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 2), 'EGL version too high')
-    def test_egl1_2_constants_omitted(self):
-        """Check that EGL 1.2 constants are not defined.
-
-        This test passes if:
-
-        - No EGL 1.2 constants are defined
-
-        """
-        for n, (name, *_) in enumerate(EGL1_2_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 3), 'EGL version too low')
-    def test_egl1_3_constants_defined(self):
-        """Check values of EGL 1.3 constants.
-
-        This test passes if:
-
-        - All EGL 1.3 constants are defined
-        - They have the correct values
-
-        """
-        for n, (name, value, is_ctypes_type) in enumerate(EGL1_3_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                egl_constant = getattr(egl, name)
-                if is_ctypes_type:
-                    self.assertEqual(type(egl_constant), type(value), name)
-                    self.assertEqual(egl_constant.value, value.value, name)
-                else:
-                    self.assertEqual(egl_constant, value, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 3), 'EGL version too high')
-    def test_egl1_3_constants_omitted(self):
-        """Check that EGL 1.3 constants are not defined.
-
-        This test passes if:
-
-        - No EGL 1.3 constants are defined
-
-        """
-        for n, (name, *_) in enumerate(EGL1_3_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 4), 'EGL version too low')
-    def test_egl1_4_constants_defined(self):
-        """Check values of EGL 1.4 constants.
-
-        This test passes if:
-
-        - All EGL 1.4 constants are defined
-        - They have the correct values
-
-        """
-        for n, (name, value, is_ctypes_type) in enumerate(EGL1_4_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                egl_constant = getattr(egl, name)
-                if is_ctypes_type:
-                    self.assertEqual(type(egl_constant), type(value), name)
-                    self.assertEqual(egl_constant.value, value.value, name)
-                else:
-                    self.assertEqual(egl_constant, value, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 4), 'EGL version too high')
-    def test_egl1_4_constants_omitted(self):
-        """Check that EGL 1.4 constants are not defined.
-
-        This test passes if:
-
-        - No EGL 1.4 constants are defined
-
-        """
-        for n, (name, *_) in enumerate(EGL1_4_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 5), 'EGL version too low')
-    def test_egl1_5_constants_defined(self):
-        """Check values of EGL 1.5 constants.
-
-        This test passes if:
-
-        - All EGL 1.5 constants are defined
-        - They have the correct values
-
-        """
-        for n, (name, value, is_ctypes_type) in enumerate(EGL1_5_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                egl_constant = getattr(egl, name)
-                if is_ctypes_type:
-                    self.assertEqual(type(egl_constant), type(value), name)
-                    self.assertEqual(egl_constant.value, value.value, name)
-                else:
-                    self.assertEqual(egl_constant, value, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 5), 'EGL version too high')
-    def test_egl1_5_constants_omitted(self):
-        """Check that EGL 1.5 constants are not defined.
-
-        This test passes if:
-
-        - No EGL 1.5 constants are defined
-
-        """
-        for n, (name, *_) in enumerate(EGL1_5_CONSTANTS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
+    pass
 
 
 class TestEGLFunctions(unittest.TestCase):
+    pass
+
+
+# Dynamically build the tests for each version.
+for (major, minor) in known_versions:
     @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    def test_egl1_0_functions_defined(self):
-        """Check definitions of EGL 1.0 functions.
+    @unittest.skipIf(egl.egl_version < (major, minor), 'EGL version too low')
+    def are_constants_defined(self):
+        f"""Check values of EGL {major}.{minor} constants.
 
         This test passes if:
 
-        - All EGL 1.0 functions are defined.
-        - They have the correct return types.
+        - All EGL {major}.{minor} constants are defined
+        - They have the correct values
 
         """
-        for n, (name, restype) in enumerate(EGL1_0_FUNCTIONS):
+        for n, (name, value, is_ctypes_type) in enumerate(CONSTANTS[(major,
+                                                                     minor)]):
             with self.subTest(msg=name, n=n):
-                egl_fn = getattr(egl, name)
-                self.assertEqual(egl_fn.restype, restype, name)
+                egl_constant = getattr(egl, name)
+                if is_ctypes_type:
+                    self.assertEqual(type(egl_constant), type(value), name)
+                    self.assertEqual(egl_constant.value, value.value, name)
+                else:
+                    self.assertEqual(egl_constant, value, name)
 
     @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 1), 'EGL version too low')
-    def test_egl1_1_functions_defined(self):
-        """Check definitions of EGL 1.1 functions.
+    @unittest.skipIf(egl.egl_version >= (major, minor), 'EGL version too high')
+    def are_constants_omitted(self):
+        f"""Check that EGL {major}.{minor} constants are not defined.
 
         This test passes if:
 
-        - All EGL 1.1 functions are defined.
+        - No EGL {major}.{minor} constants are defined
+
+        """
+        for n, (name, *_) in enumerate(CONSTANTS[(major, minor)]):
+            with self.subTest(msg=name, n=n):
+                self.assertRaises(AttributeError, getattr(egl, name))
+
+    setattr(TestEGLConstants, f'test_egl{major}_{minor}_constants_defined',
+            are_constants_defined)
+    setattr(TestEGLConstants, f'test_egl{major}_{minor}_constants_omitted',
+            are_constants_omitted)
+
+    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
+    @unittest.skipIf(egl.egl_version < (major, minor), 'EGL version too low')
+    def are_functions_defined(self):
+        f"""Check definitions of EGL {major}.{minor} functions.
+
+        This test passes if:
+
+        - All EGL {major}.{minor} functions are defined.
         - They have the correct return types.
 
         """
-        for n, (name, restype) in enumerate(EGL1_1_FUNCTIONS):
+        for n, (name, restype) in enumerate(FUNCTIONS[(major, minor)]):
             with self.subTest(msg=name, n=n):
                 egl_fn = getattr(egl, name)
                 self.assertEqual(egl_fn.restype, restype, name)
 
     @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
     @unittest.skipIf(egl.egl_version >= (1, 1), 'EGL version too high')
-    def test_egl1_1_functions_omitted(self):
-        """Check that EGL 1.1 functions are not defined.
+    def are_functions_omitted(self):
+        f"""Check that EGL {major}.{minor} functions are not defined.
 
         This test passes if:
 
-        - No EGL 1.1 functions are defined.
+        - No EGL {major}.{minor} functions are defined.
 
         """
-        for n, (name, *_) in enumerate(EGL1_1_FUNCTIONS):
+        for n, (name, *_) in enumerate(FUNCTIONS[(major, minor)]):
             with self.subTest(msg=name, n=n):
                 self.assertRaises(AttributeError, getattr(egl, name))
 
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 2), 'EGL version too low')
-    def test_egl1_2_functions_defined(self):
-        """Check definitions of EGL 1.2 functions.
+    setattr(TestEGLFunctions, f'test_egl{major}_{minor}_constants_defined',
+            are_constants_defined)
+    setattr(TestEGLFunctions, f'test_egl{major}_{minor}_constants_omitted',
+            are_constants_omitted)
 
-        This test passes if:
-
-        - All EGL 1.2 functions are defined.
-        - They have the correct return types.
-
-        """
-        for n, (name, restype) in enumerate(EGL1_2_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                egl_fn = getattr(egl, name)
-                self.assertEqual(egl_fn.restype, restype, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 2), 'EGL version too high')
-    def test_egl1_2_functions_omitted(self):
-        """Check that EGL 1.2 functions are not defined.
-
-        This test passes if:
-
-        - No EGL 1.2 functions are defined.
-
-        """
-        for n, (name, *_) in enumerate(EGL1_2_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 3), 'EGL version too low')
-    def test_egl1_3_functions_defined(self):
-        """Check definitions of EGL 1.3 functions.
-
-        This test passes if:
-
-        - All EGL 1.3 functions are defined.
-        - They have the correct return types.
-
-        """
-        for n, (name, restype) in enumerate(EGL1_3_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                egl_fn = getattr(egl, name)
-                self.assertEqual(egl_fn.restype, restype, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 3), 'EGL version too high')
-    def test_egl1_3_functions_omitted(self):
-        """Check that EGL 1.3 functions are not defined.
-
-        This test passes if:
-
-        - No EGL 1.3 functions are defined.
-
-        """
-        for n, (name, *_) in enumerate(EGL1_3_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 4), 'EGL version too low')
-    def test_egl1_4_functions_defined(self):
-        """Check definitions of EGL 1.4 functions.
-
-        This test passes if:
-
-        - All EGL 1.4 functions are defined.
-        - They have the correct return types.
-
-        """
-        for n, (name, restype) in enumerate(EGL1_4_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                egl_fn = getattr(egl, name)
-                self.assertEqual(egl_fn.restype, restype, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 4), 'EGL version too high')
-    def test_egl1_4_functions_omitted(self):
-        """Check that EGL 1.4 functions are not defined.
-
-        This test passes if:
-
-        - No EGL 1.4 functions are defined.
-
-        """
-        for n, (name, *_) in enumerate(EGL1_4_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (1, 5), 'EGL version too low')
-    def test_egl1_5_functions_defined(self):
-        """Check definitions of EGL 1.5 functions.
-
-        This test passes if:
-
-        - All EGL 1.5 functions are defined.
-        - They have the correct return types.
-
-        """
-        for n, (name, restype) in enumerate(EGL1_5_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                egl_fn = getattr(egl, name)
-                self.assertEqual(egl_fn.restype, restype, name)
-
-    @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 5), 'EGL version too high')
-    def test_egl1_5_functions_omitted(self):
-        """Check that EGL 1.5 functions are not defined.
-
-        This test passes if:
-
-        - No EGL 1.5 functions are defined.
-
-        """
-        for n, (name, *_) in enumerate(EGL1_5_FUNCTIONS):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
