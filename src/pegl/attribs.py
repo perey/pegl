@@ -50,8 +50,8 @@ def attrib_list(attribs: Optional[dict[Any, Any]], new_type=False):
         # the special value EGL_NONE.
         ctype = (EGLAttrib if new_type else EGLint)
         length = 2 * len(attribs) + 1
-        seq = [*chain.from_iterable(attribs.items()), EGL_NONE]
 
-        return (ctype * length)(seq)
+        return (ctype * length)(*chain.from_iterable(attribs.items()),
+                                EGL_NONE)
 
 DONT_CARE = EGL_DONT_CARE
