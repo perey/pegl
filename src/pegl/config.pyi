@@ -12,6 +12,7 @@ from .enums import (ClientAPIFlag, ClientBufferType, ColorBufferType,
                     SurfaceTypeFlag, TransparentType)
 from .surface import Surface
 
+
 class Config(Cached):
     def __init__(self, display: Display, handle: Any): ...
 
