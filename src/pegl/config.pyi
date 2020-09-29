@@ -14,7 +14,7 @@ from .surface import Surface
 
 
 class Config(Cached):
-    def __init__(self, display: Display, handle: Any): ...
+    def __init__(self, display: Display, handle: Any) -> None: ...
 
     def create_context(
         self, share_context: Optional[Context]=...,
