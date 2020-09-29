@@ -2,7 +2,7 @@
 
 # Standard library imports.
 from abc import ABC
-from typing import ClassVar, Generic, Mapping, Protocol, TypeVar
+from typing import Any, ClassVar, Generic, Mapping, Protocol, TypeVar
 
 CType = TypeVar('CType')
 

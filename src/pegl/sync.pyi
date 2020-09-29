@@ -4,6 +4,7 @@
 from typing import Any, Optional
 
 # Local imports.
+from .display import Display
 from .enums import NativeEngine, SyncCondition, SyncFlag, SyncResult, SyncType
 
 
@@ -13,7 +14,7 @@ class Sync:
     def client_wait_sync(self, flags: SyncFlag=...,
                          timeout: Optional[int]=...) -> SyncResult: ...
 
-    def wait_sync(self, flags: SyncFlag=SyncFlag.NONE) -> None: ...
+    def wait_sync(self, flags: SyncFlag=...) -> None: ...
 
     @property
     def sync_condition(self) -> SyncCondition: ...

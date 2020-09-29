@@ -22,7 +22,7 @@ class Config(Cached):
 
     def create_pbuffer_from_client_buffer(
         self, buftype: ClientBufferType, buffer: Any,
-        attribs: Optional[dict[SurfaceAttrib, Any]]=...) -> Surface:
+        attribs: Optional[dict[SurfaceAttrib, Any]]=...) -> Surface: ...
 
     def create_pbuffer_surface(
         self, attribs: Optional[dict[SurfaceAttrib, Any]]=...) -> Surface: ...
@@ -33,11 +33,11 @@ class Config(Cached):
 
     def create_platform_pixmap_surface(
         self, native_pixmap: int,
-        attribs: Optional[dict[SurfaceAttrib, Any]]=...) -> Surface:
+        attribs: Optional[dict[SurfaceAttrib, Any]]=...) -> Surface: ...
 
     def create_platform_window_surface(
         self, native_window: int,
-        attribs: Optional[dict[SurfaceAttrib, Any]]=...) -> Surface:
+        attribs: Optional[dict[SurfaceAttrib, Any]]=...) -> Surface: ...
 
     def create_window_surface(
         self, win: int,

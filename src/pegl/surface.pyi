@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 # Local imports.
 from ._caching import Cached
+from .config import Config
 from .display import Display
 from .enums import (MultisampleResolve, RenderBuffer, SwapBehavior,
                     TextureFormat, TextureTarget)
