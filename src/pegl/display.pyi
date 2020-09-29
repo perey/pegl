@@ -1,13 +1,14 @@
 """Typing stubs for pegl.display"""
 
 # Standard library imports.
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 # Local imports.
 from ._caching import Cached
 from .config import Config
 from .context import Context
-from .enums import ConfigAttrib
+from .enums import (ConfigAttrib, DisplayAttrib, ImageAttrib, ImageTarget,
+                    Platform, SyncAttrib, SyncType)
 from .image import Image
 from .surface import Surface
 from .sync import Sync
@@ -27,7 +28,7 @@ class Display(Cached):
     @classmethod
     def get_platform_display(cls, platform: Platform, native_display: int,
                              attribs: Optional[dict[DisplayAttrib, Any]]=None,
-                             init: bool=True) -> Display:
+                             init: bool=True) -> Display: ...
 
     def choose_config(
         self, attribs: dict[ConfigAttrib, Any],
