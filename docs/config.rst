@@ -121,7 +121,7 @@ The Config class
 
         The underlying EGL function is :eglfunc:`eglCreateWindowSurface`.
 
-    .. py:method:: get_config_attrib(attribute: pegl.enums.ConfigAttrib) -> int
+    .. py:method:: get_config_attrib(attribute: pegl.enums.ConfigAttrib) -> Any
 
         Get the value of one of this configuration’s attributes. Users will not
         generally need this function, as the available attributes can be
