@@ -26,15 +26,18 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Standard library imports.
-import os.path
+from pathlib import Path
 import re
-from distutils.core import setup
+from setuptools import setup
 
 version_re = re.compile('''^\s*__version__ = ['"]([^'"]+)['"]''')
 
-def get_version(package, filename='__init__.py'):
+package_dir = 'src/pegl'
+package_path = Path(package_dir)
+
+def get_version(package_path, filename='__init__.py'):
     '''Find the __version__ attribute of the specified package.'''
-    with open(os.path.join(package, filename)) as f:
+    with open(package_path / filename)) as f:
         for line in f:
             match = version_re.search(line)
             if match:
@@ -43,11 +46,11 @@ def get_version(package, filename='__init__.py'):
 
 setup(
     name='Pegl',
-    version=get_version('src/pegl'),
+    version=get_version(package_path),
     author='Tim Pederick',
     author_email='pederick@gmail.com',
     packages=['pegl', 'pegl.egl'],
-    package_dir={'pegl': 'src/pegl'},
+    package_dir={'pegl': package_dir},
     url='https://github.com/perey/pegl',
     description='Python 3 wrapper for the EGL API',
     classifiers=['Development Status :: 3 - Alpha',
