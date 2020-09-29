@@ -62,6 +62,6 @@ setup(
                  'Programming Language :: Python :: 3.9',
                  'Topic :: Multimedia :: Graphics',
                  'Topic :: Software Development :: Libraries'],
-    long_description=open('README.rst', 'rt').read(),
+    long_description=open('README.rst', 'rt', encoding='utf-8').read(),
     install_requires=['aenum'],
 )
