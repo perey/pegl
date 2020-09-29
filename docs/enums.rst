@@ -808,7 +808,7 @@ these are also left out of short names.
 
 .. py:class:: SyncType
 
-    An enumeration of sync object types.
+    Available types of sync object.
 
     .. availability:: EGL 1.5
 

@@ -25,7 +25,6 @@ __all__ = ['attrib_list', 'DONT_CARE']
 
 # Standard library imports.
 from itertools import chain
-from typing import Any, Optional
 
 # Local imports.
 from .egl import EGL_DONT_CARE, EGL_NONE
@@ -45,13 +44,12 @@ def attrib_list(attribs, new_type=False):
     """
     if attribs is None:
         return None
-    else:
-        # Construct a sequence of keys followed by values, terminated with
-        # the special value EGL_NONE.
-        ctype = (EGLAttrib if new_type else EGLint)
-        length = 2 * len(attribs) + 1
 
-        return (ctype * length)(*chain.from_iterable(attribs.items()),
-                                EGL_NONE)
+    # Construct a sequence of keys followed by values, terminated with
+    # the special value EGL_NONE.
+    ctype = (EGLAttrib if new_type else EGLint)
+    length = 2 * len(attribs) + 1
+
+    return (ctype * length)(*chain.from_iterable(attribs.items()), EGL_NONE)
 
 DONT_CARE = EGL_DONT_CARE

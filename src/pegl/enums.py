@@ -66,11 +66,12 @@ __all__ = ['ConfigAttrib', 'ConfigCaveat', 'NativeEngine', 'ReadOrDraw',
 
 # Use hexadecimal in the repr to make it easier to compare to the EGL headers.
 def hex_repr(self):
+    """Represent an IntEnum member in hexadecimal."""
     cls = self.__class__
     if self._name_ is not None:
         return '<{}.{}: {:#06x}>'.format(cls.__name__, self._name_,
                                          self._value_)
-    members, uncovered = _decompose(cls, self._value_)
+    members, _ = _decompose(cls, self._value_)
     return '<{}.{}: {:#06x}>'.format(cls.__name__,
                                      '|'.join([str(m._name_ or m._value_)
                                                for m in members]),
@@ -80,6 +81,7 @@ IntFlag.__repr__ = hex_repr
 
 # EGL 1.0 enumerations.
 class ConfigAttrib(IntEnum):
+    """Attributes that can be used to request a particular config."""
     ALPHA_SIZE = egl.EGL_ALPHA_SIZE
     BLUE_SIZE = egl.EGL_BLUE_SIZE
     BUFFER_SIZE = egl.EGL_BUFFER_SIZE
@@ -105,6 +107,7 @@ class ConfigAttrib(IntEnum):
     TRANSPARENT_TYPE = egl.EGL_TRANSPARENT_TYPE
 
 class ConfigCaveat(IntEnum):
+    """Caveats that may apply to a configuration."""
     NONE = egl.EGL_NONE
     NON_CONFORMANT = egl.EGL_NON_CONFORMANT_CONFIG
     NON_CONFORMANT_CONFIG = egl.EGL_NON_CONFORMANT_CONFIG
@@ -112,19 +115,23 @@ class ConfigCaveat(IntEnum):
     SLOW_CONFIG = egl.EGL_SLOW_CONFIG
 
 class NativeEngine(IntEnum):
+    """Native rendering engines recognized by the EGL implementation."""
     CORE = egl.EGL_CORE_NATIVE_ENGINE
     CORE_NATIVE_ENGINE = egl.EGL_CORE_NATIVE_ENGINE
 
 class ReadOrDraw(IntEnum):
+    """Which of the bound surfaces is requested."""
     DRAW = egl.EGL_DRAW
     READ = egl.EGL_READ
 
 class SurfaceAttrib(IntEnum):
+    """Attributes that can be specified when creating a config."""
     HEIGHT = egl.EGL_HEIGHT
     LARGEST_PBUFFER = egl.EGL_LARGEST_PBUFFER
     WIDTH = egl.EGL_WIDTH
 
 class SurfaceTypeFlag(IntFlag):
+    """Surfaces that may be supported by a configuration."""
     PBUFFER = egl.EGL_PBUFFER_BIT
     PBUFFER_BIT = egl.EGL_PBUFFER_BIT
     PIXMAP = egl.EGL_PIXMAP_BIT
@@ -133,6 +140,7 @@ class SurfaceTypeFlag(IntFlag):
     WINDOW_BIT = egl.EGL_WINDOW_BIT
 
 class TransparentType(IntEnum):
+    """Transparency types that may be supported."""
     NONE = egl.EGL_NONE
     RGB = egl.EGL_TRANSPARENT_RGB
     TRANSPARENT_RGB = egl.EGL_TRANSPARENT_RGB
@@ -152,10 +160,12 @@ if egl.egl_version >= (1, 1):
         extend_enum(SurfaceAttrib, name, value)
 
     class RenderBuffer(IntEnum):
+        """Buffer targets for rendering."""
         BACK = egl.EGL_BACK_BUFFER
         BACK_BUFFER = egl.EGL_BACK_BUFFER
 
     class TextureFormat(IntEnum):
+        """OpenGL ES texture formats."""
         NO_TEXTURE = egl.EGL_NO_TEXTURE
         RGB = egl.EGL_TEXTURE_RGB
         TEXTURE_RGB = egl.EGL_TEXTURE_RGB
@@ -163,6 +173,7 @@ if egl.egl_version >= (1, 1):
         TEXTURE_RGBA = egl.EGL_TEXTURE_RGBA
 
     class TextureTarget(IntEnum):
+        """OpenGL ES texture targets."""
         NO_TEXTURE = egl.EGL_NO_TEXTURE
         TEXTURE_2D = egl.EGL_TEXTURE_2D
 
@@ -184,31 +195,37 @@ if egl.egl_version >= (1, 2):
         extend_enum(SurfaceAttrib, name, value)
 
     class ClientAPI(IntEnum):
+        """Client APIs supported by EGL."""
         OPENGL_ES = egl.EGL_OPENGL_ES_API
         OPENGL_ES_API = egl.EGL_OPENGL_ES_API
         OPENVG = egl.EGL_OPENVG_API
         OPENVG_API = egl.EGL_OPENVG_API
 
     class ClientAPIFlag(IntFlag):
+        """Flags for client APIs supported by a config."""
         OPENGL_ES = egl.EGL_OPENGL_ES_BIT
         OPENGL_ES_BIT = egl.EGL_OPENGL_ES_BIT
         OPENVG = egl.EGL_OPENVG_BIT
         OPENVG_BIT = egl.EGL_OPENVG_BIT
 
     class ClientBufferType(IntEnum):
+        """Client API buffer types."""
         OPENVG_IMAGE = egl.EGL_OPENVG_IMAGE
 
     class ColorBufferType(IntEnum):
+        """Types of color buffer that may be supported by a config."""
         RGB = egl.EGL_RGB_BUFFER
         RGB_BUFFER = egl.EGL_RGB_BUFFER
         LUMINANCE = egl.EGL_LUMINANCE_BUFFER
         LUMINANCE_BUFFER = egl.EGL_LUMINANCE_BUFFER
 
     class ContextAttrib(IntEnum):
+        """Attributes that may be requested when creating a context."""
         CLIENT_TYPE = egl.EGL_CONTEXT_CLIENT_TYPE
         CONTEXT_CLIENT_TYPE = egl.EGL_CONTEXT_CLIENT_TYPE
 
     class SwapBehavior(IntEnum):
+        """Effects of a buffer swap on the color buffer."""
         BUFFER_DESTROYED = egl.EGL_BUFFER_DESTROYED
         BUFFER_PRESERVED = egl.EGL_BUFFER_PRESERVED
 
@@ -248,12 +265,14 @@ if egl.egl_version >= (1, 3):
         extend_enum(SurfaceTypeFlag, name, value)
 
     class VGAlphaFormat(IntEnum):
+        """OpenVG alpha formats that a surface may use."""
         NONPRE = egl.EGL_VG_ALPHA_FORMAT_NONPRE
         VG_ALPHA_FORMAT_NONPRE = egl.EGL_VG_ALPHA_FORMAT_NONPRE
         PRE = egl.EGL_VG_ALPHA_FORMAT_PRE
         VG_ALPHA_FORMAT_PRE = egl.EGL_VG_ALPHA_FORMAT_PRE
 
     class VGColorspace(IntEnum):
+        """Colorspaces supported by OpenVG."""
         sRGB = egl.EGL_VG_COLORSPACE_sRGB
         # It's odd how OpenGL uses SRGB, but OpenVG uses sRGB (notice the
         # lower-case s). To save errors, I'm providing both as aliases.
@@ -287,6 +306,7 @@ if egl.egl_version >= (1, 4):
 
 
     class MultisampleResolve(IntEnum):
+        """Filters that may be used to resolve the multisample buffer."""
         DEFAULT = egl.EGL_MULTISAMPLE_RESOLVE_DEFAULT
         MULTISAMPLE_RESOLVE_DEFAULT = egl.EGL_MULTISAMPLE_RESOLVE_DEFAULT
         BOX = egl.EGL_MULTISAMPLE_RESOLVE_BOX
@@ -328,7 +348,12 @@ if egl.egl_version >= (1, 5):
         extend_enum(SurfaceAttrib, name, value)
 
 
+    class DisplayAttrib(IntEnum):
+        """Attributes that may be specified when getting a display."""
+        pass
+
     class GLColorspace(IntEnum):
+        """Colorspaces supported by OpenGL and OpenGL ES."""
         SRGB = egl.EGL_GL_COLORSPACE_SRGB
         # It's odd how OpenGL uses SRGB, but OpenVG uses sRGB (notice the
         # lower-case s). To save errors, I'm providing both as aliases.
@@ -339,11 +364,13 @@ if egl.egl_version >= (1, 5):
         GL_COLORSPACE_LINEAR = egl.EGL_GL_COLORSPACE_LINEAR
 
     class ImageAttrib(IntEnum):
+        """Attributes that can be specified when creating an image."""
         GL_TEXTURE_LEVEL = egl.EGL_GL_TEXTURE_LEVEL
         GL_TEXTURE_ZOFFSET = egl.EGL_GL_TEXTURE_ZOFFSET
         IMAGE_PRESERVED = egl.EGL_IMAGE_PRESERVED
 
     class ImageTarget(IntEnum):
+        """Sources for creating an image."""
         GL_TEXTURE_2D = egl.EGL_GL_TEXTURE_2D
         GL_TEXTURE_CUBE_MAP_POSITIVE_X = egl.EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_X
         GL_TEXTURE_CUBE_MAP_NEGATIVE_X = egl.EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_X
@@ -355,6 +382,7 @@ if egl.egl_version >= (1, 5):
         GL_RENDERBUFFER = egl.EGL_GL_RENDERBUFFER
 
     class OpenGLProfileFlag(IntFlag):
+        """Flags for OpenGL profiles."""
         CORE = egl.EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT
         CONTEXT_OPENGL_CORE_PROFILE_BIT = \
             egl.EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT
@@ -363,39 +391,43 @@ if egl.egl_version >= (1, 5):
             egl.EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT
 
     class Platform(IntEnum):
-        pass
-
-    class DisplayAttrib(IntEnum):
+        """Known platforms."""
         pass
 
     class ResetNotificationStrategy(IntEnum):
+        """OpenGL and OpenGL ES reset notification strategies."""
         NO_RESET_NOTIFICATION = egl.EGL_NO_RESET_NOTIFICATION
         LOSE_CONTEXT_ON_RESET = egl.EGL_LOSE_CONTEXT_ON_RESET
 
     class SyncAttrib(IntEnum):
+        """Attributes that may be specified when creating a sync object."""
         CL_EVENT_HANDLE = egl.EGL_CL_EVENT_HANDLE
 
     class SyncCondition(IntEnum):
+        """Conditions that can cause a sync object to be signaled."""
         PRIOR_COMMANDS_COMPLETE = egl.EGL_SYNC_PRIOR_COMMANDS_COMPLETE
         SYNC_PRIOR_COMMANDS_COMPLETE = egl.EGL_SYNC_PRIOR_COMMANDS_COMPLETE
         CL_EVENT_COMPLETE = egl.EGL_SYNC_CL_EVENT_COMPLETE
         SYNC_CL_EVENT_COMPLETE = egl.EGL_SYNC_CL_EVENT_COMPLETE
 
     class SyncFlag(IntFlag):
+        """Flags that define the waiting behaviour of a sync object."""
         NONE = 0
         FLUSH_COMMANDS = egl.EGL_SYNC_FLUSH_COMMANDS_BIT
         SYNC_FLUSH_COMMANDS_BIT = egl.EGL_SYNC_FLUSH_COMMANDS_BIT
 
     class SyncResult(IntEnum):
+        """Results from waiting on a sync object."""
         CONDITION_SATISFIED = egl.EGL_CONDITION_SATISFIED
         TIMEOUT_EXPIRED = egl.EGL_TIMEOUT_EXPIRED
 
     class SyncType(IntEnum):
+        """Sync object types."""
         FENCE = egl.EGL_SYNC_FENCE
         SYNC_FENCE = egl.EGL_SYNC_FENCE
         CL_EVENT = egl.EGL_SYNC_CL_EVENT
         SYNC_CL_EVENT = egl.EGL_SYNC_CL_EVENT
 
-    __all__.extend(['GLColorspace', 'ImageAttrib', 'ImageTarget', 'Platform',
-                    'DisplayAttrib', 'SyncAttrib', 'SyncCondition',
+    __all__.extend(['DisplayAttrib', 'GLColorspace', 'ImageAttrib',
+                    'ImageTarget', 'Platform', 'SyncAttrib', 'SyncCondition',
                     'SyncFlag', 'SyncResult', 'SyncType'])

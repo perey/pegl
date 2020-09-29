@@ -90,16 +90,19 @@ if egl.egl_version >= (1, 5):
 
         @property
         def sync_condition(self):
+            """When will this sync object be signaled?"""
             return SyncCondition(egl.eglGetSyncAttrib(self._display, self,
                                                       egl.EGL_SYNC_CONDITION))
 
         @property
         def sync_status(self):
+            """Is this sync object signaled?"""
             return bool(egl.eglGetSyncAttrib(self._display, self,
                                              egl.EGL_SYNC_STATUS))
 
         @property
         def sync_type(self):
+            """The type of this sync object."""
             return SyncType(egl.eglGetSyncAttrib(self._display, self,
                                                  egl.EGL_SYNC_TYPE))
 

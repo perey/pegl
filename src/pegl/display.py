@@ -188,7 +188,8 @@ if egl.egl_version >= (1, 1):
     def get_swap_interval(self):
         """The number of video frames to wait between buffer swaps."""
         return self._swap_interval
-    def set_swap_interval(self, interval): # pylint: disable=missing-function-docstring
+    def set_swap_interval(self, interval):
+        # pylint: disable=missing-function-docstring
         egl.eglSwapInterval(self, interval)
         self._swap_interval = interval
     setattr(Display, 'swap_interval', property(get_swap_interval,

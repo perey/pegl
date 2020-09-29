@@ -36,10 +36,12 @@ class ContextMeta(type(Cached)):
     # class.
     @property
     def current_draw_surface(cls):
+        """The surface bound to the current context for drawing."""
         return cls.get_current_surface(ReadOrDraw.DRAW)
 
     @property
     def current_read_surface(cls):
+        """The surface bound to the current context for reading."""
         return cls.get_current_surface(ReadOrDraw.READ)
 
 
@@ -71,12 +73,12 @@ class Context(Cached, metaclass=ContextMeta):
             pass
 
     @classmethod
-    def get_current_surface(cls, readdraww):
+    def get_current_surface(cls, readdraww): # pylint: disable=missing-function-docstring
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
 
     @classmethod
-    def release_current(cls):
+    def release_current(cls): # pylint: disable=missing-function-docstring
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
 
@@ -102,11 +104,13 @@ class Context(Cached, metaclass=ContextMeta):
 
     @property
     def config(self):
+        """The config object used to create this context."""
         # Implemented in pegl.config to avoid dependency problems.
         raise NotImplementedError
 
     @property
     def config_id(self):
+        """The unique ID of the config used to create this context."""
         return egl.eglQueryContext(self._display, self, egl.EGL_CONFIG_ID)
 
 
@@ -120,24 +124,27 @@ if egl.egl_version >= (1, 2):
     def query_api():
         """Get the client API that is bound for this thread."""
         api = ClientAPI(egl.eglQueryAPI())
-        return (None if api == ClientAPI.NONE else api)
+        return None if api == ClientAPI.NONE else api
 
     __all__.extend(['bind_api', 'query_api'])
 
     def client_type(self):
+        """The client API this context supports."""
         return ClientAPI(egl.eglQueryContext(self._display, self,
                                              egl.EGL_CONTEXT_CLIENT_TYPE))
     setattr(Context, 'client_type', property(client_type))
 
     def render_buffer(self):
+        """Which buffer client APIs will render to."""
         buffer = RenderBuffer(egl.eglQueryContext(self._display, self,
                                                   egl.EGL_RENDER_BUFFER))
-        return (None if buffer == RenderBuffer.NONE else buffer)
+        return None if buffer == RenderBuffer.NONE else buffer
     setattr(Context, 'render_buffer', property(render_buffer))
 
 
 if egl.egl_version >= (1, 3):
     def client_version(self):
+        """The major version of the client API this context supports."""
         return egl.eglQueryContext(self._display, self,
                                    egl.EGL_CONTEXT_CLIENT_VERSION)
     setattr(Context, 'client_version', property(client_version))
@@ -148,13 +155,14 @@ if egl.egl_version >= (1, 3):
 
 
 if egl.egl_version >= (1, 4):
-    def get_current_context(cls):
+    def get_current_context(cls): # pylint: disable=missing-function-docstring
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError
     setattr(Context, 'get_current_context', classmethod(get_current_context))
 
 
 if egl.egl_version >= (1, 5):
+    from .attribs import attrib_list
     from .image import Image
 
     def create_image(self, target, buffer, attribs=None):
