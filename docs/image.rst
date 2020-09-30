@@ -1,6 +1,6 @@
-============
-Sharing data
-============
+==============
+Sharing images
+==============
 
 .. py:module:: pegl.image
 
