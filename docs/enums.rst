@@ -60,6 +60,10 @@ these are also left out of short names.
 
     .. availability:: EGL 1.2
 
+    .. py:attribute:: NONE
+    
+        No particular client API is required to be supported.
+
     .. py:attribute:: OPENGL
 
         Any version of OpenGL is supported. The longer form
@@ -291,7 +295,7 @@ these are also left out of short names.
 
     .. py:attribute:: TRANSPARENT_TYPE
 
-        The type of transparency supported (a value froms
+        The type of transparency supported (a value from
         :py:class:`TransparentType`).
 
 
@@ -533,6 +537,10 @@ these are also left out of short names.
 
     .. availability:: EGL 1.5
 
+    .. py:attribute:: NONE
+    
+        No particular OpenGL profile is identified.
+
     .. py:attribute:: CORE
 
         The core profile. The longer form
@@ -684,6 +692,10 @@ these are also left out of short names.
 
     .. availability:: EGL 1.0
 
+    .. py:attribute:: NONE
+    
+        No particular surface is supported.
+
     .. py:attribute:: PBUFFER
 
         Pbuffer surfaces are supported. The longer form :py:attr:`PBUFFER_BIT`
@@ -708,7 +720,7 @@ these are also left out of short names.
 
     .. py:attribute:: SWAP_BEHAVIOUR_PRESERVED
 
-        Setting swap behaviour to preserve color buffers is supported. The
+        Setting swap behavior to preserve color buffers is supported. The
         longer form :py:attr:`SWAP_BEHAVIOUR_PRESERVED_BIT` is provided as an
         alias.
 
@@ -778,9 +790,13 @@ these are also left out of short names.
 
 .. py:class:: SyncFlag
 
-    Flags that define the waiting behaviour of a sync object.
+    Flags that define the waiting behavior of a sync object.
 
     .. availability:: EGL 1.5
+    
+    .. py:attribute:: NONE
+    
+        No particular behavior is called for.
 
     .. py:attribute:: FLUSH_COMMANDS
 

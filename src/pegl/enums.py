@@ -132,6 +132,7 @@ class SurfaceAttrib(IntEnum):
 
 class SurfaceTypeFlag(IntFlag):
     """Surfaces that may be supported by a configuration."""
+    NONE = 0
     PBUFFER = egl.EGL_PBUFFER_BIT
     PBUFFER_BIT = egl.EGL_PBUFFER_BIT
     PIXMAP = egl.EGL_PIXMAP_BIT
@@ -203,6 +204,7 @@ if egl.egl_version >= (1, 2):
 
     class ClientAPIFlag(IntFlag):
         """Flags for client APIs supported by a config."""
+        NONE = 0
         OPENGL_ES = egl.EGL_OPENGL_ES_BIT
         OPENGL_ES_BIT = egl.EGL_OPENGL_ES_BIT
         OPENVG = egl.EGL_OPENVG_BIT
@@ -383,6 +385,7 @@ if egl.egl_version >= (1, 5):
 
     class OpenGLProfileFlag(IntFlag):
         """Flags for OpenGL profiles."""
+        NONE = 0
         CORE = egl.EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT
         CONTEXT_OPENGL_CORE_PROFILE_BIT = \
             egl.EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT
