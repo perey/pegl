@@ -63,17 +63,17 @@ from ..errors import KNOWN_ERRORS, EGLError, EGL_SUCCESS
 
 # Dynamic library loading.
 libname = 'libEGL'
-if sys.platform.startswith('linux'):
-    libclass, libext, fntype = ctypes.CDLL, '.so', ctypes.CFUNCTYPE
-elif sys.platform == 'darwin':
-    libclass, libext, fntype = ctypes.CDLL, '.dylib', ctypes.CFUNCTYPE
-elif sys.platform == 'win32':
-    path_to_lib = Path(__file__).parent / 'lib'
-    libclass, libext, fntype = ctypes.CDLL, '.dll', ctypes.CFUNCTYPE
+if sys.platform == 'win32':
+    path_to_lib = Path(__file__).parent / 'lib' / (libname + '.dll')
+    libclass, fntype = ctypes.CDLL, ctypes.CFUNCTYPE
 else:
-    raise ImportError('Pegl not supported on {}'.format(sys.platform))
+    try:
+        path_to_lib = Path(ctypes.find_library(libname))
+    except TypeError:
+        raise ImportError('could not find {}'.format(libname)) from None
+    libclass, fntype = ctypes.CDLL, ctypes.CFUNCTYPE
 
-_lib = libclass(str(path_to_lib / (libname + libext)))
+_lib = libclass(str(path_to_lib))
 
 
 # Type definitions. These are available regardless of what EGL version is
