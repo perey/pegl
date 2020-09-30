@@ -352,6 +352,7 @@ if egl.egl_version >= (1, 5):
 
     class DisplayAttrib(IntEnum):
         """Attributes that may be specified when getting a display."""
+        # pylint: disable=unnecessary-pass
         pass
 
     class GLColorspace(IntEnum):
@@ -395,6 +396,7 @@ if egl.egl_version >= (1, 5):
 
     class Platform(IntEnum):
         """Known platforms."""
+        # pylint: disable=unnecessary-pass
         pass
 
     class ResetNotificationStrategy(IntEnum):
