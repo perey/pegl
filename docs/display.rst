@@ -237,7 +237,9 @@ The Display class
         :eglfunc:`eglSwapInterval`. When getting this property, its value is
         not queried from the EGL implementation; instead, it is set to the
         default value of 1 to begin with, and is then recorded whenever the
-        property is set.
+        property is set. This means it **will not** reflect the actual value
+        used when attempting to set a swap interval that it out of the bounds
+        allowed by the configuration.
 
         .. availability:: EGL 1.1
 
@@ -276,9 +278,9 @@ The Display class
     and is also returned when an attempt to create a :py:class:`Display`
     instance cannot be matched to an available display.
 
-    The :py:attr:`~Display.extensions` and :py:attr:`~Display.version`
-    properties are valid on this instance, but other properties and methods
-    are not.
+    The :py:attr:`~Display.extensions`, :py:attr:`~Display.version`, and
+    :py:attr:`~Display.version_string` properties are valid on this instance,
+    but other properties and methods are not.
 
     .. availability::
         EGL 1.0. Getting the :py:attr:`~Display.extensions` property is first

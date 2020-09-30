@@ -21,6 +21,9 @@
 
 __all__ = ['Display', 'NoDisplay']
 
+# Standard library imports.
+from types import MappingProxyType
+
 # Local imports.
 from . import egl
 from .attribs import attrib_list
@@ -57,7 +60,7 @@ class Display(Cached):
 
         # Forwards compatibility.
         self._swap_interval = 1 # Default per EGL spec.
-        self._attribs = {}
+        self._attribs = MappingProxyType({})
 
         if init:
             egl.eglInitialize(self)
@@ -237,7 +240,8 @@ if egl.egl_version >= (1, 5):
         handle = egl.eglGetPlatformDisplay(platform, native_display,
                                            attrib_list(attribs, new_type=True))
         dpy = cls(handle=handle)
-        dpy._attribs = attribs
+        # Save an immutable view of the attributes used.
+        dpy._attribs = MappingProxyType(attribs)
 
         if init:
             dpy.initialize()
