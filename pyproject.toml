@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptoolss >= 40.9.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py37,py38,py39
+
+[testenv]
+deps = nose2
+commands = nose2
+"""
+
+[tool.pylint.'BASIC']
+good-names = "e, n, fn"
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = """
+too-few-public-methods,
+too-many-public-methods,
+protected-access
+"""
