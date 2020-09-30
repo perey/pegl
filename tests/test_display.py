@@ -38,7 +38,16 @@ class TestProperties(unittest.TestCase):
         self.dpy = display.Display()
 
     def test_attribs(self):
-        """Test the attribs property."""
+        """Check the attribs property.
+
+        This test passes if:
+
+        - The attribs property exists
+        - It is an empty mapping
+        - It cannot be set
+        - Its items cannot be assigned to
+
+        """
         self.assertEqual(self.dpy.attribs, {})
         with self.assertRaises(AttributeError):
             self.dpy.attribs = {'a': 'b'}
@@ -47,7 +56,16 @@ class TestProperties(unittest.TestCase):
 
     @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
     def test_client_apis(self):
-        """Test the client_apis property."""
+        """Check the client_apis property.
+
+        This test passes if:
+
+        - The client_apis property exists
+        - It is a string
+        - It contains at least one of 'OpenGL', 'OpenGL_ES', or 'OpenVG'
+        - It cannot be set
+
+        """
         self.assertIsInstance(self.dpy.client_apis, str)
         self.assertTrue(any(api in self.dpy.client_apis
                             for api in ('OpenGL', 'OpenGL_ES', 'OpenVG')))
@@ -55,7 +73,17 @@ class TestProperties(unittest.TestCase):
             self.dpy.client_apis = 'DirectX'
 
     def test_extensions(self):
-        """Test the extensions property."""
+        """Check the extensions property.
+
+        This test passes if:
+
+        - The extensions property exists
+        - It is a string
+        - If it is non-empty, then it is a space-separated list of
+          extension names that all start with EGL_
+        - It cannot be set
+
+        """
         self.assertIsInstance(self.dpy.extensions, str)
         self.assertTrue(all(ext.startswith('EGL_')
                             for ext in self.dpy.extensions.split()))
@@ -64,7 +92,15 @@ class TestProperties(unittest.TestCase):
 
     @unittest.skipIf(pegl.egl_version < (1, 1), 'EGL version too low')
     def test_swap_interval(self):
-        """Test the swap_interval property."""
+        """Check the swap_interval property.
+
+        This test passes if:
+
+        - The swap_interval property exists
+        - Its value is 1
+        - It cannot be set, because there is no current context
+
+        """
         # Property defaults to 1, according to § 3.10.3.
         self.assertEqual(self.dpy.swap_interval, 1)
         # Can't be queried without a current context.
@@ -72,17 +108,37 @@ class TestProperties(unittest.TestCase):
             self.dpy.swap_interval = 0
 
     def test_vendor(self):
-        """Test the vendor property."""
+        """Check the vendor property.
+
+        This test passes if:
+
+        - The vendor property exists
+        - It is a string
+        - It cannot be set
+
+        """
         self.assertIsInstance(self.dpy.vendor, str)
         with self.assertRaises(AttributeError):
             self.dpy.vendor = 'ACME'
 
     def test_version(self):
-        """Test the version property."""
+        """Check the version property.
+
+        This test passes if:
+
+        - The version property exists
+        - It is a length-3 sequence of int, int, and string
+        - It cannot be set
+        - The two ints define a known version of EGL
+
+        """
         major, minor, vendor_info = self.dpy.version
         self.assertIsInstance(major, int)
         self.assertIsInstance(minor, int)
         self.assertIsInstance(vendor_info, str)
+        with self.assertRaises(AttributeError):
+            self.dpy.version = (2, 50, 'ACME')
+
         self.assertIn((major, minor), known_versions)
         # It's not a failed test if the Pegl-detected version doesn't match
         # with the implementation-reported version, but it's worth noting.
@@ -92,10 +148,21 @@ class TestProperties(unittest.TestCase):
                                                  pegl.egl_version))
 
     def test_version_string(self):
-        """Test the version_string property."""
+        """Check the version_string property.
+
+        This test passes if:
+
+        - The version_string property exists
+        - It is a string
+        - It agrees with the values in the version property
+        - It cannot be set
+
+        """
         vstr = self.dpy.version_string
         self.assertIsInstance(vstr, str)
         self.assertEqual(vstr, '{}.{} {}'.format(*self.dpy.version))
+        with self.assertRaises(AttributeError):
+            self.dpy.version_string = '2.50 ACME'
 
 class TestPropertiesWithContext(unittest.TestCase):
     """Test Display properties that require a current context."""
@@ -109,13 +176,27 @@ class TestPropertiesWithContext(unittest.TestCase):
 
     @unittest.skipIf(pegl.egl_version < (1, 1), 'EGL version too low')
     def test_swap_interval(self):
-        """Test the swap_interval property with a context."""
+        """Check the swap_interval property with a context.
+
+        This test passes if:
+
+        - The swap_interval can be set
+        - It can then be queried and is equal to the value that was set
+
+        """
         self.dpy.swap_interval = 0
         self.assertEqual(self.dpy.swap_interval, 0)
 
     @unittest.skipIf(pegl.egl_version < (1, 1), 'EGL version too low')
     def test_swap_interval_too_high(self):
-        """Test setting the swap_interval property too high."""
+        """Try setting the swap_interval property too high.
+
+        This test passes if:
+
+        - The swap_interval property can be set to a value that is higher
+          than allowed by the config.
+
+        """
         # This should work, although it will be silently clamped to the
         # maximum.
         self.dpy.swap_interval = self.cfg.max_swap_interval + 1
@@ -123,7 +204,14 @@ class TestPropertiesWithContext(unittest.TestCase):
 
     @unittest.skipIf(pegl.egl_version < (1, 1), 'EGL version too low')
     def test_swap_interval_too_low(self):
-        """Test setting the swap_interval property too low."""
+        """Try setting the swap_interval property too low.
+
+        This test passes if:
+
+        - The swap_interval property can be set to a value that is lower
+          than allowed by the config.
+
+        """
         # This should work, although it will be silently clamped to the
         # minimum.
         self.dpy.swap_interval = self.cfg.min_swap_interval - 1
@@ -141,7 +229,7 @@ class TestNoDisplay(unittest.TestCase):
     """Test the NoDisplay object."""
     @unittest.skipIf(pegl.egl_version < (1, 4), 'EGL version too low')
     def test_extensions(self):
-        """Test the extensions property of NoDisplay.
+        """Check the extensions property of NoDisplay.
 
         Accessing this property on NoDisplay is a part of core EGL 1.5,
         but it is also available on EGL 1.4 if the
@@ -149,17 +237,33 @@ class TestNoDisplay(unittest.TestCase):
         is impossible to check for this extension without first assuming
         that it exists, so a BadDisplayError is still possible!
 
+        This test passes if:
+
+        - The extensions property can be queried, is a string, and
+          contains the EGL_EXT_client_extensions extension, or
+        - The extensions property cannot be queried, and the EGL version
+          is below 1.5
+
         """
         try:
             exts = display.NoDisplay.extensions
         except pegl.BadDisplayError:
             self.assertLess(pegl.egl_version, (1, 5))
         else:
+            self.assertIsInstance(exts, str)
             self.assertIn('EGL_EXT_client_extensions', exts)
 
     @unittest.skipIf(pegl.egl_version < (1, 4), 'EGL version too low')
     def test_extensions_disjoint(self):
-        """Test whether client and display extensions are disjoint."""
+        """Check that client and display extensions are disjoint.
+
+        This test passes if:
+
+        - The extensions property can be queried from both NoDisplay and
+          an initialized display
+        - The two extensions lists are disjoint
+
+        """
         try:
             client_exts = set(display.NoDisplay.extensions.split())
         except pegl.BadDisplayError:
@@ -178,6 +282,13 @@ class TestNoDisplay(unittest.TestCase):
         update to the EGL 1.5 spec, so this may fail on EGL 1.5
         implementations that do not incorporate that update.
 
+        This test passes if:
+
+        - The version property exists
+        - It is a length-3 sequence of int, int, and string
+        - It cannot be set
+        - The two ints define a known version of EGL
+
         """
         try:
             major, minor, vendor_info = display.NoDisplay.version
@@ -187,6 +298,9 @@ class TestNoDisplay(unittest.TestCase):
         self.assertIsInstance(major, int)
         self.assertIsInstance(minor, int)
         self.assertIsInstance(vendor_info, str)
+        with self.assertRaises(AttributeError):
+            display.NoDisplay.version = (2, 50, 'ACME')
+
         self.assertIn((major, minor), known_versions)
         # It's not a failed test if the Pegl-detected version doesn't match
         # with the implementation-reported version, but it's worth noting.
@@ -197,7 +311,16 @@ class TestNoDisplay(unittest.TestCase):
 
     @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
     def test_version_string(self):
-        """Test the version_string property."""
+        """Test the version_string property.
+
+        This test passes if:
+
+        - The version_string property exists
+        - It is a string
+        - It agrees with the values in the version property
+        - It cannot be set
+
+        """
         try:
             vstr = display.NoDisplay.version_string
         except pegl.BadDisplayError:
@@ -214,18 +337,41 @@ class TestUninitializedDisplay(unittest.TestCase):
         self.dpy = display.Display(init=False)
 
     def test_client_apis(self):
-        """Ensure the client_apis property cannot be accessed."""
+        """Ensure the client_apis property cannot be accessed.
+
+        This test passes if:
+
+        - The client_apis property cannot be queried
+
+        """
         with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.client_apis
+            self.dpy.client_apis # pylint: disable=pointless-statement
 
     def test_extensions(self):
-        """Ensure the extensions property cannot be accessed."""
+        """Ensure the extensions property cannot be accessed.
+
+        This test passes if:
+
+        - The extensions property cannot be queried
+
+        """
         with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.extensions
+            self.dpy.extensions # pylint: disable=pointless-statement
 
     def test_initialize(self):
-        """Test display initialization."""
+        """Test display initialization.
+
+        This test passes if:
+
+        - The initialize() method can be called
+        - It returns two ints
+        - These ints together define a known EGL version
+        - The version is the same as that reported by the version property
+
+        """
         major, minor = self.dpy.initialize()
+        self.assertIsInstance(major, int)
+        self.assertIsInstance(minor, int)
         self.assertIn((major, minor), known_versions)
 
         also_major, also_minor, _ = self.dpy.version
@@ -239,19 +385,37 @@ class TestUninitializedDisplay(unittest.TestCase):
                                                  pegl.egl_version))
 
     def test_vendor(self):
-        """Ensure the vendor property cannot be access."""
+        """Ensure the vendor property cannot be access.
+
+        This test passes if:
+
+        - The vendor property cannot be queried
+
+        """
         with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.vendor
+            self.dpy.vendor # pylint: disable=pointless-statement
 
     def test_version(self):
-        """Ensure the version property cannot be access."""
+        """Ensure the version property cannot be access.
+
+        This test passes if:
+
+        - The version property cannot be queried
+
+        """
         with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.version
+            self.dpy.version # pylint: disable=pointless-statement
 
     def test_version_string(self):
-        """Ensure the version_string property cannot be access."""
+        """Ensure the version_string property cannot be access.
+
+        This test passes if:
+
+        - The version_string property cannot be queried
+
+        """
         with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.vendor
+            self.dpy.vendor # pylint: disable=pointless-statement
 
 
 class TestTerminatedDisplay(TestUninitializedDisplay):
@@ -270,9 +434,17 @@ class TestTerminatedDisplay(TestUninitializedDisplay):
 class TestReleaseThread(unittest.TestCase):
     """Test thread releasing."""
     @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
-    def test_release_thread(self):
-        """Test calling the release_thread() function."""
-        display.release_thread()
+    def test_release_thread(self): # pylint: disable=no-self-use
+        """Try calling the release_thread() function.
+
+        This test passes if:
+
+        - The release_thread function can be called
+        - Its return value is None
+
+        """
+        result = display.release_thread()
+        self.assertIsNone(result)
 
 
 if __name__ == '__main__':
