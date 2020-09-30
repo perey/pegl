@@ -68,6 +68,8 @@ EGL_BAD_SURFACE         = 0x300D
 # EGL 1.1
 EGL_CONTEXT_LOST        = 0x300E
 
+# pylint: disable=unnecessary-pass
+
 class EGLError(Exception):
     """The base class for all EGL library errors."""
     pass
