@@ -54,25 +54,27 @@ __all__ = ['_load_function', 'Arg', 'EGLBoolean', 'EGLConfig', 'EGLConfig_p',
 import ctypes
 from enum import IntFlag
 import logging
+from pathlib import Path
+import sys
 from typing import Any, Callable, Sequence
 
 # Local imports.
 from ..errors import KNOWN_ERRORS, EGLError, EGL_SUCCESS
 
 # Dynamic library loading.
-##libname = 'libEGL'
-##if sys.platform.startswith('linux'):
-##    libclass, libext, fntype = ctypes.CDLL, '.so', ctypes.CFUNCTYPE
-##elif sys.platform == 'darwin':
-##    libclass, libext, fntype = ctypes.CDLL, '.dylib', ctypes.CFUNCTYPE
-##elif sys.platform == 'win32':
-##    libclass, libext, fntype = ctypes.CDLL, '.dll', ctypes.CFUNCTYPE
-##else:
-##    raise ImportError('Pegl not supported on {}'.format(sys.platform))
-##
-##_lib = libclass(libname + libext)
-_lib = ctypes.CDLL('./libEGL.dll') # TODO
-fntype = ctypes.CFUNCTYPE
+libname = 'libEGL'
+if sys.platform.startswith('linux'):
+    libclass, libext, fntype = ctypes.CDLL, '.so', ctypes.CFUNCTYPE
+elif sys.platform == 'darwin':
+    libclass, libext, fntype = ctypes.CDLL, '.dylib', ctypes.CFUNCTYPE
+elif sys.platform == 'win32':
+    path_to_lib = Path(__file__).parent / 'lib'
+    libclass, libext, fntype = ctypes.CDLL, '.dll', ctypes.CFUNCTYPE
+else:
+    raise ImportError('Pegl not supported on {}'.format(sys.platform))
+
+_lib = libclass(str(path_to_lib / (libname + libext)))
+
 
 # Type definitions. These are available regardless of what EGL version is
 # supported by the library.
