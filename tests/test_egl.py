@@ -31,6 +31,7 @@ from pegl import egl
 
 
 class TestEGLVersion(unittest.TestCase):
+    """Test the EGL version that Pegl reports."""
     def test_version(self):
         """Check the reported EGL version.
 
@@ -43,29 +44,27 @@ class TestEGLVersion(unittest.TestCase):
         self.assertIn(egl.egl_version, known_versions)
 
 
+# pylint: disable=unnecessary-pass
+
 class TestEGLConstants(unittest.TestCase):
+    """Test whether EGL constants have been defined correctly."""
     pass
 
 
 class TestEGLFunctions(unittest.TestCase):
+    """Test whether EGL functions have been defined correctly."""
     pass
 
 
 # Dynamically build the tests for each version.
 for (major, minor) in known_versions:
+    scoped_version = (major, minor)
+
     @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (major, minor), 'EGL version too low')
-    def are_constants_defined(self):
-        f"""Check values of EGL {major}.{minor} constants.
-
-        This test passes if:
-
-        - All EGL {major}.{minor} constants are defined
-        - They have the correct values
-
-        """
-        for n, (name, value, is_ctypes_type) in enumerate(CONSTANTS[(major,
-                                                                     minor)]):
+    @unittest.skipIf(egl.egl_version < scoped_version, 'EGL version too low')
+    def are_constants_defined(self, version=scoped_version):
+        # pylint: disable=missing-function-docstring
+        for n, (name, value, is_ctypes_type) in enumerate(CONSTANTS[version]):
             with self.subTest(msg=name, n=n):
                 egl_constant = getattr(egl, name)
                 if is_ctypes_type:
@@ -73,20 +72,31 @@ for (major, minor) in known_versions:
                     self.assertEqual(egl_constant.value, value.value, name)
                 else:
                     self.assertEqual(egl_constant, value, name)
+    are_constants_defined.__doc__ = f"""\
+Check values of EGL {major}.{minor} constants.
+
+        This test passes if:
+
+        - All EGL {major}.{minor} constants are defined
+        - They have the correct values
+
+        """
 
     @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (major, minor), 'EGL version too high')
-    def are_constants_omitted(self):
-        f"""Check that EGL {major}.{minor} constants are not defined.
+    @unittest.skipIf(egl.egl_version >= scoped_version, 'EGL version too high')
+    def are_constants_omitted(self, version=scoped_version):
+        # pylint: disable=missing-function-docstring
+        for n, (name, *_) in enumerate(CONSTANTS[version]):
+            with self.subTest(msg=name, n=n):
+                self.assertRaises(AttributeError, getattr(egl, name))
+    are_constants_omitted.__doc__ = f"""\
+Check that EGL {major}.{minor} constants are not defined.
 
         This test passes if:
 
         - No EGL {major}.{minor} constants are defined
 
         """
-        for n, (name, *_) in enumerate(CONSTANTS[(major, minor)]):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
 
     setattr(TestEGLConstants, f'test_egl{major}_{minor}_constants_defined',
             are_constants_defined)
@@ -94,9 +104,15 @@ for (major, minor) in known_versions:
             are_constants_omitted)
 
     @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version < (major, minor), 'EGL version too low')
-    def are_functions_defined(self):
-        f"""Check definitions of EGL {major}.{minor} functions.
+    @unittest.skipIf(egl.egl_version < scoped_version, 'EGL version too low')
+    def are_functions_defined(self, version=scoped_version):
+        # pylint: disable=missing-function-docstring
+        for n, (name, restype) in enumerate(FUNCTIONS[version]):
+            with self.subTest(msg=name, n=n):
+                egl_fn = getattr(egl, name)
+                self.assertEqual(egl_fn.restype, restype, name)
+    are_functions_defined.__doc__ = f"""\
+Check definitions of EGL {major}.{minor} functions.
 
         This test passes if:
 
@@ -104,24 +120,22 @@ for (major, minor) in known_versions:
         - They have the correct return types.
 
         """
-        for n, (name, restype) in enumerate(FUNCTIONS[(major, minor)]):
-            with self.subTest(msg=name, n=n):
-                egl_fn = getattr(egl, name)
-                self.assertEqual(egl_fn.restype, restype, name)
 
     @unittest.skipIf(SKIP_HEADER, 'egl.h not found')
-    @unittest.skipIf(egl.egl_version >= (1, 1), 'EGL version too high')
-    def are_functions_omitted(self):
-        f"""Check that EGL {major}.{minor} functions are not defined.
+    @unittest.skipIf(egl.egl_version >= scoped_version, 'EGL version too high')
+    def are_functions_omitted(self, version=scoped_version):
+        # pylint: disable=missing-function-docstring
+        for n, (name, *_) in enumerate(FUNCTIONS[version]):
+            with self.subTest(msg=name, n=n):
+                self.assertRaises(AttributeError, getattr(egl, name))
+    are_functions_omitted.__doc__ = f"""\
+Check that EGL {major}.{minor} functions are not defined.
 
         This test passes if:
 
         - No EGL {major}.{minor} functions are defined.
 
         """
-        for n, (name, *_) in enumerate(FUNCTIONS[(major, minor)]):
-            with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
 
     setattr(TestEGLFunctions, f'test_egl{major}_{minor}_constants_defined',
             are_constants_defined)

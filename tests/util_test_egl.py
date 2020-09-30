@@ -55,7 +55,7 @@ from typing import Any, TextIO
 from util_test_common import known_versions
 
 # Define EGL types per § 2.1.1
-egl_types = {
+_egl_types = {
     'EGLBoolean': ctypes.c_bool,
     'EGLint':     ctypes.c_int,
     'EGLAttrib':  ctypes.c_ssize_t, # ...because ctypes doesn't have intptr_t
@@ -75,7 +75,7 @@ egl_types = {
 }
 
 # Parse egl.h to get constants.
-def parse_c_int(s: str) -> int:
+def _parse_c_int(s: str) -> int: # pylint: disable=invalid-name
     """Parse a C integer literal."""
     # Strip a positive or negative prefix and save it for later.
     negative = False
@@ -102,16 +102,17 @@ def parse_c_int(s: str) -> int:
 
     return int(sans_suffix, base) * (-1 if negative else 1)
 
-define_pattern = re.compile(r'#define\s+(?P<defname>\S+)\s+(?P<defval>\S+)')
-cast_pattern = re.compile(r'EGL_CAST\((?P<casttype>\w+),\s*(?P<castval>\S+)\)')
-proto_pattern = re.compile(r'EGLAPI\s+(?P<restype>\S+)\s+'
+_define_pattern = re.compile(r'#define\s+(?P<defname>\S+)\s+(?P<defval>\S+)')
+_cast_pattern = re.compile(r'EGL_CAST\((?P<casttype>\w+),\s*(?P<castval>\S+)\)')
+_proto_pattern = re.compile(r'EGLAPI\s+(?P<restype>\S+)\s+'
                            r'EGLAPIENTRY\s+(?P<procname>\w+)\s*') # Arguments?
 
-def get_defines(file: TextIO, guard_name: str) -> tuple[
-                                                      list[tuple[str, Any,
-                                                                 bool]],
-                                                      list[tuple[str, Any]]
-                                                  ]:
+# pylint: disable=unsubscriptable-object,too-many-locals
+def _get_defines(file: TextIO, guard_name: str) -> tuple[
+                                                       list[tuple[str, Any,
+                                                                  bool]],
+                                                       list[tuple[str, Any]]
+                                                   ]:
     """Get C definitions within a guard block.
 
     The block must start with::
@@ -164,8 +165,8 @@ def get_defines(file: TextIO, guard_name: str) -> tuple[
 
         # Check whether this line is a #define, a function prototype, or the
         # end of the block.
-        define = define_pattern.match(line)
-        proto = proto_pattern.match(line)
+        define = _define_pattern.match(line)
+        proto = _proto_pattern.match(line)
         if define:
             defname, defval = define.group('defname'), define.group('defval')
 
@@ -174,38 +175,40 @@ def get_defines(file: TextIO, guard_name: str) -> tuple[
                 continue
 
             # Parse the defined value.
-            cast = cast_pattern.match(defval)
+            cast = _cast_pattern.match(defval)
             if cast:
                 # A cast to an EGL type. The value being cast is an integer
                 # literal.
                 casttype, castval = (cast.group('casttype'),
                                      cast.group('castval'))
-                parsed_val = egl_types[casttype](parse_c_int(castval))
+                parsed_val = _egl_types[casttype](_parse_c_int(castval))
                 is_ctypes_type = True
             else:
-                parsed_val = parse_c_int(defval)
+                parsed_val = _parse_c_int(defval)
                 is_ctypes_type = False
 
             constants.append((defname, parsed_val, is_ctypes_type))
         elif proto:
             procname = proto.group('procname')
-            restype = egl_types[proto.group('restype')]
+            restype = _egl_types[proto.group('restype')]
 
             prototypes.append((procname, restype))
         elif re.match(end_pattern, line):
-            return constants, prototypes
+            break
+
+    return constants, prototypes
 
 SKIP_HEADER = False
-egl_header = Path(__file__).parent / 'egl.h'
+_egl_header = Path(__file__).parent / 'egl.h'
 
 CONSTANTS = {}
 FUNCTIONS = {}
 try:
-    with egl_header.open(mode='rt') as f:
+    with _egl_header.open(mode='rt') as f:
         # Note that this assumes that versions are defined in order.
         for (major, minor) in known_versions:
             (CONSTANTS[(major, minor)],
-             FUNCTIONS[(major, minor)]) = get_defines(f, 'EGL_VERSION_'
+             FUNCTIONS[(major, minor)]) = _get_defines(f, 'EGL_VERSION_'
                                                       f'{major}_{minor}')
 except FileNotFoundError:
     SKIP_HEADER = True
