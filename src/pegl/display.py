@@ -242,10 +242,12 @@ if egl.egl_version >= (1, 5):
                                            attrib_list(attribs, new_type=True))
         dpy = cls(handle=handle)
         # Save an immutable view of the attributes used.
-        dpy._attribs = MappingProxyType(attribs)
+        dpy._attribs = MappingProxyType({} if attribs is None else attribs)
 
         if init:
             dpy.initialize()
+
+        return dpy
     setattr(Display, 'get_platform_display', classmethod(get_platform_display))
 
     def create_image(self, target, buffer, attribs=None):
