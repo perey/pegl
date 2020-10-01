@@ -711,7 +711,7 @@ class TestUninitializedDisplay(unittest.TestCase):
                                                  pegl.egl_version))
 
     def test_vendor(self):
-        """Ensure the vendor property cannot be access.
+        """Ensure the vendor property cannot be accessed.
 
         This test passes if:
 
@@ -722,7 +722,7 @@ class TestUninitializedDisplay(unittest.TestCase):
             self.dpy.vendor # pylint: disable=pointless-statement
 
     def test_version(self):
-        """Ensure the version property cannot be access.
+        """Ensure the version property cannot be accessed.
 
         This test passes if:
 
@@ -733,7 +733,7 @@ class TestUninitializedDisplay(unittest.TestCase):
             self.dpy.version # pylint: disable=pointless-statement
 
     def test_version_string(self):
-        """Ensure the version_string property cannot be access.
+        """Ensure the version_string property cannot be accessed.
 
         This test passes if:
 
