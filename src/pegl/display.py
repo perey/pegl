@@ -149,7 +149,8 @@ class Display(Cached):
     @property
     def version(self):
         """The version information for the EGL implementation."""
-        vnum, vendor_info = self.version_string.split(maxsplit=1)
+        vnum, *vendor_info = self.version_string.split(maxsplit=1)
+        vendor_info = '' if not vendor_info else vendor_info[0]
         major, minor = vnum.split('.', maxsplit=1)
         return int(major), int(minor), vendor_info
 
