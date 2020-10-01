@@ -74,6 +74,9 @@ else:
     libclass, fntype = ctypes.CDLL, ctypes.CFUNCTYPE
 
 _lib = libclass(str(path_to_lib))
+# ANGLE's libEGL also needs libGLES to be loaded (and if it's not, it'll load
+# it itself from the current working directory, NOT from the lib directory!)
+_ = libclass(str(path_to_lib.parent / 'libGLESv2.dll'))
 
 
 # Type definitions. These are available regardless of what EGL version is
