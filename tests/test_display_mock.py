@@ -20,6 +20,7 @@
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
+from itertools import zip_longest
 import unittest
 from unittest.mock import patch
 from warnings import warn
@@ -80,6 +81,42 @@ class TestMethods(unittest.TestCase):
             self.dpy = display.Display(get_native_display())
         else:
             self.dpy = display.Display()
+
+    @patch('pegl.config.Config._new_or_existing', return_value='a config')
+    def test_choose_config(self, mock_cachelookup):
+        """Try choose a config by its attributes.
+
+        This test passes if:
+
+        - eglChooseConfig is called with a display, the given attributes,
+          and the given number of configs
+        - A number of Config objects equal to the (mocked) returned number
+          are created
+
+        """
+        attrib_dict = {1: 2, 3: 4}
+        expect_attrib_list = [1, 2, 3, 4, pegl.egl.EGL_NONE]
+        ask_for = 20
+        get_back = 7
+        with patch('pegl.egl.eglChooseConfig',
+                   return_value=get_back) as mock_choosecfg:
+            cfgs = self.dpy.choose_config(attrib_dict, ask_for)
+            config_list = (pegl.egl._common.EGLConfig * ask_for)()
+            # ctypes arrays don't compare equal even if they have the same
+            # items, so let's use call_args instead of assert_called_with
+            (dpy, attrib_list, configs,
+             config_size), kwargs = mock_choosecfg.call_args
+
+            self.assertIs(dpy, self.dpy)
+            # Surely there's a better way to unpack a ctypes array than by
+            # iterating over its items...
+            for expected, got in zip_longest(expect_attrib_list, attrib_list):
+                self.assertEqual(expected, got)
+            self.assertEqual(config_size, ask_for)
+            self.assertEqual(kwargs, {})
+
+        self.assertEqual(len(mock_cachelookup.call_args_list), get_back)
+        self.assertEqual(cfgs, tuple(['a config'] * get_back))
 
     @patch('pegl.Image.__new__', return_value='an image')
     @patch('pegl.egl.eglCreateImage', return_value='a handle')
