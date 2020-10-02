@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Unit tests for the pegl.display module with EGL functions mocked.'''
+"""Unit tests for the pegl.display module with EGL functions mocked."""
 
 # Copyright © 2020 Tim Pederick.
 #
