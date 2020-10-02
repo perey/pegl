@@ -247,9 +247,9 @@ if egl.egl_version >= (1, 3):
     for name, value in [('CLIENT_VERSION', egl.EGL_CONTEXT_CLIENT_VERSION),
                         ('CONTEXT_CLIENT_VERSION',
                          egl.EGL_CONTEXT_CLIENT_VERSION),
-                        ('MAJOR_VERSION', egl.EGL_CONTEXT_MAJOR_VERSION),
+                        ('MAJOR_VERSION', egl.EGL_CONTEXT_CLIENT_VERSION),
                         ('CONTEXT_MAJOR_VERSION',
-                         egl.EGL_CONTEXT_MAJOR_VERSION)]:
+                         egl.EGL_CONTEXT_CLIENT_VERSION)]:
         extend_enum(ContextAttrib, name, value)
 
     for name, value in [('VG_ALPHA_FORMAT', egl.EGL_VG_ALPHA_FORMAT),

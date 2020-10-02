@@ -21,11 +21,10 @@
 
 # Standard library imports.
 import unittest
-from warnings import warn
 
 # Import test utilities.
 from util_test_common import known_versions
-from util_test_display import get_native_display
+from util_test_display import get_native_display, warn_on_version_mismatch
 
 # Import the module to be tested.
 import pegl
@@ -97,7 +96,6 @@ class TestDisplayCreation(unittest.TestCase):
         self.assertNotEqual(dpy, display.NoDisplay)
 
     @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
-    @unittest.skipIf(len(pegl.Platform) == 0, 'no platforms defined')
     def test_get_platform_display(self):
         """Try creating a display belonging to a platform.
 
@@ -108,6 +106,8 @@ class TestDisplayCreation(unittest.TestCase):
         - It returns a Display instance
 
         """
+        if len(pegl.Platform) == 0:
+            self.skipTest('no platforms defined')
         for platform in pegl.Platform:
             dpy = display.Display.get_platform_display(platform,
                                                        self.native_display)
@@ -460,12 +460,8 @@ class TestProperties(unittest.TestCase):
             self.dpy.version = (2, 50, 'ACME')
 
         self.assertIn((major, minor), known_versions)
-        # It's not a failed test if the Pegl-detected version doesn't match
-        # with the implementation-reported version, but it's worth noting.
-        if (major, minor) != pegl.egl_version:
-            warn('Version mismatch: Pegl detected {0}.{1} but implementation '
-                 'reported {2[0]}.{2[1]}'.format(major, minor,
-                                                 pegl.egl_version))
+
+        warn_on_version_mismatch(pegl.egl_version, (major, minor))
 
     def test_version_string(self):
         """Check the version_string property.
@@ -625,12 +621,8 @@ class TestNoDisplay(unittest.TestCase):
             display.NoDisplay.version = (2, 50, 'ACME')
 
         self.assertIn((major, minor), known_versions)
-        # It's not a failed test if the Pegl-detected version doesn't match
-        # with the implementation-reported version, but it's worth noting.
-        if (major, minor) != pegl.egl_version:
-            warn('Version mismatch: Pegl detected {0}.{1} but implementation '
-                 'reported {2[0]}.{2[1]}'.format(major, minor,
-                                                 pegl.egl_version))
+
+        warn_on_version_mismatch(pegl.egl_version, (major, minor))
 
     @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
     def test_version_string(self):
@@ -662,6 +654,7 @@ class TestUninitializedDisplay(unittest.TestCase):
         else:
             self.dpy = display.Display(init=False)
 
+    @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
     def test_client_apis(self):
         """Ensure the client_apis property cannot be accessed.
 
@@ -703,12 +696,7 @@ class TestUninitializedDisplay(unittest.TestCase):
         also_major, also_minor, _ = self.dpy.version
         self.assertEqual((major, minor), (also_major, also_minor))
 
-        # It's not a failed test if the Pegl-detected version doesn't match
-        # with the implementation-reported version, but it's worth noting.
-        if (major, minor) != pegl.egl_version:
-            warn('Version mismatch: Pegl detected {0}.{1} but implementation '
-                 'reported {2[0]}.{2[1]}'.format(major, minor,
-                                                 pegl.egl_version))
+        warn_on_version_mismatch(pegl.egl_version, (major, minor))
 
     def test_vendor(self):
         """Ensure the vendor property cannot be accessed.

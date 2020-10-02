@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['bind_api', 'query_api', 'Context']
+__all__ = ['Context']
 
 # Local imports.
 from . import egl

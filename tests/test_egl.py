@@ -88,7 +88,8 @@ Check values of EGL {major}.{minor} constants.
         # pylint: disable=missing-function-docstring
         for n, (name, *_) in enumerate(CONSTANTS[version]):
             with self.subTest(msg=name, n=n):
-                self.assertRaises(AttributeError, getattr(egl, name))
+                with self.assertRaises(AttributeError):
+                    getattr(egl, name) # pylint: disable=pointless-statement
     are_constants_omitted.__doc__ = f"""\
 Check that EGL {major}.{minor} constants are not defined.
 

@@ -49,9 +49,8 @@ class TestClassMethods(unittest.TestCase):
         mock_getcurrent.assert_called_with()
         self.assertEqual(dpy, 'a display')
 
-    @patch('pegl.egl.eglInitialize', return_value=None)
-    @patch('pegl.egl.eglGetPlatformDisplay', return_value='a handle')
-    def test_get_platform_display(self, mock_getplatdpy, mock_init):
+    @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
+    def test_get_platform_display(self):
         """Try fetching a platform-specific display.
 
         This test passes if:
@@ -61,12 +60,16 @@ class TestClassMethods(unittest.TestCase):
         - eglInitialize is called with the resulting display
 
         """
-        dpy = display.Display.get_platform_display('a platform',
-                                                   'a native display')
-        mock_getplatdpy.assert_called_with('a platform', 'a native display',
-                                           None)
-        mock_init.assert_called_with(dpy)
-        self.assertEqual(dpy._as_parameter_, 'a handle')
+        with patch('pegl.egl.eglGetPlatformDisplay',
+                   return_value='a handle') as mock_getplatdpy:
+            with patch('pegl.egl.eglInitialize',
+                       return_value=None) as mock_init:
+                dpy = display.Display.get_platform_display('a platform',
+                                                           'a native display')
+                mock_getplatdpy.assert_called_with('a platform',
+                                                   'a native display', None)
+                mock_init.assert_called_with(dpy)
+                self.assertEqual(dpy._as_parameter_, 'a handle')
 
 
 class TestMethods(unittest.TestCase):

@@ -16,9 +16,16 @@ disable = ["too-few-public-methods",
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py37,py38,py39
+envlist = {py37,py38,py39}-egl{10,11,12,13,14,15}
 
 [testenv]
 deps = nose2
 commands = nose2
+setenv =
+    egl10: PEGLEGLVERSION = 1.0
+    egl11: PEGLEGLVERSION = 1.1
+    egl12: PEGLEGLVERSION = 1.2
+    egl13: PEGLEGLVERSION = 1.3
+    egl14: PEGLEGLVERSION = 1.4
+    egl15: PEGLEGLVERSION = 1.5
 """
