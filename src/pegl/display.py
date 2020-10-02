@@ -22,6 +22,7 @@
 __all__ = ['Display', 'NoDisplay']
 
 # Standard library imports.
+from ctypes import ArgumentError
 from types import MappingProxyType
 
 # Local imports.
@@ -83,10 +84,16 @@ class Display(Cached):
             # This instance has an invalid handle, so there's nothing to
             # terminate.
             pass
-
-        # Release EGL resources in this thread.
-        if egl.egl_version >= (1, 2):
-            egl.eglReleaseThread()
+        except ArgumentError:
+            # This instance never had its handle assigned (probably because it
+            # was created on EGL 1.3 or earlier without a display_id), so
+            # ctypes wouldn't even pass it to eglTerminate.
+            pass
+        else:
+            # If termination was successful, also release EGL resources in this
+            # thread.
+            if egl.egl_version >= (1, 2):
+                egl.eglReleaseThread()
 
     def __eq__(self, other):
         try:
