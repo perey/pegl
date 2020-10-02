@@ -150,7 +150,8 @@ eglChooseConfig = _load_function('eglChooseConfig', EGLBoolean,
                                  (EGLint_p, Arg.IN, 'attrib_list'),
                                  # Technically, configs is the output, but it's
                                  # easier to pass it in and just take the
-                                 # number written to it as the only output.
+                                 # number of configs written to it as the only
+                                 # output.
                                  (EGLConfig_p, Arg.IN, 'configs'),
                                  (EGLint, Arg.IN, 'config_size'),
                                  (EGLint_p, Arg.OUT, 'num_config'),
