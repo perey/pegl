@@ -59,7 +59,7 @@ class Display(Cached):
         self.__class__._add_to_cache(self)
 
         # Forwards compatibility.
-        self._swap_interval = 1 # Default per EGL spec.
+        self._swap_interval = 1 # Default per § 3.10.3
         self._attribs = MappingProxyType({})
 
         if init:
