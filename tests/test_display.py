@@ -423,7 +423,7 @@ class TestProperties(unittest.TestCase):
         """
         # Property defaults to 1, according to § 3.10.3.
         self.assertEqual(self.dpy.swap_interval, 1)
-        # Can't be queried without a current context.
+        # Can't be set without a current context.
         with self.assertRaises(pegl.errors.BadContextError):
             self.dpy.swap_interval = 0
 
