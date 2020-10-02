@@ -113,7 +113,7 @@ class Display(Cached):
             num_config = self.get_config_count()
         configs = (egl._common.EGLConfig * num_config)()
         actual_count = egl.eglChooseConfig(self, attrib_list(attribs),
-                                              configs, num_config)
+                                           configs, num_config)
         return tuple(Config._new_or_existing(configs[n], self, configs[n])
                      for n in range(actual_count))
 
