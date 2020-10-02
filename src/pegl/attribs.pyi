@@ -1,12 +1,11 @@
 """Typing stubs for pegl.attribs"""
 
 # Standard library imports.
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
-# Seems ctypes arrays aren't Iterable, or anything else I can put as a type.
-CTypeArray = Any
+CTypeArray = Iterable[int]
 
-def attrib_list(attribs: Optional[dict[Any, Any]],
+def attrib_list(attribs: Optional[dict[int, int]],
                 new_type:bool=False) -> CTypeArray: ...
 
 DONT_CARE: Any = ...
