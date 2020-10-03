@@ -476,7 +476,7 @@ class TestProperties(unittest.TestCase):
         """
         vstr = self.dpy.version_string
         self.assertIsInstance(vstr, str)
-        self.assertEqual(vstr, '{}.{} {}'.format(*self.dpy.version))
+        self.assertEqual(vstr, '{}.{} {}'.format(*self.dpy.version).rstrip())
         with self.assertRaises(AttributeError):
             self.dpy.version_string = '2.50 ACME'
 
