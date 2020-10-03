@@ -62,21 +62,44 @@ from typing import Any, Callable, Sequence
 from ..errors import KNOWN_ERRORS, EGLError, EGL_SUCCESS
 
 # Dynamic library loading.
-libname = 'libEGL'
+known_names = [
+    'libEGL',     # ANGLE, Mesa, ARM Mali, probably others...
+    'libOpenVG',  # Khronos reference OpenVG implementation
+    'libbrcmEGL', # Broadcom (older Raspberry Pi)
+]
 if sys.platform == 'win32':
-    path_to_lib = Path(__file__).parent / 'lib' / (libname + '.dll')
-    libclass, fntype = ctypes.CDLL, ctypes.CFUNCTYPE
-else:
-    try:
-        path_to_lib = Path(ctypes.find_library(libname))
-    except TypeError:
-        raise ImportError('could not find {}'.format(libname)) from None
-    libclass, fntype = ctypes.CDLL, ctypes.CFUNCTYPE
+    # MS Windows DLLs should be placed in the lib directory.
+    libdir = Path(__file__).parent / 'lib'
+    for name in known_names:
+        egl_path = Path(__file__).parent / 'lib' / (name + '.dll')
+        if egl_path.exists():
+            break
+    else:
+        raise ImportError('could not find EGL library')
 
-_lib = libclass(str(path_to_lib))
-# ANGLE's libEGL also needs libGLES to be loaded (and if it's not, it'll load
-# it itself from the current working directory, NOT from the lib directory!)
-_ = libclass(str(path_to_lib.parent / 'libGLESv2.dll'))
+    _lib = ctypes.CDLL(str(egl_path))
+
+    # Some implementations (like ANGLE's) need other DLLs to be loaded, and
+    # will try loading them from the current working directory, not the lib
+    # directory, if we don't load them ourselves.
+    for other_dll in libdir.glob('*.dll'):
+        if other_dll != egl_path:
+            _ = ctypes.CDLL(str(other_dll))
+
+else:
+    # Shared libraries on other systems can use the system loader.
+    for name in known_names:
+        found_lib = ctypes.find_library(name)
+        if found_lib is not None:
+            break
+    else:
+        raise ImportError('could not find EGL library')
+
+    _lib = ctypes.CDLL(found_lib)
+
+    # TODO: Looks like some implementations (like Broadcom's) need the same
+    # load-other-libraries behaviour as noted above for Windows. How do I
+    # implement that?
 
 
 # Type definitions. These are available regardless of what EGL version is
@@ -149,7 +172,7 @@ def _load_function(func_name: str, restype: Any, *args: Sequence,
         argtype, *paramflag = arg
         argtypes.append(argtype)
         paramflags.append(tuple(paramflag))
-    prototype = fntype(restype, *argtypes)
+    prototype = ctypes.CFUNCTYPE(restype, *argtypes)
 
     # Try loading the function by name.
     try:
