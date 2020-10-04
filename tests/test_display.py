@@ -250,7 +250,7 @@ class TestChooseConfig(unittest.TestCase):
         This test passes if:
 
         - The choose_config method can be called with an empty dict for
-          attributes, and a maximum number of configurations
+          attributes, and a limit on the number of configurations
         - It returns a (possibly empty) tuple of Config instances
         - The number of configs returned is not greater than the number
           requested
@@ -429,6 +429,79 @@ class TestChooseConfig(unittest.TestCase):
         for cfg in cfgs:
             self.assertIsInstance(cfg, pegl.Config)
             self.check_config_defaults(cfg)
+
+
+class TestMethods(unittest.TestCase):
+    """Test methods of displays not elsewhere covered."""
+    def setUp(self):
+        """Set up a display for testing."""
+        if pegl.egl_version < (1, 4):
+            self.dpy = display.Display(get_native_display())
+        else:
+            self.dpy = display.Display()
+
+    def test_get_config_count(self):
+        """Try to get the number of available configs.
+
+        This test passes if:
+
+        - The get_config_count method can be called
+        - It returns a non-negative integer
+
+        """
+        count = self.dpy.get_config_count()
+        self.assertIsInstance(count, int)
+        self.assertGreaterEqual(count, 0)
+
+    def test_get_configs(self):
+        """Try to get all available configs.
+
+        This test passes if:
+
+        - The get_configs method can be called with no argument
+        - It returns a tuple of configs
+        - The tuple's size is equal to the value returned by
+          get_config_count
+
+        """
+        cfgs = self.dpy.get_configs()
+        self.assertEqual(len(cfgs), self.dpy.get_config_count())
+        self.assertTrue(all(isinstance(cfg, pegl.Config) for cfg in cfgs))
+
+    def test_get_configs_limited(self):
+        """Try to get a limited number of configs.
+
+        This test passes if:
+
+        - The get_configs method can be called with an integer argument
+        - It returns a tuple of configs
+        - The tuple's size is equal to the supplied argument, given that
+          this is less than the value returned by get_config_count
+
+        """
+        max_configs = self.dpy.get_config_count() // 2
+        cfgs = self.dpy.get_configs(max_configs)
+        self.assertEqual(len(cfgs), max_configs)
+        self.assertTrue(all(isinstance(cfg, pegl.Config) for cfg in cfgs))
+
+    @unittest.skip('The sync handle supplied is invalid and cannot be queried,'
+                   ' plus this has weird side effects where other tests start '
+                   'to fail. Move this to test_sync anyway?')
+    @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
+    def test_create_fence_sync(self):
+        """Try to create a sync object.
+
+        This test passes if:
+
+        - The create_sync method can be called with a sync type of
+          pegl.SyncType.FENCE and no attributes
+        - It returns a sync object
+        - The sync object has a sync type of pegl.SyncType.FENCE
+
+        """
+        sync = self.dpy.create_sync(pegl.SyncType.FENCE)
+        self.assertIsInstance(sync, pegl.sync.Sync)
+        self.assertEqual(sync.sync_type, pegl.SyncType.FENCE)
 
 
 class TestProperties(unittest.TestCase):

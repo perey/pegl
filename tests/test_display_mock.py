@@ -135,6 +135,52 @@ class TestMethods(unittest.TestCase):
                                             'a target', 'a buffer', None)
         self.assertEqual(img, 'an image')
 
+    @patch('pegl.Sync.__new__', return_value='a sync object')
+    @patch('pegl.egl.eglCreateSync', return_value='a handle')
+    @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
+    def test_create_fence_sync(self, mock_createsync, mock_Sync):
+        """Try creating a fence sync object.
+
+        This test passes if:
+
+        - eglCreateImage is called with a display, EGL_SYNC_FENCE, and no
+          attribs
+
+        """
+        sync = self.dpy.create_sync(pegl.SyncType.FENCE)
+        mock_createsync.assert_called_with(self.dpy, pegl.egl.EGL_SYNC_FENCE,
+                                           None)
+        self.assertEqual(sync, 'a sync object')
+
+    @patch('pegl.Sync.__new__', return_value='a sync object')
+    @patch('pegl.egl.eglCreateSync', return_value='a handle')
+    @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
+    def test_create_cl_sync(self, mock_createsync, mock_Sync):
+        """Try creating a CL even sync object.
+
+        This test passes if:
+
+        - eglCreateImage is called with a display, EGL_SYNC_CL_EVEL, and
+          the given (fake) OpenCL event handle
+        
+
+        """
+        attrib_dict = {pegl.SyncAttrib.CL_EVENT_HANDLE: 42}
+        expect_attrib_list = [pegl.egl.EGL_CL_EVENT_HANDLE, 42,
+                              pegl.egl.EGL_NONE]
+
+        sync = self.dpy.create_sync(pegl.SyncType.CL_EVENT,
+                                    {pegl.SyncAttrib.CL_EVENT_HANDLE: 42})
+
+        (dpy, synctype, attrib_list), kwargs = mock_createsync.call_args
+        self.assertIs(dpy, self.dpy)
+        self.assertEqual(synctype, pegl.egl.EGL_SYNC_CL_EVENT)
+        for expected, got in zip_longest(expect_attrib_list, attrib_list):
+            self.assertEqual(expected, got)
+        self.assertEqual(kwargs, {})
+
+        self.assertEqual(sync, 'a sync object')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
