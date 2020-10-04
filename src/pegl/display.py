@@ -44,12 +44,15 @@ class Display:
 
     """
     def __new__(cls, display_id=None, init=True, *, handle=None):
-        import logging
-        logging.debug('Creating a new %s with args (display_id=%r, init=%r, '
-                      ' handle=%r', cls.__name__, display_id, init, handle)
+        # Is there an existing display created with these arguments? Note that
+        # if both display_id and handle are None (and the EGL version is 1.4 or
+        # above), then the display_id would've been replaced with the token
+        # EGL_DEFAULT_DISPLAY before being created (and cached), so check for
+        # that case here too.
+        if handle is None and display_id is None and egl.egl_version >= (1, 4):
+            display_id = egl.EGL_DEFAULT_DISPLAY
         instance = cls._get_existing((handle, display_id))
-        logging.debug('\tNo matching instance found' if instance is None else
-                      '\tMatching instance found')
+
         return (instance if instance is not None else
                 super().__new__(cls))
 

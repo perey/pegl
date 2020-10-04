@@ -35,14 +35,6 @@ The Display class
     to the given ``display_id``, then the special object :py:obj:`NoDisplay`
     is returned.
 
-    .. todo::
-        Actually, that’s not true. Displays are cached by their ``EGLDisplay``
-        handle, not by the ``display_id`` argument. While EGL will return the
-        same handle for the same display_id, a new :py:class:`Display` object
-        will be created (using the same handle). The two will compare equal,
-        though! Relatedly, :py:obj:`NoDisplay` isn’t returned; a
-        :py:class:`Display` instance that compares equal to it is.
-
     The EGL functions underlying the constructor are :eglfunc:`eglGetDisplay`
     and, if the ``init`` argument is ``True``, :eglfunc:`eglInitialize`. The
     destructor calls :eglfunc:`eglTerminate` and, if on EGL 1.2 or later,
@@ -87,9 +79,6 @@ The Display class
         object. If the EGL implementation cannot provide a display
         corresponding to the given ``native_display``, then the special object
         :py:obj:`NoDisplay` is returned.
-
-        .. todo::
-            And as with the default constructor, that’s not actually true.
 
         The underlying EGL functions are :eglfunc:`eglGetPlatformDisplay` and,
         if the ``init`` argument is True, :eglfunc:`eglInitialize`.

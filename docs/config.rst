@@ -28,11 +28,6 @@ The Config class
     identifier (the :py:attr:`config_id` property) will result in the same
     object.
 
-    .. todo::
-        Caching is not currently working properly. Instances are cached by
-        their ``EGLConfig`` handle, not by their ``config_id``. Why EGL makes
-        these different things, I don’t know…
-
     Note that all properties on :py:class:`Config` instances are read-only.
 
     .. availability:: EGL 1.0

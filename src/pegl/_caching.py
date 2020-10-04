@@ -70,10 +70,11 @@ def cached(*cache_keys):
             """Add an instance to the cache."""
             used_keys = [] # For debugging only.
             for keyname, cache in zip(cls._cache_keys, cls._caches):
-                key = extract_key(getattr(instance, keyname))
-                used_keys.append(key)
+                raw_key = getattr(instance, keyname)
+                key = extract_key(raw_key)
+                used_keys.append(raw_key)
 
-                if key is not None:
+                if raw_key is not None:
                     cache[key] = instance
 
             logging.debug('Cached %s instance with keys %r',
@@ -86,8 +87,9 @@ def cached(*cache_keys):
             # from __del__ methods, but since the cache only holds weakrefs,
             # its entries will be deleted anyway when they're finalised, right?
             for keyname, cache in zip(cls._cache_keys, cls._caches):
-                key = extract_key(getattr(instance, keyname))
-                if key is not None:
+                raw_key = getattr(instance, keyname)
+                key = extract_key(raw_key)
+                if raw_key is not None:
                     del cache[key]
         setattr(cls, '_remove_from_cache', classmethod(_remove_from_cache))
 
