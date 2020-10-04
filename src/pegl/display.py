@@ -95,6 +95,9 @@ class Display(Cached):
             if egl.egl_version >= (1, 2):
                 egl.eglReleaseThread()
 
+    def __bool__(self):
+        return self._as_parameter_ != egl.EGL_NO_DISPLAY
+
     def __eq__(self, other):
         try:
             return other._as_parameter_ == self._as_parameter_

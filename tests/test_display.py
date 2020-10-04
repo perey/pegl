@@ -31,6 +31,59 @@ import pegl
 from pegl import display
 
 
+class TestDunderMethods(unittest.TestCase):
+    """Test the special methods defined on displays."""
+    def setUp(self):
+        """Get a native display handle to use."""
+        self.native_display = get_native_display()
+
+    def test_bool_true(self):
+        """Ensure a display evaluates as True.
+
+        This test passes if:
+
+        - A display that compares not equal to NoDisplay evaluates to
+          True in a boolean context
+
+        """
+        dpy = display.Display(self.native_display)
+        self.assertNotEqual(dpy, display.NoDisplay)
+        self.assertTrue(dpy)
+
+    def test_bool_false(self):
+        """Ensure that NoDisplay evaluates as False.
+
+        This test passes if:
+
+        - The NoDisplay instance evaluates to False in a boolean context
+
+        """
+        self.assertFalse(display.NoDisplay)
+
+    def test_eq_self(self):
+        """Ensure a display compares equal to itself.
+
+        This test passes if:
+
+        - A display compares equal to itself
+
+        """
+        dpy = display.Display(self.native_display)
+        self.assertEqual(dpy, dpy)
+
+    def test_neq_somethingelse(self):
+        """Ensure a display compares not equal to a non-Display.
+
+        This test passes if:
+
+        - A display compares not equal to an object that happens to be its
+          _as_parameter_ attribute
+
+        """
+        dpy = display.Display(self.native_display)
+        self.assertNotEqual(dpy, dpy._as_parameter_)
+
+
 class TestClassMethods(unittest.TestCase):
     """Test the class methods defined on the Display class."""
     def test_get_current_display(self):
@@ -48,6 +101,7 @@ class TestClassMethods(unittest.TestCase):
         self.assertIsInstance(dpy, display.Display)
         self.assertEqual(dpy, display.NoDisplay)
         self.assertIs(dpy, display.NoDisplay)
+
 
 class TestDisplayCreation(unittest.TestCase):
     """Test the different ways to get a display."""
