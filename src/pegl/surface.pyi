@@ -1,7 +1,9 @@
 """Typing stubs for pegl.surface"""
 
 # Standard library imports.
-from typing import Any, Optional
+from typing import Any, List, Optional
+
+__all__: List[str] = ...
 
 # Local imports.
 from .config import Config

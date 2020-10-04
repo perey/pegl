@@ -2,8 +2,10 @@
 
 # Standard library imports.
 from abc import ABC
-from typing import (Any, Callable, ClassVar, Generic, Hashable, Mapping,
-                    Protocol)
+from typing import (Any, Callable, ClassVar, Generic, Hashable, List, Mapping,
+                    Protocol, Tuple, Union)
+
+__all__: List[str] = ...
 
 class HasHashableValue(Protocol):
     value: Hashable
@@ -16,8 +18,8 @@ class CtypesPassable(Protocol):
 def extract_key(key: CacheKey) -> Hashable: ...
 
 class CachedClass(Protocol):
-    _cache_keys: ClassVar[tuple[str, ...]]
-    _caches: ClassVar[list[Mapping[Hashable, CtypesPassable]]]
+    _cache_keys: ClassVar[Tuple[str, ...]]
+    _caches: ClassVar[List[Mapping[Hashable, CtypesPassable]]]
 
     @classmethod
     def _add_to_cache(cls, instance: CtypesPassable) -> None: ...
@@ -26,10 +28,10 @@ class CachedClass(Protocol):
     def _remove_from_cache(cls, instance: CtypesPassable) -> None: ...
 
     @classmethod
-    def _get_existing(cls, keys[tuple
+    def _get_existing(cls, keys: Tuple[CacheKey, ...]) -> CtypesPassable: ...
 
     @classmethod
-    def _new_or_existing(cls, keys: tuple[CacheKey, ...],
+    def _new_or_existing(cls, keys: Tuple[CacheKey, ...],
                          *args: Any, **kwargs: Any) -> CtypesPassable: ...
 
 caching_decorator = Callable[[type], CachedClass]

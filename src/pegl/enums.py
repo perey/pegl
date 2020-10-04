@@ -55,7 +55,7 @@
 #     POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports.
-from aenum import IntEnum, IntFlag, extend_enum, _decompose
+from aenum import IntEnum, IntFlag, extend_enum, _decompose # type: ignore
 # I sure hope importing _decompose doesn't come back to bite me...
 
 # Local imports.

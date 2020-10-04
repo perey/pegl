@@ -1,11 +1,13 @@
 """Typing stubs for pegl.sync"""
 
 # Standard library imports
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 # Local imports.
 from .display import Display
 from .enums import NativeEngine, SyncCondition, SyncFlag, SyncResult, SyncType
+
+__all__: List[str] = ...
 
 
 class Sync:

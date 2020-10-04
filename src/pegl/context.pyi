@@ -1,7 +1,7 @@
 """Typing stubs for pegl.context"""
 
 # Standard library imports.
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 # Local imports.
 from .config import Config
@@ -10,6 +10,8 @@ from .enums import (ClientAPI, ImageAttrib, ImageTarget, ReadOrDraw,
                     RenderBuffer)
 from .image import Image
 from .surface import Surface
+
+__all__: List[str] = ...
 
 
 class ContextMeta(type):
@@ -37,7 +39,7 @@ class Context(metaclass=ContextMeta):
 
     def create_image(
         self, target: ImageTarget, buffer: int,
-        attribs: Optional[dict[ImageAttrib, Any]]=None) -> Image: ...
+        attribs: Optional[Dict[ImageAttrib, Any]]=None) -> Image: ...
 
     def make_current(self, draw: Optional[Surface]=None,
                      read: Optional[Surface]=None) -> None: ...

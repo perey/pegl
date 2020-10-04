@@ -1,5 +1,10 @@
 """Typing stubs for pegl.errors"""
 
+# Standard library imports.
+from typing import List
+
+__all__: List[str] = ...
+
 EGL_SUCCESS: int
 EGL_NOT_INITIALIZED: int
 EGL_BAD_ACCESS: int
@@ -46,4 +51,4 @@ class BadSurfaceError(EGLError): ...
 
 class ContextLostError(EGLError): ...
 
-KNOWN_ERRORS: dict[int, EGLError]
+KNOWN_ERRORS: dict[int, EGLError] = ...

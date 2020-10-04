@@ -56,7 +56,6 @@ from enum import IntFlag
 import logging
 from pathlib import Path
 import sys
-from typing import Any, Callable, Sequence
 
 # Local imports.
 from ..errors import KNOWN_ERRORS, EGLError, EGL_SUCCESS
@@ -143,8 +142,7 @@ class Arg(IntFlag):
     INOUT = IN | OUT
     IN_DEFAULT0 = 4
 
-def _load_function(func_name: str, restype: Any, *args: Sequence,
-                   **kwargs) -> Callable:
+def _load_function(func_name, restype, *args, **kwargs):
     """Load an EGL function.
 
     Arguments to the function may be specified as sequences comprising
@@ -201,7 +199,7 @@ def _load_function(func_name: str, restype: Any, *args: Sequence,
                 if error_code != EGL_SUCCESS:
                     raise KNOWN_ERRORS.get(error_code, EGLError)
             return args
-        fn.errcheck = error_check
+        setattr(fn, 'errcheck', error_check)
 
     # Store the function name, for debugging.
     fn.name = func_name
