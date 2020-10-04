@@ -149,6 +149,33 @@ class TestDisplayCreation(unittest.TestCase):
         self.assertIsNot(dpy, display.NoDisplay)
         self.assertNotEqual(dpy, display.NoDisplay)
 
+    def test_get_same_display(self):
+        """Ensure two displays with the same handle are the same object.
+
+        This test passes if:
+
+        - Two Display instances created from the same native display
+          handle are the same object (compared with ``is``)
+
+        """
+        dpy1 = display.Display(self.native_display)
+        dpy2 = display.Display(self.native_display)
+        self.assertIs(dpy1, dpy2)
+
+    @unittest.skipIf(pegl.egl_version < (1, 4), 'EGL version too low')
+    def test_get_same_default_display(self):
+        """Ensure two default displays are the same object.
+
+        This test passes if:
+
+        - Two Display instances created with default-display syntax are
+          the same object (compared with ``is``)
+
+        """
+        dpy1 = display.Display()
+        dpy2 = display.Display()
+        self.assertIs(dpy1, dpy2)
+
     @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
     def test_get_platform_display(self):
         """Try creating a display belonging to a platform.

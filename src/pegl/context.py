@@ -28,8 +28,7 @@ from .enums import ReadOrDraw
 from .errors import BadContextError
 
 
-# Inherit from type(Cached) to avoid metaclass conflicts.
-class ContextMeta(type(Cached)):
+class ContextMeta(Cached):
     """Metaclass for EGL contexts, to enable class properties."""
     # Note that Context.get_current_surface is added to the class by the
     # pegl.display module, since its implementation needs the Display
@@ -45,11 +44,12 @@ class ContextMeta(type(Cached)):
         return cls.get_current_surface(ReadOrDraw.READ)
 
 
-class Context(Cached, metaclass=ContextMeta):
+class Context(metaclass=ContextMeta):
     """An EGL rendering context."""
     def __init__(self, display, handle):
         self._display = display
         self._as_parameter_ = handle
+        self._cache_key = None
 
         self.__class__._add_to_cache(self)
 

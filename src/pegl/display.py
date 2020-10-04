@@ -35,7 +35,7 @@ from .context import Context
 from .surface import Surface
 
 
-class Display(Cached):
+class Display(metaclass=Cached):
     """An EGL display.
 
     In EGL, a display is both a representation of a (physical or virtual)
@@ -47,6 +47,8 @@ class Display(Cached):
         # else.
         if handle is not None:
             self._as_parameter_ = handle
+            self._cache_key = None
+
             self.__class__._add_to_cache(self)
             return
 
@@ -57,6 +59,8 @@ class Display(Cached):
             display_id = egl.EGL_DEFAULT_DISPLAY
 
         self._as_parameter_ = egl.eglGetDisplay(display_id)
+        self._cache_key = display_id
+
         self.__class__._add_to_cache(self)
 
         # Forwards compatibility.
@@ -108,7 +112,7 @@ class Display(Cached):
     def get_current_display(cls):
         """Get the display for the current context on the calling thread."""
         handle = egl.eglGetCurrentDisplay()
-        return cls._new_or_existing(handle, handle)
+        return cls._new_or_existing((handle, None), handle)
 
     def choose_config(self, attribs, num_config=None):
         """Get available configurations that match given attributes."""
@@ -117,7 +121,8 @@ class Display(Cached):
         configs = (egl._common.EGLConfig * num_config)()
         actual_count = egl.eglChooseConfig(self, attrib_list(attribs),
                                            configs, num_config)
-        return tuple(Config._new_or_existing(configs[n], self, configs[n])
+        return tuple(Config._new_or_existing((configs[n], None),
+                                             self, configs[n])
                      for n in range(actual_count))
 
     def get_config_count(self) -> int:
@@ -130,7 +135,8 @@ class Display(Cached):
             num_config = self.get_config_count()
         configs = (egl._common.EGLConfig * num_config)()
         actual_count = egl.eglGetConfigs(self, configs, num_config)
-        return tuple(Config._new_or_existing(configs[n], self, configs[n])
+        return tuple(Config._new_or_existing((configs[n], None),
+                                             self, configs[n])
                      for n in range(actual_count))
 
     def initialize(self):
@@ -187,7 +193,8 @@ def get_current_surface(cls, readdraw): # pylint: disable=unused-argument
     """
     handle = egl.eglGetCurrentSurface(readdraw)
     return (None if handle == egl.EGL_NO_SURFACE else
-            Surface._new_or_existing(handle, Display.get_current_display(),
+            Surface._new_or_existing((handle, None),
+                                     Display.get_current_display(),
                                      handle))
 setattr(Context, 'get_current_surface', classmethod(get_current_surface))
 
@@ -236,7 +243,8 @@ if egl.egl_version >= (1, 4):
         """Get the current context for the calling thread."""
         handle = egl.eglGetCurrentContext()
         return (None if handle == egl.EGL_NO_CONTEXT else
-                cls._new_or_existing(handle, Display.get_current_display(),
+                cls._new_or_existing((handle, None),
+                                     Display.get_current_display(),
                                      handle))
     setattr(Context, 'get_current_context', classmethod(get_current_context))
 

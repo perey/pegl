@@ -2,22 +2,28 @@
 
 # Standard library imports.
 from abc import ABC
-from typing import Any, ClassVar, Generic, Mapping, Protocol, TypeVar
+from typing import Any, ClassVar, Generic, Hashable, Mapping, Protocol
 
-CType = TypeVar('CType')
+class HasHashableValue(Protocol):
+    value: Hashable
 
-class CtypesPassable(Generic[CType]):
-    _as_parameter_: CType
+CacheKey = Union[Hashable, HasHashableValue]
+
+class CtypesPassable(Protocol):
+    _as_parameter_: CacheKey
+
+def extract_key(key: CacheKey) -> Hashable: ...
 
 class Cached(ABC):
-    _cache: ClassVar[Mapping[CType, CtypesPassable[CType]]]
+    _param_cache: ClassVar[Mapping[Hashable, CtypesPassable]]
+    _prop_cache: ClassVar[Mapping[Hashable, CtypesPassable]]
 
     @classmethod
-    def _add_to_cache(cls, instance: CtypesPassable[CType]) -> None: ...
+    def _add_to_cache(cls, instance: CtypesPassable) -> None: ...
 
     @classmethod
-    def _remove_from_cache(cls, instance: CtypesPassable[CType]) -> None: ...
+    def _remove_from_cache(cls, instance: CtypesPassable) -> None: ...
 
     @classmethod
-    def _new_or_existing(cls, key: CType, *args: Any,
-                         **kwargs: Any) -> CtypesPassable[CType]: ...
+    def _new_or_existing(cls, key: tuple[CacheKey, CacheKey],
+                         *args: Any, **kwargs: Any) -> CtypesPassable: ...

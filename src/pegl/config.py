@@ -36,7 +36,7 @@ from .surface import Surface
 # caching quite a bit... And it's entirely possible that it affects other
 # cached types as well!
 
-class Config(Cached):
+class Config(metaclass=Cached):
     """A set of EGL configuration options."""
     def __init__(self, display, handle):
         self._display = display
@@ -105,6 +105,8 @@ class Config(Cached):
     def config_id(self):
         """The config's unique identifier."""
         return egl.eglGetConfigAttrib(self._display, self, egl.EGL_CONFIG_ID)
+    # Cache configs by their config_id
+    _cache_key = config_id
 
     @property
     def depth_size(self):
@@ -216,7 +218,7 @@ class Config(Cached):
 # module depends on the context or surface module, and vice versa.
 def config(self): # pylint: disable=missing-function-docstring
     handle = self.config_id
-    return Config._new_or_existing(handle, self._display, handle)
+    return Config._new_or_existing((None, handle), self._display, handle)
 setattr(Context, 'config',
         property(config, doc='The config object used to create this context.'))
 setattr(Surface, 'config',
