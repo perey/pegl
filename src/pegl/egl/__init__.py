@@ -27,11 +27,15 @@ import os
 
 # Check for the environment variable specifying which EGL version to load.
 known_versions = ((1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5))
-env_version = os.environ.get('PEGLEGLVERSION', None)
 try:
+    env_version = os.environ['PEGLEGLVERSION']
     major, minor = (int(num) for num in env_version.split('.'))
+except KeyError:
+    # No environment variable set. Try loading the latest known version.
+    major, minor = known_versions[-1]
 except (AttributeError, ValueError):
-    # Try loading the latest known version.
+    # Environment variable set but not understood. Try loading the latest known
+    # version.
     logging.debug('Environment EGL version request not understood '
                   '(%r)', env_version)
     major, minor = known_versions[-1]
