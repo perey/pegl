@@ -33,17 +33,17 @@ try:
 except (AttributeError, ValueError):
     # Try loading the latest known version.
     logging.debug('Environment EGL version request not understood '
-                  '({!r})'.format(env_version))
+                  '(%r)', env_version)
     major, minor = known_versions[-1]
 else:
-    logging.debug('Environment requested version {}.{}'.format(major, minor))
+    logging.debug('Environment requested version %d.%d', major, minor)
     if (major, minor) not in known_versions:
         major, minor = known_versions[-1]
 requested_version = (major, minor)
 
 # Load constants and functions from each successive version of EGL out of the
 # version-specific module and into the subpackage namespace.
-# TODO: Configurable version loading!!
+# pylint: disable=wrong-import-position
 from .egl1_0 import *
 from .egl1_0 import __all__ as egl1_0_all
 __all__.extend(egl1_0_all)

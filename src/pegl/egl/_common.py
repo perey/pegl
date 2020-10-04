@@ -89,7 +89,7 @@ if sys.platform == 'win32':
 else:
     # Shared libraries on other systems can use the system loader.
     for name in known_names:
-        found_lib = ctypes.find_library(name)
+        found_lib = ctypes.util.find_library(name)
         if found_lib is not None:
             break
     else:
