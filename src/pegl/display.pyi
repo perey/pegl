@@ -4,7 +4,6 @@
 from typing import Any, Optional, Tuple
 
 # Local imports.
-from ._caching import Cached
 from .config import Config
 from .context import Context
 from .enums import (ConfigAttrib, DisplayAttrib, ImageAttrib, ImageTarget,
@@ -14,7 +13,7 @@ from .surface import Surface
 from .sync import Sync
 
 
-class Display(Cached):
+class Display:
     def __init__(self, display_id: Optional[int]=..., init: bool=...,
                  *, handle: Any=...) -> None: ...
 

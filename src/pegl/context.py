@@ -23,12 +23,12 @@ __all__ = ['Context']
 
 # Local imports.
 from . import egl
-from ._caching import Cached
+from ._caching import cached
 from .enums import ReadOrDraw
 from .errors import BadContextError
 
 
-class ContextMeta(Cached):
+class ContextMeta(type):
     """Metaclass for EGL contexts, to enable class properties."""
     # Note that Context.get_current_surface is added to the class by the
     # pegl.display module, since its implementation needs the Display
@@ -44,6 +44,7 @@ class ContextMeta(Cached):
         return cls.get_current_surface(ReadOrDraw.READ)
 
 
+@cached
 class Context(metaclass=ContextMeta):
     """An EGL rendering context."""
     def __init__(self, display, handle):

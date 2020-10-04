@@ -14,7 +14,7 @@ class CtypesPassable(Protocol):
 
 def extract_key(key: CacheKey) -> Hashable: ...
 
-class Cached(ABC):
+class CachedClass(Protocol):
     _param_cache: ClassVar[Mapping[Hashable, CtypesPassable]]
     _prop_cache: ClassVar[Mapping[Hashable, CtypesPassable]]
 
@@ -27,3 +27,5 @@ class Cached(ABC):
     @classmethod
     def _new_or_existing(cls, key: tuple[CacheKey, CacheKey],
                          *args: Any, **kwargs: Any) -> CtypesPassable: ...
+
+def cached(cls: type) -> CachedClass: ...

@@ -28,14 +28,15 @@ from types import MappingProxyType
 # Local imports.
 from . import egl
 from .attribs import attrib_list
-from ._caching import Cached
+from ._caching import cached
 from .errors import BadDisplayError
 from .config import Config
 from .context import Context
 from .surface import Surface
 
 
-class Display(metaclass=Cached):
+@cached
+class Display:
     """An EGL display.
 
     In EGL, a display is both a representation of a (physical or virtual)

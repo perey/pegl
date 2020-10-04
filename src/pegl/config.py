@@ -26,7 +26,7 @@ __all__ = ['Config']
 # Local imports.
 from . import egl
 from .attribs import attrib_list
-from ._caching import Cached
+from ._caching import cached
 from .enums import ConfigCaveat, SurfaceTypeFlag, TransparentType
 from .context import Context
 from .surface import Surface
@@ -36,7 +36,8 @@ from .surface import Surface
 # caching quite a bit... And it's entirely possible that it affects other
 # cached types as well!
 
-class Config(metaclass=Cached):
+@cached
+class Config:
     """A set of EGL configuration options."""
     def __init__(self, display, handle):
         self._display = display

@@ -23,10 +23,11 @@ __all__ = ['Surface']
 
 # Local imports.
 from . import egl
-from ._caching import Cached
+from ._caching import cached
 from .errors import BadSurfaceError
 
-class Surface(metaclass=Cached):
+@cached
+class Surface:
     """A rendering surface."""
     def __init__(self, display, handle):
         self._display = display

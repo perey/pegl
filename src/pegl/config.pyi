@@ -4,7 +4,6 @@
 from typing import Any, Optional
 
 # Local imports.
-from ._caching import Cached
 from .context import Context
 from .display import Display
 from .enums import (ClientAPIFlag, ClientBufferType, ColorBufferType,
@@ -13,7 +12,7 @@ from .enums import (ClientAPIFlag, ClientBufferType, ColorBufferType,
 from .surface import Surface
 
 
-class Config(Cached):
+class Config:
     def __init__(self, display: Display, handle: Any) -> None: ...
 
     def create_context(

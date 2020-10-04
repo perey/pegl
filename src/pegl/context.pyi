@@ -4,7 +4,6 @@
 from typing import Any, Optional
 
 # Local imports.
-from ._caching import Cached
 from .config import Config
 from .display import Display
 from .enums import (ClientAPI, ImageAttrib, ImageTarget, ReadOrDraw,
@@ -13,7 +12,7 @@ from .image import Image
 from .surface import Surface
 
 
-class ContextMeta:
+class ContextMeta(type):
     @property
     def current_draw_surface(cls) -> Optional[Surface]: ...
 
@@ -21,7 +20,7 @@ class ContextMeta:
     def current_read_surface(cls) -> Optional[Surface]: ...
 
 
-class Context(Cached, metaclass=ContextMeta):
+class Context(metaclass=ContextMeta):
     def __init__(self, display: Display, handle: Any) -> None: ...
 
     def __del__(self) -> None: ...

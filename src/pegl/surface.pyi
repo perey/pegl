@@ -4,13 +4,12 @@
 from typing import Any, Optional
 
 # Local imports.
-from ._caching import Cached
 from .config import Config
 from .display import Display
 from .enums import (MultisampleResolve, RenderBuffer, SwapBehavior,
                     TextureFormat, TextureTarget)
 
-class Surface(Cached):
+class Surface:
     def __init__(self, display: Display, handle: Any) -> None: ...
 
     def __del__(self) -> None: ...

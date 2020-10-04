@@ -40,8 +40,8 @@ def extract_key(key):
     except AttributeError:
         return key
 
-class Cached(type):
-    """Metaclass for classes whose instances are cached.
+def cached(cls):
+    """Decorator for classes whose instances are cached.
 
     Two caches are used, both of which maintain weak references to their
     values, so as to not delay garbage collection when the caches hold the
@@ -69,10 +69,8 @@ class Cached(type):
     overwrite each other.
 
     """
-    def __init__(cls, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        cls._param_cache = WeakValueDictionary()
-        cls._prop_cache = WeakValueDictionary()
+    cls._param_cache = WeakValueDictionary()
+    cls._prop_cache = WeakValueDictionary()
 
     def _add_to_cache(cls, instance):
         """Add an instance to the cache."""
@@ -87,6 +85,7 @@ class Cached(type):
         else:
             logging.debug('Cached %s instance with param key %r',
                           cls.__name__, param_key)
+    setattr(cls, '_add_to_cache', classmethod(_add_to_cache))
 
     def _remove_from_cache(cls, instance):
         """Remove an instance from the cache."""
@@ -99,6 +98,7 @@ class Cached(type):
         if instance._cache_key is not None:
             prop_key = extract_key(instance._cache_key)
             del cls._prop_cache[prop_key]
+    setattr(cls, '_remove_from_cache', classmethod(_remove_from_cache))
 
     def _new_or_existing(cls, keys, *args, **kwargs):
         """Get a cached instance if it exists, or create a new one."""
@@ -118,3 +118,6 @@ class Cached(type):
         else:
             logging.debug('Param cache hit (%s): %r}', cls.__name__, param_key)
         return instance
+    setattr(cls, '_new_or_existing', classmethod(_new_or_existing))
+
+    return cls
