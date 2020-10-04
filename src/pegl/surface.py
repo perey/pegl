@@ -70,7 +70,7 @@ class Surface(Cached):
     def config(self):
         """The config used to create this surface."""
         # Implemented in pegl.config to avoid dependency problems.
-        raise NotImplementedError
+        raise NotImplementedError # pragma: nocover
 
     @property
     def config_id(self):

@@ -75,12 +75,12 @@ class Context(Cached, metaclass=ContextMeta):
     @classmethod
     def get_current_surface(cls, readdraww): # pylint: disable=missing-function-docstring
         # Implemented in pegl.display to avoid dependency problems.
-        raise NotImplementedError
+        raise NotImplementedError # pragma: nocover
 
     @classmethod
     def release_current(cls): # pylint: disable=missing-function-docstring
         # Implemented in pegl.display to avoid dependency problems.
-        raise NotImplementedError
+        raise NotImplementedError # pragma: nocover
 
     def make_current(self, draw=None, read=None):
         """Make this context current for the calling thread.
@@ -106,7 +106,7 @@ class Context(Cached, metaclass=ContextMeta):
     def config(self):
         """The config object used to create this context."""
         # Implemented in pegl.config to avoid dependency problems.
-        raise NotImplementedError
+        raise NotImplementedError # pragma: nocover
 
     @property
     def config_id(self):
@@ -157,7 +157,7 @@ if egl.egl_version >= (1, 3):
 if egl.egl_version >= (1, 4):
     def get_current_context(cls): # pylint: disable=missing-function-docstring
         # Implemented in pegl.display to avoid dependency problems.
-        raise NotImplementedError
+        raise NotImplementedError # pragma: nocover
     setattr(Context, 'get_current_context', classmethod(get_current_context))
 
 
