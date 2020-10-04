@@ -43,6 +43,16 @@ class Display:
     display device, and an environment for other objects.
 
     """
+    def __new__(cls, display_id=None, init=True, *, handle=None):
+        import logging
+        logging.debug('Creating a new %s with args (display_id=%r, init=%r, '
+                      ' handle=%r', cls.__name__, display_id, init, handle)
+        instance = cls._get_existing((handle, display_id))
+        logging.debug('\tNo matching instance found' if instance is None else
+                      '\tMatching instance found')
+        return (instance if instance is not None else
+                super().__new__(cls))
+
     def __init__(self, display_id=None, init=True, *, handle=None):
         # Specifying a display by its EGLDisplay handle overrides everything
         # else.
@@ -113,7 +123,12 @@ class Display:
     def get_current_display(cls):
         """Get the display for the current context on the calling thread."""
         handle = egl.eglGetCurrentDisplay()
-        return cls._new_or_existing((handle, None), handle)
+        # The mismatch between c_void_p(None) (the value of EGL_NO_DISPLAY) and
+        # a plain None is causing issues. So, while it breaks encapsulation,
+        # let's compare the given handle to None.
+        if handle is None:
+            return NoDisplay
+        return cls._new_or_existing((handle, None), handle=handle)
 
     def choose_config(self, attribs, num_config=None):
         """Get available configurations that match given attributes."""
@@ -194,8 +209,7 @@ def get_current_surface(cls, readdraw): # pylint: disable=unused-argument
     """
     handle = egl.eglGetCurrentSurface(readdraw)
     return (None if handle == egl.EGL_NO_SURFACE else
-            Surface._new_or_existing((handle, None),
-                                     Display.get_current_display(),
+            Surface._new_or_existing(handle, Display.get_current_display(),
                                      handle))
 setattr(Context, 'get_current_surface', classmethod(get_current_surface))
 
@@ -244,8 +258,7 @@ if egl.egl_version >= (1, 4):
         """Get the current context for the calling thread."""
         handle = egl.eglGetCurrentContext()
         return (None if handle == egl.EGL_NO_CONTEXT else
-                cls._new_or_existing((handle, None),
-                                     Display.get_current_display(),
+                cls._new_or_existing(handle, Display.get_current_display(),
                                      handle))
     setattr(Context, 'get_current_context', classmethod(get_current_context))
 

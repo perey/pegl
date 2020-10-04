@@ -56,10 +56,10 @@ def cached(*cache_keys):
     display_id argument used to create them) and for Config objects
     (caching them by their config_id property).
 
-    A key that is None will not be used to cache any instance. When
-    looking up cached instances, each cache is searched in order (again
-    skipping any keys that are None) until a match is found or all caches
-    have been tried.
+    A key that is None will not be used to cache any instance (but a key
+    that has a value attribute of None can be). When looking up cached
+    instances, each cache is searched in order (again skipping any keys
+    that are None) until a match is found or all caches have been tried.
 
     """
     def cached_class(cls):
@@ -91,17 +91,27 @@ def cached(*cache_keys):
                     del cache[key]
         setattr(cls, '_remove_from_cache', classmethod(_remove_from_cache))
 
-        def _new_or_existing(cls, keys, *args, **kwargs):
-            """Get a cached instance if it exists, or create a new one."""
+        def _get_existing(cls, keys):
+            """Get a cached instance if it exists, or else None."""
             for key, keyname, cache in zip(keys, cls._cache_keys, cls._caches):
-                instance = cache.get(key)
+                if key is None:
+                    continue
+
+                instance = cache.get(extract_key(key))
                 if instance is not None:
-                    logging.debug('Cache hit (%s, %r): %r}', cls.__name__,
+                    logging.debug('Cache hit (%s, %r): %r', cls.__name__,
                                   keyname, key)
                     return instance
 
-            logging.debug('Cache miss (%s): %r}', cls.__name__, keys)
-            return cls(*args, **kwargs)
+            logging.debug('Cache miss (%s): %r', cls.__name__, keys)
+            return None
+        setattr(cls, '_get_existing', classmethod(_get_existing))
+
+        def _new_or_existing(cls, keys, *args, **kwargs):
+            """Get a cached instance if it exists, or create a new one."""
+            instance = cls._get_existing(keys)
+
+            return (instance if instance is not None else cls(*args, **kwargs))
         setattr(cls, '_new_or_existing', classmethod(_new_or_existing))
 
         return cls

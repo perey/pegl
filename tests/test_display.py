@@ -93,12 +93,14 @@ class TestClassMethods(unittest.TestCase):
 
         - get_current_display can be called
         - It returns a Display instance
+        - The instance's _as_parameter_ handle is EGL_NO_DISPLAY
         - The instance compares equal to NoDisplay
         - The instance is NoDisplay
 
         """
         dpy = display.Display.get_current_display()
         self.assertIsInstance(dpy, display.Display)
+        self.assertEqual(dpy._as_parameter_, pegl.egl.EGL_NO_DISPLAY)
         self.assertEqual(dpy, display.NoDisplay)
         self.assertIs(dpy, display.NoDisplay)
 

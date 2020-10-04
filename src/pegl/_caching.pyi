@@ -16,8 +16,8 @@ class CtypesPassable(Protocol):
 def extract_key(key: CacheKey) -> Hashable: ...
 
 class CachedClass(Protocol):
-    _param_cache: ClassVar[Mapping[Hashable, CtypesPassable]]
-    _prop_cache: ClassVar[Mapping[Hashable, CtypesPassable]]
+    _cache_keys: ClassVar[tuple[str, ...]]
+    _caches: ClassVar[list[Mapping[Hashable, CtypesPassable]]]
 
     @classmethod
     def _add_to_cache(cls, instance: CtypesPassable) -> None: ...
@@ -26,7 +26,10 @@ class CachedClass(Protocol):
     def _remove_from_cache(cls, instance: CtypesPassable) -> None: ...
 
     @classmethod
-    def _new_or_existing(cls, key: tuple[CacheKey, CacheKey],
+    def _get_existing(cls, keys[tuple
+
+    @classmethod
+    def _new_or_existing(cls, keys: tuple[CacheKey, ...],
                          *args: Any, **kwargs: Any) -> CtypesPassable: ...
 
 caching_decorator = Callable[[type], CachedClass]
