@@ -35,7 +35,7 @@ from .context import Context
 from .surface import Surface
 
 
-@cached
+@cached('_as_parameter_', '_display_id')
 class Display:
     """An EGL display.
 
@@ -48,7 +48,7 @@ class Display:
         # else.
         if handle is not None:
             self._as_parameter_ = handle
-            self._cache_key = None
+            self._display_id = display_id
 
             self.__class__._add_to_cache(self)
             return
@@ -60,7 +60,7 @@ class Display:
             display_id = egl.EGL_DEFAULT_DISPLAY
 
         self._as_parameter_ = egl.eglGetDisplay(display_id)
-        self._cache_key = display_id
+        self._display_id = display_id
 
         self.__class__._add_to_cache(self)
 

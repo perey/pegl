@@ -44,13 +44,12 @@ class ContextMeta(type):
         return cls.get_current_surface(ReadOrDraw.READ)
 
 
-@cached
+@cached('_as_parameter_')
 class Context(metaclass=ContextMeta):
     """An EGL rendering context."""
     def __init__(self, display, handle):
         self._display = display
         self._as_parameter_ = handle
-        self._cache_key = None
 
         self.__class__._add_to_cache(self)
 

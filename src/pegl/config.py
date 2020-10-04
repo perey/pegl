@@ -36,7 +36,7 @@ from .surface import Surface
 # caching quite a bit... And it's entirely possible that it affects other
 # cached types as well!
 
-@cached
+@cached('_as_parameter_', 'config_id')
 class Config:
     """A set of EGL configuration options."""
     def __init__(self, display, handle):
@@ -106,8 +106,6 @@ class Config:
     def config_id(self):
         """The config's unique identifier."""
         return egl.eglGetConfigAttrib(self._display, self, egl.EGL_CONFIG_ID)
-    # Cache configs by their config_id
-    _cache_key = config_id
 
     @property
     def depth_size(self):

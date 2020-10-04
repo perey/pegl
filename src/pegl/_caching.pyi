@@ -2,7 +2,8 @@
 
 # Standard library imports.
 from abc import ABC
-from typing import Any, ClassVar, Generic, Hashable, Mapping, Protocol
+from typing import (Any, Callable, ClassVar, Generic, Hashable, Mapping,
+                    Protocol)
 
 class HasHashableValue(Protocol):
     value: Hashable
@@ -28,4 +29,6 @@ class CachedClass(Protocol):
     def _new_or_existing(cls, key: tuple[CacheKey, CacheKey],
                          *args: Any, **kwargs: Any) -> CtypesPassable: ...
 
-def cached(cls: type) -> CachedClass: ...
+caching_decorator = Callable[[type], CachedClass]
+
+def cached(*args: str) -> caching_decorator: ...

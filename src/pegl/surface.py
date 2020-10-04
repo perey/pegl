@@ -26,13 +26,12 @@ from . import egl
 from ._caching import cached
 from .errors import BadSurfaceError
 
-@cached
+@cached('_as_parameter_')
 class Surface:
     """A rendering surface."""
     def __init__(self, display, handle):
         self._display = display
         self._as_parameter_ = handle
-        self._cache_key = None
 
         self.__class__._add_to_cache(self)
 

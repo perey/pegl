@@ -40,84 +40,70 @@ def extract_key(key):
     except AttributeError:
         return key
 
-def cached(cls):
-    """Decorator for classes whose instances are cached.
+def cached(*cache_keys):
+    """Construct a decorator for classes whose instances are cached.
 
-    Two caches are used, both of which maintain weak references to their
-    values, so as to not delay garbage collection when the caches hold the
-    only references to the objects.
+    Multiple caches may be used, each of which maintains weak references
+    to their values, so as to not delay garbage collection when the caches
+    hold the only references to the objects.
 
-    The first cache tracks instances by the _as_parameter_ attribute, as
-    used by ctypes. Instances must have such an attribute (or property),
-    and it must either be hashable itself, or have a value attribute that
-    is hashable (as ctypes types do).
+    For all Pegl uses, the first cache will be keyed by the _as_parameter_
+    attribute, as used by ctypes. Instances must have such an attribute
+    (or property), and it must either be hashable itself, or have a value
+    attribute that is hashable (as ctypes types do).
 
-    The second cache tracks instances by another property, _cache_key,
-    defined by the class implementation, which must be hashable. This is
-    included because there are EGL objects that can be uniquely identified
-    in two ways:
+    A second cache is used for Display objects (caching them by the
+    display_id argument used to create them) and for Config objects
+    (caching them by their config_id property).
 
-    * Display objects can be identified by their handle (an EGLDisplay),
-      or by the display_id argument used to create them (which must result
-      in the same EGLDisplay handle being returned).
-    * Config objects can be identified by their handle (an EGLConfig), or
-      by the value of their config_id property.
-
-    An instance will not be held in the second cache if its _cache_key is
-    None; this is so that Display instances created without a display_id,
-    and Context instances (which don't use the second cache), do not
-    overwrite each other.
+    A key that is None will not be used to cache any instance. When
+    looking up cached instances, each cache is searched in order (again
+    skipping any keys that are None) until a match is found or all caches
+    have been tried.
 
     """
-    cls._param_cache = WeakValueDictionary()
-    cls._prop_cache = WeakValueDictionary()
+    def cached_class(cls):
+        cls._cache_keys = cache_keys
+        cls._caches = [WeakValueDictionary() for _ in cache_keys]
 
-    def _add_to_cache(cls, instance):
-        """Add an instance to the cache."""
-        param_key = extract_key(instance._as_parameter_)
+        def _add_to_cache(cls, instance):
+            """Add an instance to the cache."""
+            used_keys = [] # For debugging only.
+            for keyname, cache in zip(cls._cache_keys, cls._caches):
+                key = extract_key(getattr(instance, keyname))
+                used_keys.append(key)
 
-        cls._param_cache[param_key] = instance
-        if instance._cache_key is not None:
-            prop_key = extract_key(instance._cache_key)
-            cls._prop_cache[prop_key] = instance
-            logging.debug('Cached %s instance with param key %r, prop key %r',
-                          cls.__name__, param_key, prop_key)
-        else:
-            logging.debug('Cached %s instance with param key %r',
-                          cls.__name__, param_key)
-    setattr(cls, '_add_to_cache', classmethod(_add_to_cache))
+                if key is not None:
+                    cache[key] = instance
 
-    def _remove_from_cache(cls, instance):
-        """Remove an instance from the cache."""
-        # TODO: Is this necessary? It's only (as far as I recall) called from
-        # __del__ methods, but since the cache only holds weakrefs, its entries
-        # will be deleted anyway when they're finalised, right?
-        param_key = extract_key(instance._as_parameter_)
+            logging.debug('Cached %s instance with keys %r',
+                          cls.__name__, used_keys)
+        setattr(cls, '_add_to_cache', classmethod(_add_to_cache))
 
-        del cls._param_cache[param_key]
-        if instance._cache_key is not None:
-            prop_key = extract_key(instance._cache_key)
-            del cls._prop_cache[prop_key]
-    setattr(cls, '_remove_from_cache', classmethod(_remove_from_cache))
+        def _remove_from_cache(cls, instance):
+            """Remove an instance from the cache."""
+            # TODO: Is this necessary? It's only (as far as I recall) called
+            # from __del__ methods, but since the cache only holds weakrefs,
+            # its entries will be deleted anyway when they're finalised, right?
+            for keyname, cache in zip(cls._cache_keys, cls._caches):
+                key = extract_key(getattr(instance, keyname))
+                if key is not None:
+                    del cache[key]
+        setattr(cls, '_remove_from_cache', classmethod(_remove_from_cache))
 
-    def _new_or_existing(cls, keys, *args, **kwargs):
-        """Get a cached instance if it exists, or create a new one."""
-        param_key, prop_key = keys
+        def _new_or_existing(cls, keys, *args, **kwargs):
+            """Get a cached instance if it exists, or create a new one."""
+            for key, keyname, cache in zip(keys, cls._cache_keys, cls._caches):
+                instance = cache.get(key)
+                if instance is not None:
+                    logging.debug('Cache hit (%s, %r): %r}', cls.__name__,
+                                  keyname, key)
+                    return instance
 
-        instance = cls._param_cache.get(param_key)
-        if instance is None:
-            if prop_key is not None:
-                instance = cls._prop_cache.get(prop_key)
+            logging.debug('Cache miss (%s): %r}', cls.__name__, keys)
+            return cls(*args, **kwargs)
+        setattr(cls, '_new_or_existing', classmethod(_new_or_existing))
 
-            if instance is None:
-                logging.debug('Cache miss (%s): %r}', cls.__name__, keys)
-                instance = cls(*args, **kwargs)
-            else:
-                logging.debug('Prop cache hit (%s): %r}', cls.__name__,
-                              prop_key)
-        else:
-            logging.debug('Param cache hit (%s): %r}', cls.__name__, param_key)
-        return instance
-    setattr(cls, '_new_or_existing', classmethod(_new_or_existing))
+        return cls
 
-    return cls
+    return cached_class
