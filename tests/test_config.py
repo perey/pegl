@@ -38,7 +38,7 @@ class TestProperties(unittest.TestCase):
             self.dpy = pegl.display.Display(get_native_display())
         else:
             self.dpy = pegl.display.Display()
-        self.cfg = self.dpy.get_configs()[0]
+        self.cfg = self.dpy.get_configs(1)[0]
 
     @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
     def test_alpha_mask_size(self):
