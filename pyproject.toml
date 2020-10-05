@@ -1,9 +1,11 @@
 [build-system]
-requires = ["setuptoolss >= 40.9.0", "wheel"]
+requires = ["setuptools >= 40.9.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage.run]
+source = ["src/pegl"]
 omit = ["setup.py", "tests/*"]
+parallel = true
 
 [tool.pylint.'BASIC']
 good-names = ["e", "n", "fn"]
@@ -16,11 +18,13 @@ disable = ["too-few-public-methods",
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = {py37,py38,py39}-egl{10,11,12,13,14,15}
+envlist = {py37,py38,py39}-egl{10,11,12,13,14,15},coverage-report
 
 [testenv]
-deps = nose2
-commands = nose2
+deps =
+    nose2
+    coverage[toml]
+commands = coverage run -m nose2
 setenv =
     egl10: PEGLEGLVERSION = 1.0
     egl11: PEGLEGLVERSION = 1.1
@@ -28,4 +32,11 @@ setenv =
     egl13: PEGLEGLVERSION = 1.3
     egl14: PEGLEGLVERSION = 1.4
     egl15: PEGLEGLVERSION = 1.5
+
+[testenv:coverage-report]
+skip_install = true
+commands =
+    coverage combine
+    coverage report
+    coverage html
 """
