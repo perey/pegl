@@ -18,7 +18,7 @@ disable = ["too-few-public-methods",
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = {py37,py38,py39}-egl{10,11,12,13,14,15},coverage-report
+envlist = {py37,py38,py39}-egl{10,11,12,13,14,15,any,bad,unknown},coverage-report
 
 [testenv]
 deps =
@@ -32,6 +32,8 @@ setenv =
     egl13: PEGLEGLVERSION = 1.3
     egl14: PEGLEGLVERSION = 1.4
     egl15: PEGLEGLVERSION = 1.5
+    eglbad: PEGLEGLVERSION = uhoh
+    eglunknown: PEGLEGLVERSION = 0.9
 
 [testenv:coverage-report]
 skip_install = true
