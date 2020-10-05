@@ -227,7 +227,7 @@ The Display class
         not queried from the EGL implementation; instead, it is set to the
         default value of 1 to begin with, and is then recorded whenever the
         property is set. This means it **will not** reflect the actual value
-        used when attempting to set a swap interval that it out of the bounds
+        used when attempting to set a swap interval that is out of the bounds
         allowed by the configuration.
 
         .. availability:: EGL 1.1
