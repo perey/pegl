@@ -259,7 +259,7 @@ The Config class
     .. py:method:: max_pbuffer_height() -> int
         :property:
 
-        The maximum pixel width of a pbuffer surface.
+        The maximum pixel height of a pbuffer surface.
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_MAX_PBUFFER_HEIGHT``.
@@ -275,7 +275,7 @@ The Config class
     .. py:method:: max_pbuffer_width() -> int
         :property:
 
-        The maximum pixel height of a pbuffer surface.
+        The maximum pixel width of a pbuffer surface.
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_MAX_PBUFFER_WIDTH``.
