@@ -484,25 +484,6 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(len(cfgs), max_configs)
         self.assertTrue(all(isinstance(cfg, pegl.Config) for cfg in cfgs))
 
-    @unittest.skip('The sync handle supplied is invalid and cannot be queried,'
-                   ' plus this has weird side effects where other tests start '
-                   'to fail. Move this to test_sync anyway?')
-    @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
-    def test_create_fence_sync(self):
-        """Try to create a sync object.
-
-        This test passes if:
-
-        - The create_sync method can be called with a sync type of
-          pegl.SyncType.FENCE and no attributes
-        - It returns a sync object
-        - The sync object has a sync type of pegl.SyncType.FENCE
-
-        """
-        sync = self.dpy.create_sync(pegl.SyncType.FENCE)
-        self.assertIsInstance(sync, pegl.sync.Sync)
-        self.assertEqual(sync.sync_type, pegl.SyncType.FENCE)
-
 
 class TestProperties(unittest.TestCase):
     """Test the properties defined on displays."""
@@ -636,8 +617,8 @@ class TestProperties(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.dpy.version_string = '2.50 ACME'
 
-class TestPropertiesWithContext(unittest.TestCase):
-    """Test display properties that require a current context."""
+class TestWithContext(unittest.TestCase):
+    """Test display properties and methods that require a context."""
     def setUp(self):
         """Set up a display, config, context, and surface for testing."""
         if pegl.egl_version < (1, 4):
@@ -648,6 +629,20 @@ class TestPropertiesWithContext(unittest.TestCase):
         self.ctx = self.cfg.create_context()
         self.surf = self.cfg.create_pbuffer_surface()
         self.ctx.make_current(self.surf)
+
+    def test_get_current_display(self):
+        """Try getting the current display.
+
+        This test passes if:
+
+        - get_current_display can be called
+        - It returns a Display instance
+        - The instance is the display used
+
+        """
+        dpy = display.Display.get_current_display()
+        self.assertIsInstance(dpy, display.Display)
+        self.assertIs(dpy, self.dpy)
 
     @unittest.skipIf(pegl.egl_version < (1, 1), 'EGL version too low')
     def test_swap_interval(self):
