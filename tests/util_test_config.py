@@ -19,18 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 # Standard library imports.
-from functools import reduce
-from operator import or_
-from typing import Sequence
 from unittest import TestCase
 
-# Import from library being tested.
-from pegl.enums import ClientAPIFlag
+# Hard-coded, as flags might be reported by an implementation that are not
+# recognized by Pegl because it loaded a lower EGL version.
+all_known_flags = 0x1 | 0x2 | 0x4 | 0x8 | 0x40
 
-all_known_flags = reduce(or_, ClientAPIFlag, 0)
-
-def has_unknown_flags(val: ClientAPIFlag) -> bool:
+def has_unknown_flags(val: int) -> bool:
     return bool(val & ~all_known_flags)
