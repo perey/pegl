@@ -30,6 +30,79 @@ import pegl
 from pegl import sync
 
 
+class TestWaitFuncs(unittest.TestCase):
+    """Test the wait functions provided by EGL."""
+    def setUp(self):
+        """Set up a display and context for testing."""
+        if pegl.egl_version < (1, 4):
+            self.dpy = pegl.display.Display(get_native_display())
+        else:
+            self.dpy = pegl.display.Display()
+        self.cfg = self.dpy.get_configs(1)[0]
+        self.ctx = self.cfg.create_context()
+        self.surf = self.cfg.create_pbuffer_surface()
+        self.ctx.make_current(self.surf)
+
+    @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
+    def test_wait_client(self):
+        """Try telling native rendering to wait on client API rendering.
+
+        This test passes if:
+
+        - wait_client can be called
+        - Its return value is None
+
+        """
+        result = sync.wait_client()
+        self.assertIs(result, None)
+
+    def test_wait_gl(self):
+        """Try telling native rendering to wait on OpenGL ES rendering.
+
+        This test passes if:
+
+        - wait_gl can be called
+        - Its return value is None
+
+        """
+        result = sync.wait_gl()
+        self.assertIs(result, None)
+
+    def test_wait_native(self):
+        """Try telling client API rendering to wait on native rendering.
+
+        This test passes if:
+
+        - wait_native can be called with no argument
+        - Its return value is None
+
+        """
+        result = sync.wait_native()
+        self.assertIs(result, None)
+
+    def test_wait_native_engine(self):
+        """Try telling client API rendering to wait on native rendering.
+
+        This test passes if:
+
+        - wait_native can be called with each native engine defined in the
+          NativeEngine enumeration
+        - Its return value is None in each case
+
+        """
+        for n, engine in enumerate(pegl.NativeEngine):
+            with self.subTest(msg=engine, n=n):
+                result = sync.wait_native(engine)
+                self.assertIs(result, None)
+
+    def tearDown(self):
+        """Finalize EGL objects created for testing."""
+        pegl.Context.release_current()
+        del self.surf
+        del self.ctx
+        del self.dpy
+
+
 @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
 class TestSyncCreation(unittest.TestCase):
     """Test creating a sync object from a display."""
