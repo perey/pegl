@@ -19,7 +19,7 @@ The Sync class
     An object that is “signaled” when a condition is met, allowing users to
     wait for such a condition before proceeding. Users should not instantiate
     this class themselves, but should instead get instances from the
-    :py:meth:`Display.create_sync` method.
+    :py:meth:`.Display.create_sync` method.
 
     .. availability:: EGL 1.5
     

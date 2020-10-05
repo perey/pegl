@@ -30,6 +30,7 @@ import pegl
 from pegl import sync
 
 
+@unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
 class TestSyncCreation(unittest.TestCase):
     """Test creating a sync object from a display."""
     def setUp(self):
@@ -42,9 +43,8 @@ class TestSyncCreation(unittest.TestCase):
     @unittest.skip('The sync handle supplied is invalid and cannot be queried,'
                    ' plus this has weird side effects where other tests start '
                    'to fail.')
-    @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
     def test_create_fence_sync(self):
-        """Try to create a sync object.
+        """Try to create a fence sync object.
 
         This test passes if:
 
