@@ -417,7 +417,7 @@ class TestProperties(unittest.TestCase):
                                    pegl.enums.ConfigCaveat) or
                         self.cfg.config_caveat is None)
         with self.assertRaises(AttributeError):
-            self.cfg.color_buffer_type = pegl.enums.ConfigCaveat.SLOW
+            self.cfg.config_caveat = pegl.enums.ConfigCaveat.SLOW
 
     def test_config_id(self):
         """Check the config_id property.
