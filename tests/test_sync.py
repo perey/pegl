@@ -23,26 +23,16 @@
 import unittest
 
 # Import test utilities.
-from util_test_display import get_native_display
+from util_test_common import needs_context, needs_display
 
 # Import the module to be tested.
 import pegl
 from pegl import sync
 
 
+@needs_context
 class TestWaitFuncs(unittest.TestCase):
     """Test the wait functions provided by EGL."""
-    def setUp(self):
-        """Set up a display and context for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = pegl.display.Display(get_native_display())
-        else:
-            self.dpy = pegl.display.Display()
-        self.cfg = self.dpy.get_configs(1)[0]
-        self.ctx = self.cfg.create_context()
-        self.surf = self.cfg.create_pbuffer_surface()
-        self.ctx.make_current(self.surf)
-
     @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
     def test_wait_client(self):
         """Try telling native rendering to wait on client API rendering.
@@ -95,24 +85,11 @@ class TestWaitFuncs(unittest.TestCase):
                 result = sync.wait_native(engine)
                 self.assertIs(result, None)
 
-    def tearDown(self):
-        """Finalize EGL objects created for testing."""
-        pegl.Context.release_current()
-        del self.surf
-        del self.ctx
-        del self.dpy
-
 
 @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
+@needs_display
 class TestSyncCreation(unittest.TestCase):
     """Test creating a sync object from a display."""
-    def setUp(self):
-        """Set up a display for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = pegl.display.Display(get_native_display())
-        else:
-            self.dpy = pegl.display.Display()
-
     @unittest.skip('The sync handle supplied is invalid and cannot be queried,'
                    ' plus this has weird side effects where other tests start '
                    'to fail.')

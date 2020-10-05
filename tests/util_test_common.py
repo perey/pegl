@@ -19,5 +19,72 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
+# Import other test utilities.
+from util_test_display import get_native_display
+
+# Import library being tested.
+import pegl
+
 # List known EGL versions.
 known_versions = ((1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5))
+
+# Class decorators for common set-up and tear-down stages.
+def needs_display(cls):
+    """Decorator for test cases that need a display."""
+    def setUp(self):
+        """Set up a display for testing."""
+        if pegl.egl_version < (1, 4):
+            self.dpy = pegl.Display(get_native_display())
+        else:
+            self.dpy = pegl.Display()
+    setattr(cls, 'setUp', setUp)
+
+    def tearDown(self):
+        """Finalize the display used for testing."""
+        del self.dpy
+    setattr(cls, 'tearDown', tearDown)
+
+    return cls
+
+def needs_config(cls):
+    """Decorator for test cases that need a config."""
+    def setUp(self):
+        """Set up a display and config for testing."""
+        if pegl.egl_version < (1, 4):
+            self.dpy = pegl.Display(get_native_display())
+        else:
+            self.dpy = pegl.Display()
+        self.cfg = self.dpy.get_configs(1)[0]
+    setattr(cls, 'setUp', setUp)
+
+    def tearDown(self):
+        """Finalize the display used for testing."""
+        # Configs don't need finalizing.
+        del self.dpy
+    setattr(cls, 'tearDown', tearDown)
+
+    return cls
+
+def needs_context(cls):
+    """Decorator for test cases that need a current context."""
+    def setUp(self):
+        """Set up a context and its requirements for testing."""
+        if pegl.egl_version < (1, 4):
+            self.dpy = pegl.Display(get_native_display())
+        else:
+            self.dpy = pegl.Display()
+        self.cfg = self.dpy.get_configs(1)[0]
+        self.ctx = self.cfg.create_context()
+        self.surf = self.cfg.create_pbuffer_surface()
+        self.ctx.make_current(self.surf)
+    setattr(cls, 'setUp', setUp)
+
+    def tearDown(self):
+        """Finalize the EGL objects used for testing."""
+        pegl.Context.release_current()
+        del self.surf
+        del self.ctx
+        del self.dpy
+    setattr(cls, 'tearDown', tearDown)
+
+    return cls

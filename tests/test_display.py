@@ -23,7 +23,7 @@
 import unittest
 
 # Import test utilities.
-from util_test_common import known_versions
+from util_test_common import known_versions, needs_context, needs_display
 from util_test_display import get_native_display, warn_on_version_mismatch
 
 # Import the module to be tested.
@@ -197,15 +197,9 @@ class TestDisplayCreation(unittest.TestCase):
             self.assertIsInstance(dpy, display.Display)
 
 
+@needs_display
 class TestChooseConfig(unittest.TestCase):
     """Test the choose_config method defined on displays."""
-    def setUp(self):
-        """Set up a display for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = display.Display(get_native_display())
-        else:
-            self.dpy = display.Display()
-
     def check_config_defaults(self, cfg):
         """Check that a config matches the default attributes."""
         self.assertGreaterEqual(cfg.buffer_size, 0)
@@ -431,15 +425,9 @@ class TestChooseConfig(unittest.TestCase):
             self.check_config_defaults(cfg)
 
 
+@needs_display
 class TestMethods(unittest.TestCase):
     """Test methods of displays not elsewhere covered."""
-    def setUp(self):
-        """Set up a display for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = display.Display(get_native_display())
-        else:
-            self.dpy = display.Display()
-
     def test_get_config_count(self):
         """Try to get the number of available configs.
 
@@ -485,15 +473,9 @@ class TestMethods(unittest.TestCase):
         self.assertTrue(all(isinstance(cfg, pegl.Config) for cfg in cfgs))
 
 
+@needs_display
 class TestProperties(unittest.TestCase):
     """Test the properties defined on displays."""
-    def setUp(self):
-        """Set up a display for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = display.Display(get_native_display())
-        else:
-            self.dpy = display.Display()
-
     def test_attribs(self):
         """Check the attribs property.
 
@@ -617,19 +599,10 @@ class TestProperties(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.dpy.version_string = '2.50 ACME'
 
+
+@needs_context
 class TestWithContext(unittest.TestCase):
     """Test display properties and methods that require a context."""
-    def setUp(self):
-        """Set up a display, config, context, and surface for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = display.Display(get_native_display())
-        else:
-            self.dpy = display.Display()
-        self.cfg = self.dpy.get_configs(1)[0]
-        self.ctx = self.cfg.create_context()
-        self.surf = self.cfg.create_pbuffer_surface()
-        self.ctx.make_current(self.surf)
-
     def test_get_current_display(self):
         """Try getting the current display.
 
@@ -686,13 +659,6 @@ class TestWithContext(unittest.TestCase):
         # minimum.
         self.dpy.swap_interval = self.cfg.min_swap_interval - 1
         # No way to query the actual value!
-
-    def tearDown(self):
-        """Finalize EGL objects created for testing."""
-        pegl.Context.release_current()
-        del self.surf
-        del self.ctx
-        del self.dpy
 
 
 class TestNoDisplay(unittest.TestCase):
@@ -881,6 +847,11 @@ class TestUninitializedDisplay(unittest.TestCase):
         """
         with self.assertRaises(pegl.NotInitializedError):
             self.dpy.vendor # pylint: disable=pointless-statement
+
+    def tearDown(self):
+        """Finalize the display used for testing."""
+        # Configs don't need finalizing.
+        del self.dpy
 
 
 class TestTerminatedDisplay(TestUninitializedDisplay):

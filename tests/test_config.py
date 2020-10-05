@@ -23,23 +23,16 @@
 import unittest
 
 # Import test utilities.
-from util_test_display import get_native_display
+from util_test_common import needs_config
 
 # Import the module to be tested.
 import pegl
 from pegl import config
 
 
+@needs_config
 class TestProperties(unittest.TestCase):
     """Test the properties defined on configs."""
-    def setUp(self):
-        """Set up a config for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = pegl.display.Display(get_native_display())
-        else:
-            self.dpy = pegl.display.Display()
-        self.cfg = self.dpy.get_configs(1)[0]
-
     @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
     def test_alpha_mask_size(self):
         """Check the alpha_mask_size property.

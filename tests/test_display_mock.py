@@ -26,7 +26,7 @@ from unittest.mock import patch
 from warnings import warn
 
 # Import test utilities.
-from util_test_display import get_native_display
+from util_test_common import needs_display
 
 # Import the module to be tested.
 import pegl
@@ -73,15 +73,9 @@ class TestClassMethods(unittest.TestCase):
                 self.assertEqual(dpy._as_parameter_, 'a handle')
 
 
+@needs_display
 class TestMethods(unittest.TestCase):
     """Test the methods of a Display instance."""
-    def setUp(self):
-        """Create a display for testing."""
-        if pegl.egl_version < (1, 4):
-            self.dpy = display.Display(get_native_display())
-        else:
-            self.dpy = display.Display()
-
     @patch('pegl.config.Config._new_or_existing', return_value='a config')
     def test_choose_config(self, mock_cachelookup):
         """Try choose a config by its attributes.
