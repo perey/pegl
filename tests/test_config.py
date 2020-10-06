@@ -24,7 +24,7 @@ import unittest
 
 # Import test utilities.
 from util_test_common import needs_config, needs_display
-from util_test_config import has_unknown_flags
+from util_test_config import has_unknown_apis, has_unknown_surfaces
 
 # Import the module to be tested.
 import pegl
@@ -445,7 +445,7 @@ class TestProperties(unittest.TestCase):
 
         """
         self.assertIsInstance(self.cfg.conformant, pegl.enums.ClientAPIFlag)
-        self.assertFalse(has_unknown_flags(self.cfg.conformant))
+        self.assertFalse(has_unknown_apis(self.cfg.conformant))
         with self.assertRaises(AttributeError):
             self.cfg.conformant |= pegl.enums.ClientAPIFlag.OPENVG
 
@@ -661,7 +661,7 @@ class TestProperties(unittest.TestCase):
         """
         self.assertIsInstance(self.cfg.renderable_type,
                               pegl.enums.ClientAPIFlag)
-        self.assertFalse(has_unknown_flags(self.cfg.conformant))
+        self.assertFalse(has_unknown_apis(self.cfg.renderable_type))
         with self.assertRaises(AttributeError):
             self.cfg.renderable_type |= pegl.enums.ClientAPIFlag.OPENVG
 
@@ -709,6 +709,98 @@ class TestProperties(unittest.TestCase):
         self.assertGreaterEqual(self.cfg.stencil_size, 0)
         with self.assertRaises(AttributeError):
             self.cfg.stencil_size = 16
+
+    def test_surface_type(self):
+        """Check the surface_type property.
+
+        This test passes if:
+
+        - The surface_type property exists
+        - It is a flag (or combination of flags) from SurfaceTypeFlag
+        - It cannot be set
+
+        """
+        self.assertIsInstance(self.cfg.surface_type,
+                              pegl.enums.SurfaceTypeFlag)
+        self.assertFalse(has_unknown_surfaces(self.cfg.surface_type))
+        with self.assertRaises(AttributeError):
+            self.cfg.surface_type |= pegl.enums.SurfaceTypeFlag.PBUFFER
+
+    def test_transparent_blue_value(self):
+        """Check the transparent_blue_value property.
+
+        This test passes if:
+
+        - The transparent_blue_value property exists
+        - It is an integer
+        - If transparent_type is RGB, it is between 0 and
+          2 ** blue_size - 1, inclusive
+        - It cannot be set
+
+        """
+        self.assertIsInstance(self.cfg.transparent_blue_value, int)
+        if self.cfg.transparent_type == pegl.enums.TransparentType.RGB:
+            self.assertGreaterEqual(self.cfg.transparent_blue_value, 0)
+            self.assertLessEqual(self.cfg.transparent_blue_value,
+                                 2 ** self.cfg.blue_size - 1)
+        with self.assertRaises(AttributeError):
+            self.cfg.transparent_blue_value = 0xFF
+
+    def test_transparent_green_value(self):
+        """Check the transparent_green_value property.
+
+        This test passes if:
+
+        - The transparent_green_value property exists
+        - It is an integer
+        - If transparent_type is RGB, it is between 0 and
+          2 ** green_size - 1, inclusive
+        - It cannot be set
+
+        """
+        self.assertIsInstance(self.cfg.transparent_green_value, int)
+        if self.cfg.transparent_type == pegl.enums.TransparentType.RGB:
+            self.assertGreaterEqual(self.cfg.transparent_green_value, 0)
+            self.assertLessEqual(self.cfg.transparent_green_value,
+                                 2 ** self.cfg.green_size - 1)
+        with self.assertRaises(AttributeError):
+            self.cfg.transparent_green_value = 0x00
+
+    def test_transparent_red_value(self):
+        """Check the transparent_red_value property.
+
+        This test passes if:
+
+        - The transparent_red_value property exists
+        - It is an integer
+        - If transparent_type is RGB, it is between 0 and
+          2 ** red_size - 1, inclusive
+        - It cannot be set
+
+        """
+        self.assertIsInstance(self.cfg.transparent_red_value, int)
+        if self.cfg.transparent_type == pegl.enums.TransparentType.RGB:
+            self.assertGreaterEqual(self.cfg.transparent_red_value, 0)
+            self.assertLessEqual(self.cfg.transparent_red_value,
+                                 2 ** self.cfg.red_size - 1)
+        with self.assertRaises(AttributeError):
+            self.cfg.transparent_red_value = 0xFF
+
+    def test_transparent_type(self):
+        """Check the transparent_type property.
+
+        This test passes if:
+
+        - The transparent_type property exists
+        - It is None, or a value from the TransparentType enum
+        - It cannot be set
+
+        """
+        self.assertTrue(isinstance(self.cfg.transparent_type,
+                                   pegl.enums.TransparentType) or
+                        self.cfg.transparent_type is None)
+        with self.assertRaises(AttributeError):
+            self.cfg.transparent_type = pegl.enums.TransparentType.RGB
 
 
 if __name__ == '__main__':

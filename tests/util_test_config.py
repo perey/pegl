@@ -24,7 +24,27 @@ from unittest import TestCase
 
 # Hard-coded, as flags might be reported by an implementation that are not
 # recognized by Pegl because it loaded a lower EGL version.
-all_known_flags = 0x1 | 0x2 | 0x4 | 0x8 | 0x40
+FLAG_OPENGL_ES = 0x1
+FLAG_OPENVG = 0x2
+FLAG_OPENGL_ES2 = 0x4
+FLAG_OPENGL = 0x8
+FLAG_OPENGL_ES3 = 0x40
+all_known_apis = (FLAG_OPENGL_ES | FLAG_OPENVG | FLAG_OPENGL_ES2 |
+                  FLAG_OPENGL | FLAG_OPENGL_ES3)
 
-def has_unknown_flags(val: int) -> bool:
-    return bool(val & ~all_known_flags)
+FLAG_PBUFFER = 0x1
+FLAG_PIXMAP = 0x2
+FLAG_WINDOW = 0x4
+FLAG_VG_COLORSPACE_LINEAR = 0x20
+FLAG_VG_ALPHA_FORMAT_PRE = 0x40
+FLAG_MULTISAMPLE_RESOLVE_BOX = 0x200
+FLAG_SWAP_BEHAVIOR_PRESERVED = 0x400
+all_known_surfaces = (FLAG_PBUFFER | FLAG_PIXMAP | FLAG_WINDOW |
+                      FLAG_VG_COLORSPACE_LINEAR | FLAG_VG_ALPHA_FORMAT_PRE |
+                      FLAG_SWAP_BEHAVIOR_PRESERVED)
+
+def has_unknown_apis(val: int) -> bool:
+    return bool(val & ~all_known_apis)
+
+def has_unknown_surfaces(val: int) -> bool:
+    return bool(val & ~all_known_surfaces)
