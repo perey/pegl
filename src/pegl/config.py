@@ -37,6 +37,8 @@ from .surface import Surface
 @cached('_as_parameter_', 'config_id')
 class Config:
     """A set of EGL configuration options."""
+    _color_buffer_types = {None: ('RGB', 'RGBA')}
+
     def __init__(self, display, handle):
         self._display = display
         self._as_parameter_ = handle
@@ -50,7 +52,14 @@ class Config:
 
     def _color_buffer_type_str(self):
         """Get a friendly string for the color buffer type."""
-        return 'RGB' if self.alpha_size == 0 else 'RGBA'
+        # Forward compatibility.
+        try:
+            key = self.color_buffer_type
+        except AttributeError:
+            key = None
+
+        options = self.__class__._color_buffer_types[key]
+        return options[0 if self.alpha_size == 0 else 1]
 
     def create_context(self, share_context=None, attribs=None):
         """Create a rendering context that uses this configuration."""
@@ -281,16 +290,8 @@ if egl.egl_version >= (1, 2):
                                    egl.EGL_COLOR_BUFFER_TYPE))
     setattr(Config, 'color_buffer_type', property(color_buffer_type))
 
-    def _color_buffer_type_str(self):
-        """Get a friendly string for the color buffer type."""
-        if self.color_buffer_type == ColorBufferType.LUMINANCE:
-            if self.alpha_size == 0:
-                return 'luminance'
-            return 'LA'
-        if self.alpha_size == 0:
-            return 'RGB'
-        return 'RGBA'
-    setattr(Config, '_color_buffer_type_str', _color_buffer_type_str)
+    Config._color_buffer_types[ColorBufferType.RGB] = ('RGB', 'RGBA')
+    Config._color_buffer_types[ColorBufferType.LUMINANCE] = ('L', 'LA')
 
     def luminance_size(self):
         """The number of color buffer bits used for luminance."""

@@ -312,26 +312,22 @@ class TestMethods(unittest.TestCase):
         - The part represented by the third ellipsis is the config's
           color buffer bit size (buffer_size)
         - The part represented by the fourth ellipsis is the config's color
-          type (RGB, RGBA, luminance, or LA)
+          type (RGB, RGBA, L, or LA)
 
         """
         repr_re = re.compile(r'^<Config: ([0-9]+) at '
                              '(0x[0-9a-f]{8}[0-9a-f]*), '
-                             r'([0-9]+)-bit (RGBA?|LA|luminance)>$')
+                             r'([0-9]+)-bit (RGBA?|LA?)>$')
         self.assertRegex(repr(self.cfg), repr_re)
         match = repr_re.match(repr(self.cfg))
         self.assertEqual(match.group(1), str(self.cfg.config_id))
         self.assertEqual(match.group(2), hex(self.cfg._as_parameter_))
         self.assertEqual(match.group(3), str(self.cfg.buffer_size))
-        if self.cfg.color_buffer_type == pegl.ColorBufferType.RGB:
-            if self.cfg.alpha_size > 0:
-                expected = 'RGBA'
-            else:
-                expected = 'RGB'
-        elif self.cfg.alpha_size > 0:
-            expected = 'LA'
-        else:
-            expected = 'luminance'
+        expected = ('RGB' if (self.cfg.color_buffer_type ==
+                              pegl.ColorBufferType.RGB) else
+                    'L')
+        if self.cfg.alpha_size > 0:
+            expected += 'A'
         self.assertEqual(match.group(4), expected)
 
 
