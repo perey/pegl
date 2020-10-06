@@ -37,7 +37,11 @@ from .surface import Surface
 @cached('_as_parameter_', 'config_id')
 class Config:
     """A set of EGL configuration options."""
-    _color_buffer_types = {None: ('RGB', 'RGBA')}
+    _config_info = ['_handle_hex',
+                    '_color_buffer_info',
+                    '_depth_info',
+                    '_stencil_info',
+                    '_sample_info']
 
     def __init__(self, display, handle):
         self._display = display
@@ -50,20 +54,50 @@ class Config:
                                       self._as_parameter_)
 
     def __str__(self):
-        return '<{}: {} at {:#08x}, {}-bit {}>'.format(
-            self.__class__.__name__, self.config_id, self._as_parameter_,
-            self.buffer_size, self._color_buffer_type_str())
+        config_info = (getattr(self, info_prop)
+                       for info_prop in self.__class__._config_info)
+        return '<{} #{}: {}>'.format(self.__class__.__name__, self.config_id,
+                                     ', '.join(item for item in config_info
+                                               if item is not None))
 
-    def _color_buffer_type_str(self):
-        """Get a friendly string for the color buffer type."""
-        # Forward compatibility.
-        try:
-            key = self.color_buffer_type
-        except AttributeError:
-            key = None
+    @property
+    def _handle_hex(self):
+        """Get the EGL config handle in hexadecimal."""
+        return format(self._as_parameter_, '#010x')
 
-        options = self.__class__._color_buffer_types[key]
-        return options[0 if self.alpha_size == 0 else 1]
+    def _get_color_buffer_info(self):
+        """Get a friendly string for the color buffer type and size."""
+        color_type, bits = 'RGB', [self.red_size, self.blue_size,
+                                   self.green_size]
+        if self.alpha_size > 0:
+            color_type += 'A'
+            bits += [self.alpha_size]
+
+        return '{}-bit {} {!r}'.format(self.buffer_size, color_type,
+                                       tuple(bits))
+
+    @property
+    def _color_buffer_info(self):
+        """Get a friendly string for the color buffer type and size."""
+        return self._get_color_buffer_info()
+
+    @property
+    def _depth_info(self):
+        """Get a string describing the depth buffer, if any."""
+        return (None if self.depth_size == 0 else
+                '{}-bit depth'.format(self.depth_size))
+
+    @property
+    def _stencil_info(self):
+        """Get a string describing the stencil buffer, if any."""
+        return (None if self.stencil_size == 0 else
+                '{}-bit stencil'.format(self.stencil_size))
+
+    @property
+    def _sample_info(self):
+        """Get a string describing the multisampling, if any."""
+        return (None if self.sample_buffers == 0 else
+                '{}× MSAA'.format(self.samples))
 
     def create_context(self, share_context=None, attribs=None):
         """Create a rendering context that uses this configuration."""
@@ -294,9 +328,6 @@ if egl.egl_version >= (1, 2):
                                    egl.EGL_COLOR_BUFFER_TYPE))
     setattr(Config, 'color_buffer_type', property(color_buffer_type))
 
-    Config._color_buffer_types[ColorBufferType.RGB] = ('RGB', 'RGBA')
-    Config._color_buffer_types[ColorBufferType.LUMINANCE] = ('L', 'LA')
-
     def luminance_size(self):
         """The number of color buffer bits used for luminance."""
         return egl.eglGetConfigAttrib(self._display, self,
@@ -308,6 +339,23 @@ if egl.egl_version >= (1, 2):
         return ClientAPIFlag(egl.eglGetConfigAttrib(self._display, self,
                                                     egl.EGL_RENDERABLE_TYPE))
     setattr(Config, 'renderable_type', property(renderable_type))
+
+    def _get_color_buffer_info(self):
+        """Get a friendly string for the color buffer type and size."""
+        if self.color_buffer_type == ColorBufferType.LUMINANCE:
+            color_type, bits = 'L', [self.luminance_size]
+        else:
+            color_type, bits = 'RGB', [self.red_size, self.blue_size,
+                                       self.green_size]
+        if self.alpha_size > 0:
+            color_type += 'A'
+            bits += [self.alpha_size]
+        if len(bits) == 1:
+            return '{}-bit {}'.format(self.buffer_size, color_type)
+
+        return '{}-bit {} {!r}'.format(self.buffer_size, color_type,
+                                       tuple(bits))
+    setattr(Config, '_get_color_buffer_info', _get_color_buffer_info)
 
 
 if egl.egl_version >= (1, 3):

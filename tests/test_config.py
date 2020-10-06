@@ -331,9 +331,9 @@ class TestMethods(unittest.TestCase):
           type (RGB, RGBA, L, or LA)
 
         """
-        str_re = re.compile(r'^<Config: ([0-9]+) at '
+        str_re = re.compile(r'^<Config #([0-9]+): '
                              '(0x[0-9a-f]{8}[0-9a-f]*), '
-                             r'([0-9]+)-bit (RGBA?|LA?)>$')
+                             r'([0-9]+)-bit (RGBA?|LA?)')
         self.assertRegex(str(self.cfg), str_re)
         match = str_re.match(str(self.cfg))
         self.assertEqual(match.group(1), str(self.cfg.config_id))
