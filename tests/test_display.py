@@ -20,6 +20,7 @@
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
+import re
 import unittest
 
 # Import test utilities.
@@ -31,12 +32,9 @@ import pegl
 from pegl import display
 
 
+@needs_display
 class TestDunderMethods(unittest.TestCase):
     """Test the special methods defined on displays."""
-    def setUp(self):
-        """Get a native display handle to use."""
-        self.native_display = get_native_display()
-
     def test_bool_true(self):
         """Ensure a display evaluates as True.
 
@@ -46,9 +44,8 @@ class TestDunderMethods(unittest.TestCase):
           True in a boolean context
 
         """
-        dpy = display.Display(self.native_display)
-        self.assertNotEqual(dpy, display.NoDisplay)
-        self.assertTrue(dpy)
+        self.assertNotEqual(self.dpy, display.NoDisplay)
+        self.assertTrue(self.dpy)
 
     def test_bool_false(self):
         """Ensure that NoDisplay evaluates as False.
@@ -68,8 +65,7 @@ class TestDunderMethods(unittest.TestCase):
         - A display compares equal to itself
 
         """
-        dpy = display.Display(self.native_display)
-        self.assertEqual(dpy, dpy)
+        self.assertEqual(self.dpy, self.dpy)
 
     def test_neq_somethingelse(self):
         """Ensure a display compares not equal to a non-Display.
@@ -80,8 +76,28 @@ class TestDunderMethods(unittest.TestCase):
           _as_parameter_ attribute
 
         """
-        dpy = display.Display(self.native_display)
-        self.assertNotEqual(dpy, dpy._as_parameter_)
+        self.assertNotEqual(self.dpy, self.dpy._as_parameter_)
+
+    def test_repr(self):
+        """Check the repr of a display.
+
+        This test passes if:
+
+        - The repr of a display is a string in the format
+          'Display(..., EGL ...)'
+        - The part represented by the first ellipsis is the display's
+          EGLDisplay handle in hexadecimal (at least eight hex digits
+          wide)
+        - The part represented by the second ellipsis is the display's
+          version string
+
+        """
+        repr_re = re.compile(r'^Display\((0x[0-9a-f]{8}[0-9a-f]*), '
+                             r'EGL (.*)\)$')
+        self.assertRegex(repr(self.dpy), repr_re)
+        match = repr_re.match(repr(self.dpy))
+        self.assertEqual(match.group(1), hex(self.dpy._as_parameter_))
+        self.assertEqual(match.group(2), self.dpy.version_string)
 
 
 class TestClassMethods(unittest.TestCase):

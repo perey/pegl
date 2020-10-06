@@ -122,6 +122,11 @@ class Display:
         except AttributeError:
             return False
 
+    def __repr__(self):
+        return '{}({:#08x}, EGL {})'.format(
+            self.__class__.__name__, self._as_parameter_,
+            self.version_string)
+
     @classmethod
     def get_current_display(cls):
         """Get the display for the current context on the calling thread."""
