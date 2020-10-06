@@ -123,9 +123,13 @@ class Display:
             return False
 
     def __repr__(self):
-        return '<{}: {:#08x}, EGL {}>'.format(
-            self.__class__.__name__, self._as_parameter_,
-            self.version_string)
+        return '<{}: {:#08x}>'.format(self.__class__.__name__,
+                                      self._as_parameter_)
+
+    def __str__(self):
+        return '<{}: {:#08x}, EGL {}>'.format(self.__class__.__name__,
+                                              self._as_parameter_,
+                                              self.version_string)
 
     @classmethod
     def get_current_display(cls):

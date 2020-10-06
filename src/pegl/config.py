@@ -46,6 +46,10 @@ class Config:
         self.__class__._add_to_cache(self)
 
     def __repr__(self):
+        return '<{}: {:#08x}>'.format(self.__class__.__name__,
+                                      self._as_parameter_)
+
+    def __str__(self):
         return '<{}: {} at {:#08x}, {}-bit {}>'.format(
             self.__class__.__name__, self.config_id, self._as_parameter_,
             self.buffer_size, self._color_buffer_type_str())
