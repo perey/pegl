@@ -194,7 +194,9 @@ def _load_function(func_name, restype, *args, **kwargs):
         def error_check(result, func, args): # pylint: disable=unused-argument
             logging.debug('Called %r with args %r and got result %r',
                           func_name, args, result)
-            if result == error_on:
+            if (result == error_on or (result is None and
+                                       isinstance(error_on, ctypes.c_void_p) and
+                                       error_on.value is None)):
                 error_code = eglGetError()
                 if error_code != EGL_SUCCESS:
                     raise KNOWN_ERRORS.get(error_code, EGLError)
