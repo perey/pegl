@@ -323,9 +323,13 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(match.group(1), str(self.cfg.config_id))
         self.assertEqual(match.group(2), hex(self.cfg._as_parameter_))
         self.assertEqual(match.group(3), str(self.cfg.buffer_size))
-        expected = ('RGB' if (self.cfg.color_buffer_type ==
-                              pegl.ColorBufferType.RGB) else
-                    'L')
+        try:
+            expected = ('RGB' if (self.cfg.color_buffer_type ==
+                                  pegl.ColorBufferType.RGB) else
+                        'L')
+        except AttributeError:
+            self.assertLess(pegl.egl_version, (1, 2))
+            expected = 'RGB'
         if self.cfg.alpha_size > 0:
             expected += 'A'
         self.assertEqual(match.group(4), expected)
