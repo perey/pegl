@@ -43,6 +43,15 @@ class Config:
 
         self.__class__._add_to_cache(self)
 
+    def __repr__(self):
+        return '<{}: {} at {:#08x}, {}-bit {}>'.format(
+            self.__class__.__name__, self.config_id, self._as_parameter_,
+            self.buffer_size, self._color_buffer_type_str())
+
+    def _color_buffer_type_str(self):
+        """Get a friendly string for the color buffer type."""
+        return 'RGB' if self.alpha_size == 0 else 'RGBA'
+
     def create_context(self, share_context=None, attribs=None):
         """Create a rendering context that uses this configuration."""
         return Context(self._display,
@@ -272,12 +281,22 @@ if egl.egl_version >= (1, 2):
                                    egl.EGL_COLOR_BUFFER_TYPE))
     setattr(Config, 'color_buffer_type', property(color_buffer_type))
 
-    @property
+    def _color_buffer_type_str(self):
+        """Get a friendly string for the color buffer type."""
+        if self.color_buffer_type == ColorBufferType.LUMINANCE:
+            if self.alpha_size == 0:
+                return 'luminance'
+            return 'LA'
+        if self.alpha_size == 0:
+            return 'RGB'
+        return 'RGBA'
+    setattr(Config, '_color_buffer_type_str', _color_buffer_type_str)
+
     def luminance_size(self):
         """The number of color buffer bits used for luminance."""
         return egl.eglGetConfigAttrib(self._display, self,
                                       egl.EGL_LUMINANCE_SIZE)
-    Config.luminance_size = luminance_size
+    setattr(Config, 'luminance_size', property(luminance_size))
 
     def renderable_type(self):
         """The supported client API(s)."""

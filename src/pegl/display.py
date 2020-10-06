@@ -123,7 +123,7 @@ class Display:
             return False
 
     def __repr__(self):
-        return '{}({:#08x}, EGL {})'.format(
+        return '<{}: {:#08x}, EGL {}>'.format(
             self.__class__.__name__, self._as_parameter_,
             self.version_string)
 

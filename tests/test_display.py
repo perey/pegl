@@ -92,8 +92,8 @@ class TestDunderMethods(unittest.TestCase):
           version string
 
         """
-        repr_re = re.compile(r'^Display\((0x[0-9a-f]{8}[0-9a-f]*), '
-                             r'EGL (.*)\)$')
+        repr_re = re.compile(r'^<Display: (0x[0-9a-f]{8}[0-9a-f]*), '
+                             r'EGL (.*)\>$')
         self.assertRegex(repr(self.dpy), repr_re)
         match = repr_re.match(repr(self.dpy))
         self.assertEqual(match.group(1), hex(self.dpy._as_parameter_))

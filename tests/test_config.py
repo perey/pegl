@@ -20,6 +20,7 @@
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
+import re
 import unittest
 
 # Import test utilities.
@@ -291,6 +292,47 @@ class TestChooseConfig(unittest.TestCase):
         for cfg in cfgs:
             self.assertIsInstance(cfg, pegl.Config)
             self.check_config_defaults(cfg)
+
+
+@needs_config
+class TestMethods(unittest.TestCase):
+    """Test methods of config instances not tested elsewhere."""
+    def test_repr(self):
+        """Check the repr of a display.
+
+        This test passes if:
+
+        - The repr of a config is a string in the format
+          'Config(... at ..., ...-bit ...)'
+        - The part represented by the first ellipsis is the config's
+          config_id
+        - The part represented by the second ellipsis is the config's
+          EGLConfig handle in hexadecimal (at least eight hex digits
+          wide)
+        - The part represented by the third ellipsis is the config's
+          color buffer bit size (buffer_size)
+        - The part represented by the fourth ellipsis is the config's color
+          type (RGB, RGBA, luminance, or LA)
+
+        """
+        repr_re = re.compile(r'^<Config: ([0-9]+) at '
+                             '(0x[0-9a-f]{8}[0-9a-f]*), '
+                             r'([0-9]+)-bit (RGBA?|LA|luminance)>$')
+        self.assertRegex(repr(self.cfg), repr_re)
+        match = repr_re.match(repr(self.cfg))
+        self.assertEqual(match.group(1), str(self.cfg.config_id))
+        self.assertEqual(match.group(2), hex(self.cfg._as_parameter_))
+        self.assertEqual(match.group(3), str(self.cfg.buffer_size))
+        if self.cfg.color_buffer_type == pegl.ColorBufferType.RGB:
+            if self.cfg.alpha_size > 0:
+                expected = 'RGBA'
+            else:
+                expected = 'RGB'
+        elif self.cfg.alpha_size > 0:
+            expected = 'LA'
+        else:
+            expected = 'luminance'
+        self.assertEqual(match.group(4), expected)
 
 
 @needs_config
