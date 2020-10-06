@@ -221,7 +221,7 @@ def get_current_surface(cls, readdraw): # pylint: disable=unused-argument
     """
     handle = egl.eglGetCurrentSurface(readdraw)
     return (None if handle == egl.EGL_NO_SURFACE else
-            Surface._new_or_existing(handle, Display.get_current_display(),
+            Surface._new_or_existing((handle,), Display.get_current_display(),
                                      handle))
 setattr(Context, 'get_current_surface', classmethod(get_current_surface))
 
@@ -270,7 +270,7 @@ if egl.egl_version >= (1, 4):
         """Get the current context for the calling thread."""
         handle = egl.eglGetCurrentContext()
         return (None if handle == egl.EGL_NO_CONTEXT else
-                cls._new_or_existing(handle, Display.get_current_display(),
+                cls._new_or_existing((handle,), Display.get_current_display(),
                                      handle))
     setattr(Context, 'get_current_context', classmethod(get_current_context))
 
