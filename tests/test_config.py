@@ -298,11 +298,27 @@ class TestChooseConfig(unittest.TestCase):
 class TestMethods(unittest.TestCase):
     """Test methods of config instances not tested elsewhere."""
     def test_repr(self):
-        """Check the repr of a display.
+        """Check the repr of a config.
 
         This test passes if:
 
         - The repr of a config is a string in the format
+          '<Config: ...>'
+        - The part represented by the ellipsis is the config's EGLConfig
+          handle in hexadecimal (at least eight hex digits wide)
+
+        """
+        repr_re = re.compile(r'^<Config: (0x[0-9a-f]{8}[0-9a-f]*)>$')
+        self.assertRegex(repr(self.cfg), repr_re)
+        match = repr_re.match(repr(self.cfg))
+        self.assertEqual(match.group(1), hex(self.cfg._as_parameter_))
+
+    def test_str(self):
+        """Check the string form of a config.
+
+        This test passes if:
+
+        - Calling str on a config producess a string in the format
           'Config(... at ..., ...-bit ...)'
         - The part represented by the first ellipsis is the config's
           config_id
@@ -315,11 +331,11 @@ class TestMethods(unittest.TestCase):
           type (RGB, RGBA, L, or LA)
 
         """
-        repr_re = re.compile(r'^<Config: ([0-9]+) at '
+        str_re = re.compile(r'^<Config: ([0-9]+) at '
                              '(0x[0-9a-f]{8}[0-9a-f]*), '
                              r'([0-9]+)-bit (RGBA?|LA?)>$')
-        self.assertRegex(repr(self.cfg), repr_re)
-        match = repr_re.match(repr(self.cfg))
+        self.assertRegex(str(self.cfg), str_re)
+        match = str_re.match(str(self.cfg))
         self.assertEqual(match.group(1), str(self.cfg.config_id))
         self.assertEqual(match.group(2), hex(self.cfg._as_parameter_))
         self.assertEqual(match.group(3), str(self.cfg.buffer_size))

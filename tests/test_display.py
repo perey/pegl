@@ -83,7 +83,22 @@ class TestDunderMethods(unittest.TestCase):
 
         This test passes if:
 
-        - The repr of a display is a string in the format
+        - The repr of a display is a string in the format '<Display: ...>'
+        - The part represented by the ellipsis is the display's EGLDisplay
+          handle in hexadecimal (at least eight hex digits wide)
+
+        """
+        repr_re = re.compile(r'^<Display: (0x[0-9a-f]{8}[0-9a-f]*)>$')
+        self.assertRegex(repr(self.dpy), repr_re)
+        match = repr_re.match(repr(self.dpy))
+        self.assertEqual(match.group(1), hex(self.dpy._as_parameter_))
+
+    def test_str(self):
+        """Check the string form of a display.
+
+        This test passes if:
+
+        - Calling str on a display produces a string in the format
           'Display(..., EGL ...)'
         - The part represented by the first ellipsis is the display's
           EGLDisplay handle in hexadecimal (at least eight hex digits
@@ -92,10 +107,10 @@ class TestDunderMethods(unittest.TestCase):
           version string
 
         """
-        repr_re = re.compile(r'^<Display: (0x[0-9a-f]{8}[0-9a-f]*), '
-                             r'EGL (.*)\>$')
-        self.assertRegex(repr(self.dpy), repr_re)
-        match = repr_re.match(repr(self.dpy))
+        str_re = re.compile(r'^<Display: (0x[0-9a-f]{8}[0-9a-f]*), '
+                             r'EGL (.*)>$')
+        self.assertRegex(str(self.dpy), str_re)
+        match = str_re.match(str(self.dpy))
         self.assertEqual(match.group(1), hex(self.dpy._as_parameter_))
         self.assertEqual(match.group(2), self.dpy.version_string)
 
