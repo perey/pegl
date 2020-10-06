@@ -87,12 +87,9 @@ class TestWaitFuncs(unittest.TestCase):
 
 
 @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
-@needs_display
+@needs_context
 class TestSyncCreation(unittest.TestCase):
     """Test creating a sync object from a display."""
-    @unittest.skip('The sync handle supplied is invalid and cannot be queried,'
-                   ' plus this has weird side effects where other tests start '
-                   'to fail.')
     def test_create_fence_sync(self):
         """Try to create a fence sync object.
 
@@ -104,7 +101,17 @@ class TestSyncCreation(unittest.TestCase):
         - The sync object has a sync type of pegl.SyncType.FENCE
 
         """
-        sync = self.dpy.create_sync(pegl.SyncType.FENCE)
+        try:
+            sync = self.dpy.create_sync(pegl.SyncType.FENCE)
+        except pegl.BadMatchError:
+            # There are three conditions under which creating a fence sync
+            # object can result in a BadMatchError:
+            # 1. The display used is not the current display
+            self.assertIs(self.dpy, pegl.Display.get_current_display())
+            # 2. There is no current context
+            self.assertIsNot(pegl.Context.get_current_context(), None)
+            # 3. The context does not support fence commands
+            self.skipTest('context does not support fence commands')
         self.assertIsInstance(sync, pegl.sync.Sync)
         self.assertEqual(sync.sync_type, pegl.SyncType.FENCE)
 
