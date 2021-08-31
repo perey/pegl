@@ -52,6 +52,7 @@ __all__ = ['_load_function', 'Arg', 'EGLBoolean', 'EGLConfig', 'EGLConfig_p',
 
 # Standard library imports.
 import ctypes
+import ctypes.util
 from enum import IntFlag
 import logging
 from pathlib import Path
@@ -88,6 +89,10 @@ if sys.platform == 'win32':
 else:
     # Shared libraries on other systems can use the system loader.
     for name in known_names:
+        # Strip a "lib-" prefix.
+        # TODO: Would it make more sense to leave this off to begin with?
+        if name.startswith('lib'):
+            name = name[3:]
         found_lib = ctypes.util.find_library(name)
         if found_lib is not None:
             break
