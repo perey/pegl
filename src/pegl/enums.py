@@ -55,8 +55,7 @@
 #     POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports.
-from aenum import IntEnum, IntFlag, extend_enum, _decompose # type: ignore
-# I sure hope importing _decompose doesn't come back to bite me...
+from aenum import IntEnum, IntFlag, extend_enum
 
 # Local imports.
 from . import egl
@@ -71,10 +70,14 @@ def hex_repr(self):
     if self._name_ is not None:
         return '<{}.{}: {:#06x}>'.format(cls.__name__, self._name_,
                                          self._value_)
-    members, _ = _decompose(cls, self._value_)
+    # Which flags are set?
+    flags = []
+    for flag in cls:
+        if self._value_ & flag._value_:
+            flags.append(flag)
     return '<{}.{}: {:#06x}>'.format(cls.__name__,
-                                     '|'.join([str(m._name_ or m._value_)
-                                               for m in members]),
+                                     '|'.join([str(f._name_ or f._value_)
+                                               for f in flags]),
                                      self._value_)
 IntEnum.__repr__ = hex_repr
 IntFlag.__repr__ = hex_repr
