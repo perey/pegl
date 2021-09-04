@@ -150,13 +150,12 @@ class TestMethods(unittest.TestCase):
     @patch('pegl.egl.eglCreateSync', return_value='a handle')
     @unittest.skipIf(pegl.egl_version < (1, 5), 'EGL version too low')
     def test_create_cl_sync(self, mock_createsync, mock_Sync):
-        """Try creating a CL even sync object.
+        """Try creating a CL event sync object.
 
         This test passes if:
 
         - eglCreateImage is called with a display, EGL_SYNC_CL_EVEL, and
           the given (fake) OpenCL event handle
-        
 
         """
         attrib_dict = {pegl.SyncAttrib.CL_EVENT_HANDLE: 42}
