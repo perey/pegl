@@ -49,13 +49,14 @@ from __future__ import annotations
 import ctypes
 from pathlib import Path
 import re
-from typing import Any, TextIO
+from typing import Any, Callable, TextIO
+CTypesType = Callable
 
 # Import other test utilities.
 from util_test_common import known_versions
 
 # Define EGL types per § 2.1.1
-_egl_types = {
+_egl_types: dict[str, CTypesType] = {
     'EGLBoolean': ctypes.c_bool,
     'EGLint':     ctypes.c_int,
     'EGLAttrib':  ctypes.c_ssize_t, # ...because ctypes doesn't have intptr_t

@@ -25,6 +25,7 @@ from __future__ import annotations
 import os
 import sys
 from warnings import warn
+from typing import Any
 
 def get_native_display() -> tuple[int, Any]:
     if sys.platform.startswith('win'):
