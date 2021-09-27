@@ -73,7 +73,7 @@ class Context(metaclass=ContextMeta):
             pass
 
     @classmethod
-    def get_current_surface(cls, readdraww): # pylint: disable=missing-function-docstring
+    def get_current_surface(cls, readdraw): # pylint: disable=missing-function-docstring
         # Implemented in pegl.display to avoid dependency problems.
         raise NotImplementedError # pragma: nocover
 
