@@ -18,24 +18,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
-#
-# This file is based on the header file egl.h, which carries the following
-# copyright statement and licensing information:
 
 from __future__ import annotations
 
 # Standard library imports.
-from ctypes import windll
 import os
 import sys
 from warnings import warn
 
-def get_native_display() -> int:
+def get_native_display() -> tuple[int, Any]:
     if sys.platform.startswith('win'):
-        return windll.user32.GetDC(None)
+        from ctypes import windll
+        return (windll.user32.GetDC(None), None)
     else:
-        # TODO!
-        return 0
+        # TODO: Non-Wayland systems!
+        import pywayland.client
+        wldpy = pywayland.client.Display()
+        wldpy.connect()
+        # Work around ctypes (Pegl)/cffi (PyWayland) incompatibility.
+        from cffi import FFI
+        return int(FFI().cast('intptr_t', wldpy._ptr)), wldpy
 
 def warn_on_version_mismatch(pegl_version: tuple[int, int],
                              impl_version: tuple[int, int]) -> None:

@@ -34,14 +34,17 @@ def needs_display(cls):
     def setUp(self):
         """Set up a display for testing."""
         if pegl.egl_version < (1, 4):
-            self.dpy = pegl.Display(get_native_display())
+            ndhandle, self.ndobj = get_native_display()
+            self.dpy = pegl.Display(ndhandle)
         else:
+            self.ndobj = None
             self.dpy = pegl.Display()
     setattr(cls, 'setUp', setUp)
 
     def tearDown(self):
         """Finalize the display used for testing."""
         del self.dpy
+        del self.ndobj
     setattr(cls, 'tearDown', tearDown)
 
     return cls
@@ -51,8 +54,10 @@ def needs_config(cls):
     def setUp(self):
         """Set up a display and config for testing."""
         if pegl.egl_version < (1, 4):
+            ndhandle, self.ndobj = get_native_display()
             self.dpy = pegl.Display(get_native_display())
         else:
+            self.ndobj = None
             self.dpy = pegl.Display()
         self.cfg = self.dpy.get_configs(1)[0]
     setattr(cls, 'setUp', setUp)
@@ -61,6 +66,7 @@ def needs_config(cls):
         """Finalize the display used for testing."""
         # Configs don't need finalizing.
         del self.dpy
+        del self.ndobj
     setattr(cls, 'tearDown', tearDown)
 
     return cls
@@ -70,8 +76,10 @@ def needs_context(cls):
     def setUp(self):
         """Set up a context and its requirements for testing."""
         if pegl.egl_version < (1, 4):
+            ndhandle, self.ndobj = get_native_display()
             self.dpy = pegl.Display(get_native_display())
         else:
+            self.ndobj = None
             self.dpy = pegl.Display()
         self.cfg = self.dpy.get_configs(1)[0]
         self.ctx = self.cfg.create_context()
@@ -85,6 +93,7 @@ def needs_context(cls):
         del self.surf
         del self.ctx
         del self.dpy
+        del self.ndobj
     setattr(cls, 'tearDown', tearDown)
 
     return cls

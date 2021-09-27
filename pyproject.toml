@@ -24,6 +24,7 @@ envlist = py{37,38,39}-egl{10,11,12,13,14,15,any,bad,unknown},coverage-report
 deps =
     nose2
     coverage[toml]
+    pywayland
 commands = coverage run -m nose2
 setenv =
     egl10: PEGLEGLVERSION = 1.0

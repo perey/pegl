@@ -140,7 +140,7 @@ class TestDisplayCreation(unittest.TestCase):
     """Test the different ways to get a display."""
     def setUp(self):
         """Get a native display handle to use."""
-        self.native_display = get_native_display()
+        self.native_display, self.ndobj = get_native_display()
 
     @unittest.skipIf(pegl.egl_version < (1, 4), 'EGL version too low')
     def test_get_default_display(self):
@@ -226,6 +226,10 @@ class TestDisplayCreation(unittest.TestCase):
             dpy = display.Display.get_platform_display(platform,
                                                        self.native_display)
             self.assertIsInstance(dpy, display.Display)
+
+    def tearDown(self):
+        """Destroy the native display object."""
+        del self.ndobj
 
 
 @needs_display
@@ -539,8 +543,10 @@ class TestUninitializedDisplay(unittest.TestCase):
     def setUp(self):
         """Set up an uninitialized display for testing."""
         if pegl.egl_version < (1, 4):
-            self.dpy = display.Display(get_native_display(), init=False)
+            nhandle, self.ndobj = get_native_display()
+            self.dpy = display.Display(ndhandle, init=False)
         else:
+            self.ndobj = None
             self.dpy = display.Display(init=False)
 
     @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
@@ -624,20 +630,23 @@ class TestUninitializedDisplay(unittest.TestCase):
         """Finalize the display used for testing."""
         # Configs don't need finalizing.
         del self.dpy
+        del self.ndobj
 
 
 class TestTerminatedDisplay(TestUninitializedDisplay):
     """Test what happens on a terminated display.
 
     A terminated display is equivalent to an uninitialized one, so the
-    tests from that test case will be reused.
+    tests (and teardown) from that test case will be reused.
 
     """
     def setUp(self):
         """Set up and terminate a display for testing."""
         if pegl.egl_version < (1, 4):
-            self.dpy = display.Display(get_native_display())
+            nhandle, self.ndobj = get_native_display()
+            self.dpy = display.Display(ndhandle)
         else:
+            self.ndobj = None
             self.dpy = display.Display()
         self.dpy.terminate()
 
