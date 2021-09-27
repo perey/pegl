@@ -26,6 +26,7 @@ deps =
     coverage[toml]
     pywayland
 commands = coverage run -m nose2
+passenv = DISPLAY XAUTHORITY XDG_RUNTIME_DIR
 setenv =
     egl10: PEGLEGLVERSION = 1.0
     egl11: PEGLEGLVERSION = 1.1
