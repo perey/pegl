@@ -42,3 +42,6 @@ nosetests.xml
 
 # Built documentation
 docs/_build
+
+# apitrace trace files
+*.trace
