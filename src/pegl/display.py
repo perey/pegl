@@ -51,7 +51,7 @@ class Display:
         # that case here too.
         if handle is None and display_id is None and egl.egl_version >= (1, 4):
             display_id = egl.EGL_DEFAULT_DISPLAY
-        instance = cls._get_existing((handle, display_id))
+        instance = cls._get_existing((handle, display_id)) # pylint: disable=no-member
 
         return (instance if instance is not None else
                 super().__new__(cls))
@@ -63,7 +63,7 @@ class Display:
             self._as_parameter_ = handle
             self._display_id = display_id
 
-            self.__class__._add_to_cache(self)
+            self.__class__._add_to_cache(self) # pylint: disable=no-member
             return
 
         if display_id is None:
@@ -75,7 +75,7 @@ class Display:
         self._as_parameter_ = egl.eglGetDisplay(display_id)
         self._display_id = display_id
 
-        self.__class__._add_to_cache(self)
+        self.__class__._add_to_cache(self) # pylint: disable=no-member
 
         # Forwards compatibility.
         self._swap_interval = 1 # Default per § 3.10.3
@@ -140,7 +140,7 @@ class Display:
         # let's compare the given handle to None.
         if handle is None:
             return NoDisplay
-        return cls._new_or_existing((handle, None), handle=handle)
+        return cls._new_or_existing((handle, None), handle=handle) # pylint: disable=no-member
 
     def choose_config(self, attribs, num_config=None):
         """Get available configurations that match given attributes."""
@@ -149,7 +149,7 @@ class Display:
         configs = (egl._common.EGLConfig * num_config)()
         actual_count = egl.eglChooseConfig(self, attrib_list(attribs),
                                            configs, num_config)
-        return tuple(Config._new_or_existing((configs[n], None),
+        return tuple(Config._new_or_existing((configs[n], None), # pylint: disable=no-member
                                              self, configs[n])
                      for n in range(actual_count))
 
@@ -163,7 +163,7 @@ class Display:
             num_config = self.get_config_count()
         configs = (egl._common.EGLConfig * num_config)()
         actual_count = egl.eglGetConfigs(self, configs, num_config)
-        return tuple(Config._new_or_existing((configs[n], None),
+        return tuple(Config._new_or_existing((configs[n], None), # pylint: disable=no-member
                                              self, configs[n])
                      for n in range(actual_count))
 
@@ -221,8 +221,8 @@ def get_current_surface(cls, readdraw): # pylint: disable=unused-argument
     """
     handle = egl.eglGetCurrentSurface(readdraw)
     return (None if handle == egl.EGL_NO_SURFACE else
-            Surface._new_or_existing((handle,), Display.get_current_display(),
-                                     handle))
+            Surface._new_or_existing((handle,),  # pylint: disable=no-member
+                                     Display.get_current_display(), handle))
 setattr(Context, 'get_current_surface', classmethod(get_current_surface))
 
 def release_current(cls): # pylint: disable=unused-argument

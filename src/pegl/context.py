@@ -51,7 +51,7 @@ class Context(metaclass=ContextMeta):
         self._display = display
         self._as_parameter_ = handle
 
-        self.__class__._add_to_cache(self)
+        self.__class__._add_to_cache(self) # pylint: disable=no-member
 
     def __del__(self):
         # Remove this context from the cache.

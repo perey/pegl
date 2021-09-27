@@ -47,7 +47,7 @@ class Config:
         self._display = display
         self._as_parameter_ = handle
 
-        self.__class__._add_to_cache(self)
+        self.__class__._add_to_cache(self) # pylint: disable=no-member
 
     def __repr__(self):
         return '<{}: {:#08x}>'.format(self.__class__.__name__,
@@ -271,7 +271,7 @@ class Config:
 # module depends on the context or surface module, and vice versa.
 def config(self): # pylint: disable=missing-function-docstring
     handle = self.config_id
-    return Config._new_or_existing((None, handle), self._display, handle)
+    return Config._new_or_existing((None, handle), self._display, handle) # pylint: disable=no-member
 setattr(Context, 'config',
         property(config, doc='The config object used to create this context.'))
 setattr(Surface, 'config',
