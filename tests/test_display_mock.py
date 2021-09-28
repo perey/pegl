@@ -154,7 +154,7 @@ class TestMethods(unittest.TestCase):
 
         This test passes if:
 
-        - eglCreateImage is called with a display, EGL_SYNC_CL_EVEL, and
+        - eglCreateImage is called with a display, EGL_SYNC_CL_EVENT, and
           the given (fake) OpenCL event handle
 
         """
