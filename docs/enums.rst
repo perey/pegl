@@ -137,7 +137,7 @@ these are also left out of short names.
 
         .. availability:: EGL 1.2
 
-    .. py:attribute:: ALPHA_SIZE:
+    .. py:attribute:: ALPHA_SIZE
 
         The number of bits in the color buffer allocated to alpha (an ``int``).
 
@@ -407,8 +407,8 @@ these are also left out of short names.
     .. py:attribute:: OPENGL_ROBUST_ACCESS
 
         Whether or not the context must support robust buffer access (a
-        ``bool``). Only valid OpenGL and OpenGL ES with the relevant extension
-        or core functionality. The longer form
+        ``bool``). Only valid for OpenGL and OpenGL ES with the relevant
+        extension or core functionality. The longer form
         :py:attr:`CONTEXT_OPENGL_ROBUST_ACCESS` is provided as an alias.
 
         .. availability:: EGL 1.5
@@ -446,13 +446,26 @@ these are also left out of short names.
 .. py:class:: ImageAttrib
 
     Attributes that can be specified when creating an image. No EGL mechanism
-    is currently provided for querying these after image creation.
+    is currently provided for querying these after image creation. The allowed
+    values, and the image targets (see :py:class:`ImageTarget`) to which they
+    apply, are described below.
 
     .. availability:: EGL 1.5
 
     .. py:attribute:: GL_TEXTURE_LEVEL
+
+        The mipmap level to be used as the source (an ``int``). Valid when the
+        target is the 2D or 3D texture, or any face of the cube map texture.
+
     .. py:attribute:: GL_TEXTURE_ZOFFSET
+
+        The depth offset to be used as the source (an ``int``). Valid only when
+        the target is the 3D texture.
+
     .. py:attribute:: IMAGE_PRESERVED
+
+        Whether or not pixel data is to be preserved (a ``bool``). Valid for
+        any target.
 
 
 .. py:class:: ImageTarget
@@ -548,7 +561,8 @@ these are also left out of short names.
 
     .. py:attribute:: COMPATIBILITY
 
-        The compatibility profile. The longer form :py:attr:`CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT` is provided as an
+        The compatibility profile. The longer form
+        :py:attr:`CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT` is provided as an
         alias.
 
 
@@ -641,7 +655,7 @@ these are also left out of short names.
 
     .. py:attribute:: MIPMAP_TEXTURE
 
-        Whether or not to allocate storage for OpenGS ES mipmaps (a ``bool``).
+        Whether or not to allocate storage for OpenGL ES mipmaps (a ``bool``).
 
         .. availability:: EGL 1.1
 
@@ -718,10 +732,10 @@ these are also left out of short names.
 
         .. availability:: EGL 1.4
 
-    .. py:attribute:: SWAP_BEHAVIOUR_PRESERVED
+    .. py:attribute:: SWAP_BEHAVIOR_PRESERVED
 
         Setting swap behavior to preserve color buffers is supported. The
-        longer form :py:attr:`SWAP_BEHAVIOUR_PRESERVED_BIT` is provided as an
+        longer form :py:attr:`SWAP_BEHAVIOR_PRESERVED_BIT` is provided as an
         alias.
 
         .. availability:: EGL 1.4
