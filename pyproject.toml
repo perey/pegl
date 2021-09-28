@@ -24,7 +24,7 @@ envlist = py{37,38,39}-egl{10,11,12,13,14,15,any,bad,unknown},coverage-report
 deps =
     nose2
     coverage[toml]
-    pywayland
+    pywayland;platform_system=="Linux"
 commands = coverage run -m nose2
 passenv = DISPLAY XAUTHORITY XDG_RUNTIME_DIR
 setenv =

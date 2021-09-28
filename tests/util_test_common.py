@@ -55,7 +55,7 @@ def needs_config(cls):
         """Set up a display and config for testing."""
         if pegl.egl_version < (1, 4):
             ndhandle, self.ndobj = get_native_display()
-            self.dpy = pegl.Display(get_native_display())
+            self.dpy = pegl.Display(ndhandle)
         else:
             self.ndobj = None
             self.dpy = pegl.Display()
@@ -77,7 +77,7 @@ def needs_context(cls):
         """Set up a context and its requirements for testing."""
         if pegl.egl_version < (1, 4):
             ndhandle, self.ndobj = get_native_display()
-            self.dpy = pegl.Display(get_native_display())
+            self.dpy = pegl.Display(ndhandle)
         else:
             self.ndobj = None
             self.dpy = pegl.Display()

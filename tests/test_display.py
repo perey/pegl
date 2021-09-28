@@ -543,7 +543,7 @@ class TestUninitializedDisplay(unittest.TestCase):
     def setUp(self):
         """Set up an uninitialized display for testing."""
         if pegl.egl_version < (1, 4):
-            nhandle, self.ndobj = get_native_display()
+            ndhandle, self.ndobj = get_native_display()
             self.dpy = display.Display(ndhandle, init=False)
         else:
             self.ndobj = None
@@ -643,7 +643,7 @@ class TestTerminatedDisplay(TestUninitializedDisplay):
     def setUp(self):
         """Set up and terminate a display for testing."""
         if pegl.egl_version < (1, 4):
-            nhandle, self.ndobj = get_native_display()
+            ndhandle, self.ndobj = get_native_display()
             self.dpy = display.Display(ndhandle)
         else:
             self.ndobj = None
