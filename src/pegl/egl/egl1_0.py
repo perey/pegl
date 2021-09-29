@@ -174,7 +174,8 @@ eglCreateContext = _load_function('eglCreateContext', EGLContext,
 eglCreatePbufferSurface = _load_function('eglCreatePbufferSurface', EGLSurface,
                                          (EGLDisplay, Arg.IN, 'dpy'),
                                          (EGLConfig, Arg.IN, 'config'),
-                                         (EGLint_p, Arg.IN, 'attrib_list'))
+                                         (EGLint_p, Arg.IN, 'attrib_list'),
+                                         error_on=EGL_NO_SURFACE)
 
 eglCreatePixmapSurface = _load_function('eglCreatePixmapSurface', EGLSurface,
                                         (EGLDisplay, Arg.IN, 'dpy'),
