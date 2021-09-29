@@ -95,6 +95,10 @@ class Display:
             # This instance never got cached.
             pass
 
+        # Don't do anything else for NoDisplay.
+        if self._as_parameter_ is egl.EGL_NO_DISPLAY:
+            return
+
         # Terminate this display.
         try:
             egl.eglTerminate(self)
@@ -114,7 +118,7 @@ class Display:
                 egl.eglReleaseThread()
 
     def __bool__(self):
-        return self._as_parameter_ != egl.EGL_NO_DISPLAY
+        return self._as_parameter_ is not egl.EGL_NO_DISPLAY
 
     def __eq__(self, other):
         try:
@@ -123,10 +127,23 @@ class Display:
             return False
 
     def __repr__(self):
+        if self._as_parameter_ is egl.EGL_NO_DISPLAY:
+            return '<{}: EGL_NO_DISPLAY>'.format(self.__class__.__name__)
         return '<{}: {:#08x}>'.format(self.__class__.__name__,
                                       self._as_parameter_)
 
     def __str__(self):
+        if self._as_parameter_ is egl.EGL_NO_DISPLAY:
+            # The ability to get the version string from NoDisplay was added in
+            # a revision to EGL 1.5, so doing so may or may not fail on that
+            # version! Let's not worry about it and just try it anyway.
+            try:
+                vstring = self.version_string
+            except BadDisplayError:
+                return '<{}: EGL_NO_DISPLAY>'.format(self.__class__.__name__)
+            else:
+                return '<{}: EGL_NO_DISPLAY, EGL {}>'.format(
+                    self.__class__.__name__, vstring)
         return '<{}: {:#08x}, EGL {}>'.format(self.__class__.__name__,
                                               self._as_parameter_,
                                               self.version_string)
