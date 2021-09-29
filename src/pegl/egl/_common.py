@@ -61,6 +61,9 @@ import sys
 # Local imports.
 from ..errors import KNOWN_ERRORS, EGLError, EGL_SUCCESS
 
+# Set up logging with the module name.
+logger = logging.getLogger(__name__)
+
 # Dynamic library loading.
 known_names = [
     'libEGL',     # ANGLE, Mesa, ARM Mali, probably others...
@@ -182,8 +185,8 @@ def _load_function(func_name, restype, *args, **kwargs):
         fn = prototype((func_name.encode(), _lib), tuple(paramflags))
     except AttributeError:
         # Failure! Try loading it by address instead.
-        logging.debug('Failed to load %r by name, trying by address instead',
-                      func_name)
+        logger.debug('Failed to load %r by name, trying by address instead',
+                     func_name)
         address = eglGetProcAddress(func_name.encode())
         fn = None if address is None else prototype(address)
 
@@ -197,8 +200,8 @@ def _load_function(func_name, restype, *args, **kwargs):
         pass
     else:
         def error_check(result, func, args): # pylint: disable=unused-argument
-            logging.debug('Called %r with args %r and got result %r',
-                          func_name, args, result)
+            logger.debug('Called %r with args %r and got result %r',
+                         func_name, args, result)
             if (result == error_on or (result is None and
                                        isinstance(error_on, ctypes.c_void_p) and
                                        error_on.value is None)):

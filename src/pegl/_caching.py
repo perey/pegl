@@ -25,6 +25,9 @@ __all__ = ['cached']
 import logging
 from weakref import WeakValueDictionary
 
+# Set up logging with the module name.
+logger = logging.getLogger(__name__)
+
 def extract_key(key):
     """Ensure a key has a hashable value.
 
@@ -77,8 +80,8 @@ def cached(*cache_keys):
                 if raw_key is not None:
                     cache[key] = instance
 
-            logging.debug('Cached %s instance with keys %r',
-                          cls.__name__, used_keys)
+            logger.debug('Cached %s instance with keys %r',
+                         cls.__name__, used_keys)
         setattr(cls, '_add_to_cache', classmethod(_add_to_cache))
 
         def _remove_from_cache(cls, instance):
@@ -101,11 +104,11 @@ def cached(*cache_keys):
 
                 instance = cache.get(extract_key(key))
                 if instance is not None:
-                    logging.debug('Cache hit (%s, %r): %r', cls.__name__,
-                                  keyname, key)
+                    logger.debug('Cache hit (%s, %r): %r', cls.__name__,
+                                 keyname, key)
                     return instance
 
-            logging.debug('Cache miss (%s): %r', cls.__name__, keys)
+            logger.debug('Cache miss (%s): %r', cls.__name__, keys)
             return None
         setattr(cls, '_get_existing', classmethod(_get_existing))
 

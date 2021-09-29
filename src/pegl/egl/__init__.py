@@ -25,6 +25,9 @@ __all__ = ['egl_version']
 import logging
 import os
 
+# Set up logging with the module name.
+logger = logging.getLogger(__name__)
+
 # Check for the environment variable specifying which EGL version to load.
 known_versions = ((1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5))
 try:
@@ -36,11 +39,11 @@ except KeyError:
 except (AttributeError, ValueError):
     # Environment variable set but not understood. Try loading the latest known
     # version.
-    logging.debug('Environment EGL version request not understood '
-                  '(%r)', env_version)
+    logger.debug('Environment EGL version request not understood '
+                 '(%r)', env_version)
     major, minor = known_versions[-1]
 else:
-    logging.debug('Environment requested version %d.%d', major, minor)
+    logger.debug('Environment requested version %d.%d', major, minor)
     if (major, minor) not in known_versions:
         major, minor = known_versions[-1]
 requested_version = (major, minor)
@@ -58,7 +61,7 @@ if requested_version > (1, 0):
         from .egl1_1 import *
         from .egl1_1 import __all__ as egl1_1_all
     except ImportError as e:
-        logging.debug(e)
+        logger.debug(e)
     else:
         __all__.extend(egl1_1_all)
         egl_version = (1, 1)
@@ -68,7 +71,7 @@ if requested_version > (1, 0):
                 from .egl1_2 import *
                 from .egl1_2 import __all__ as egl1_2_all
             except ImportError as e:
-                logging.debug(e)
+                logger.debug(e)
             else:
                 __all__.extend(egl1_2_all)
                 egl_version = (1, 2)
@@ -78,7 +81,7 @@ if requested_version > (1, 0):
                         from .egl1_3 import *
                         from .egl1_3 import __all__ as egl1_3_all
                     except ImportError as e:
-                        logging.debug(e)
+                        logger.debug(e)
                     else:
                         __all__.extend(egl1_3_all)
                         egl_version = (1, 3)
@@ -88,7 +91,7 @@ if requested_version > (1, 0):
                             from .egl1_4 import *
                             from .egl1_4 import __all__ as egl1_4_all
                         except ImportError as e:
-                            logging.debug(e)
+                            logger.debug(e)
                         else:
                             __all__.extend(egl1_4_all)
                             egl_version = (1, 4)
@@ -98,8 +101,8 @@ if requested_version > (1, 0):
                                 from .egl1_5 import *
                                 from .egl1_5 import __all__ as egl1_5_all
                             except ImportError as e:
-                                logging.debug(e)
+                                logger.debug(e)
                             else:
                                 __all__.extend(egl1_5_all)
                                 egl_version = (1, 5)
-logging.debug('Loaded EGL version %d.%d', *egl_version)
+logger.info('Loaded EGL version %d.%d', *egl_version)
