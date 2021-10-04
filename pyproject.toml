@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 source = ["src/pegl"]
 omit = ["setup.py", "tests/*"]
 parallel = true
+dynamic_context = "test_function"
 
 [tool.pylint.'BASIC']
 good-names = ["e", "n", "fn"]
@@ -42,5 +43,5 @@ skip_install = true
 commands =
     coverage combine
     coverage report
-    coverage html
+    coverage html --show-contexts
 """
