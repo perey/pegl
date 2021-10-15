@@ -22,6 +22,7 @@
 # Standard library imports.
 import re
 import unittest
+from warnings import warn
 
 # Import test utilities.
 from util_test_common import known_versions, needs_context, needs_display
@@ -600,20 +601,34 @@ class TestUninitializedDisplay(unittest.TestCase):
 
         - The vendor property cannot be queried
 
+        A warning is emitted, rather than a failed test, if the property
+        can be queried. This is known to happen on Mesa.
+
         """
-        with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.vendor # pylint: disable=pointless-statement
+        try:
+            vendor = self.dpy.vendor
+        except pegl.NotInitializedError:
+            pass # This is as expected.
+        else:
+            warn('EGL implementation allows querying vendor string on '
+                 'an uninitialized Display (returns {!r})'.format(vendor))
 
     def test_version(self):
         """Ensure the version property cannot be accessed.
 
         This test passes if:
 
-        - The version property cannot be queried
+        A warning is emitted, rather than a failed test, if the property
+        can be queried. This is known to happen on Mesa.
 
         """
-        with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.version # pylint: disable=pointless-statement
+        try:
+            version = self.dpy.version
+        except pegl.NotInitializedError:
+            pass # This is as expected.
+        else:
+            warn('EGL implementation allows querying version on '
+                 'an uninitialized Display (returns {!r})'.format(version))
 
     def test_version_string(self):
         """Ensure the version_string property cannot be accessed.
@@ -622,9 +637,17 @@ class TestUninitializedDisplay(unittest.TestCase):
 
         - The version_string property cannot be queried
 
+        A warning is emitted, rather than a failed test, if the property
+        can be queried. This is known to happen on Mesa.
+
         """
-        with self.assertRaises(pegl.NotInitializedError):
-            self.dpy.vendor # pylint: disable=pointless-statement
+        try:
+            vstring = self.dpy.version_string
+        except pegl.NotInitializedError:
+            pass # This is as expected.
+        else:
+            warn('EGL implementation allows querying version string on '
+                 'an uninitialized Display (returns {!r})'.format(vstring))
 
     def tearDown(self):
         """Finalize the display used for testing."""
