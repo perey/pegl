@@ -589,14 +589,16 @@ class TestProperties(unittest.TestCase):
 
         - The max_pbuffer_pixels property exists
         - It is a non-negative integer
-        - It is equal to max_pbuffer_height × max_pbuffer_width
+        - It is less than or equal to max_pbuffer_height ×
+          max_pbuffer_width
         - It cannot be set
 
         """
         self.assertIsInstance(self.cfg.max_pbuffer_pixels, int)
-        self.assertEqual(self.cfg.max_pbuffer_pixels,
-                         self.cfg.max_pbuffer_height *
-                         self.cfg.max_pbuffer_width)
+        self.assertGreaterEqual(self.cfg.max_pbuffer_pixels, 0)
+        self.assertLessEqual(self.cfg.max_pbuffer_pixels,
+                             self.cfg.max_pbuffer_height *
+                             self.cfg.max_pbuffer_width)
         with self.assertRaises(AttributeError):
             self.cfg.max_pbuffer_pixels = 786432
 
