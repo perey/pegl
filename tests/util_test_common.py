@@ -83,7 +83,9 @@ def needs_context(cls):
             self.dpy = pegl.Display()
         self.cfg = self.dpy.get_configs(1)[0]
         self.ctx = self.cfg.create_context()
-        self.surf = self.cfg.create_pbuffer_surface()
+        self.surf = self.cfg.create_pbuffer_surface(
+            {pegl.SurfaceAttrib.WIDTH: 20,
+             pegl.SurfaceAttrib.HEIGHT: 20})
         self.ctx.make_current(self.surf)
     setattr(cls, 'setUp', setUp)
 
