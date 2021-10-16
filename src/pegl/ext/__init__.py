@@ -32,6 +32,8 @@ Unimplemented:
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
+#pylint: skip-file
+
 __all__ = (# Registered cross-vendor (EXT) extensions.
            'ext_bufferage', 'ext_dma_buf', 'ext_extensiontypes',
            'ext_multiview', 'ext_platform', 'ext_platform_x11',
