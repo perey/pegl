@@ -34,6 +34,9 @@ __all__ = ['attribs', 'config', 'context', 'display', 'native', 'surface',
 # Standard library imports.
 from ctypes import POINTER, c_int, c_void_p
 
+# Submodule imports.
+from . import attribs, config, context, display, native, surface, sync
+
 # Null handles for the major EGL objects.
 NO_DISPLAY, NO_CONTEXT, NO_SURFACE = c_void_p(0), c_void_p(0), c_void_p(0)
 
