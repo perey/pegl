@@ -90,7 +90,7 @@ class TestChooseConfig(unittest.TestCase):
             self.assertIn(pegl.ClientAPIFlag.OPENGL_ES, cfg.renderable_type)
 
         if pegl.egl_version >= (1, 3):
-            self.assertIn(pegl.ClientAPIFlag.NONE, cfg.conformant)
+            self.assertLessEqual(pegl.ClientAPIFlag.NONE, cfg.conformant)
 
     def test_choose_config_blank(self):
         """Try choosing configurations with no attributes.
