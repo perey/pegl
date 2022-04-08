@@ -57,6 +57,11 @@ class Display:
                 super().__new__(cls))
 
     def __init__(self, display_id=None, init=True, *, handle=None):
+        # Define _as_parameter_ at once, as it's checked by the destructor
+        # (which may be called if __init__ fails, say if a display_id was
+        # omitted prior to EGL version 1.4).
+        self._as_parameter_ = None
+
         # Specifying a display by its EGLDisplay handle overrides everything
         # else.
         if handle is not None:
