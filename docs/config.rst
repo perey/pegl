@@ -332,7 +332,7 @@ The Config class
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_RED_SIZE``.
 
-    .. py:method:: renderable_type() -> ClientAPIFlag
+    .. py:method:: renderable_type() -> pegl.enums.ClientAPIFlag
         :property:
 
         A bitmask of supported client APIs.
