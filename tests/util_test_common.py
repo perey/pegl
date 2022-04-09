@@ -2,7 +2,7 @@
 
 '''Common definitions and utilities for Pegl unit tests.'''
 
-# Copyright © 2020 Tim Pederick.
+# Copyright © 2020, 2021 Tim Pederick.
 #
 # This file is part of Pegl.
 #

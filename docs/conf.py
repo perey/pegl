@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Pegl'
-copyright = '2016, 2020, Tim Pederick'
+copyright = '2016, 2020, 2021, Tim Pederick'
 author = 'Tim Pederick'
 
 # The version info for the project you're documenting, acts as replacement for

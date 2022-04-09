@@ -2,7 +2,7 @@
 
 """Unit tests for the pegl.display module with EGL functions mocked."""
 
-# Copyright © 2020 Tim Pederick.
+# Copyright © 2020, 2021 Tim Pederick.
 #
 # This file is part of Pegl.
 #

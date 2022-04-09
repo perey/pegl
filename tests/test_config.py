@@ -2,7 +2,7 @@
 
 '''Unit tests for the pegl.config module.'''
 
-# Copyright © 2020 Tim Pederick.
+# Copyright © 2020, 2021, 2022 Tim Pederick.
 #
 # This file is part of Pegl.
 #

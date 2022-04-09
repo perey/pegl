@@ -2,7 +2,7 @@
 
 '''EGL library interface for Pegl.'''
 
-# Copyright © 2012, 2013, 2020 Tim Pederick.
+# Copyright © 2012, 2013, 2020, 2021 Tim Pederick.
 #
 # This file is part of Pegl.
 #

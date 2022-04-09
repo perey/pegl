@@ -2,7 +2,7 @@
 
 '''Definitions and utilities for pegl.display unit tests.'''
 
-# Copyright © 2020 Tim Pederick.
+# Copyright © 2020, 2021 Tim Pederick.
 #
 # This file is part of Pegl.
 #
