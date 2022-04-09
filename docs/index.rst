@@ -1,17 +1,21 @@
 ========================
-Pegl 0.1a5 Documentation
+Pegl 0.2a1 Documentation
 ========================
 
-Welcome to the documentation for Pegl, a Python wrapper for the
-`EGL`:abbreviation: API.
-
-Contents:
+Contents
+========
 
 .. toctree::
    :maxdepth: 2
 
    intro
-
+   display
+   config
+   surface
+   context
+   sync
+   image
+   enums
 
 Indices and tables
 ==================

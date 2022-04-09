@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''EGL display management.'''
+"""EGL display management for Pegl."""
 
-# Copyright © 2012-13 Tim Pederick.
+# Copyright © 2012, 2013, 2020, 2021, 2022 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -19,231 +19,320 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
+__all__ = ['Display', 'NoDisplay']
+
 # Standard library imports.
-from collections import namedtuple
-from ctypes import c_void_p
+from ctypes import ArgumentError
+from types import MappingProxyType
 
 # Local imports.
-from . import native, NO_DISPLAY, NO_CONTEXT, NO_SURFACE
+from . import egl
+from .attribs import attrib_list
+from ._caching import cached
+from .errors import BadDisplayError
+from .config import Config
+from .context import Context
+from .surface import Surface
 
-# EGL constants.
-# TODO: Put these four in a namedtuple instance, like in all the other modules?
-CLIENT_APIS, EXTENSIONS, VENDOR, VERSION = 0x308D, 0x3055, 0x3053, 0x3054
-DEFAULT_DISPLAY = c_void_p(0)
 
-# Version info structure.
-Version = namedtuple('Version', ('major', 'minor', 'vendor'))
-Version.__str__ = lambda self: '{0.major}.{0.minor} {0.vendor}'.format(self)
-
-def current_display():
-    '''Get the current EGL display.'''
-    dhandle = native.eglGetCurrentDisplay()
-    return (None if dhandle == NO_DISPLAY else Display(dhandle))
-
+@cached('_as_parameter_', '_display_id')
 class Display:
-    '''An EGL display.
+    """An EGL display.
 
-    In EGL, a display is not only a representation of a (physical or
-    virtual) display device; it is also the overall context of all EGL
-    operations (although "context" also has a different meaning in EGL).
-    As such, details of the EGL implementation are accessed from a
-    Display instance.
+    In EGL, a display is both a representation of a (physical or virtual)
+    display device, and an environment for other objects.
 
-    Instance attributes:
-        dhandle -- The foreign object handle for this display.
-        client_apis -- A sequence listing the client APIs supported
-            (such as OpenGL, OpenGL_ES, and OpenVG). Although I can't
-            find it specified in the EGL standard, it seems likely that
-            these will be limited to ASCII.
-        extensions -- A sequence listing the EGL extensions supported;
-            again, probably limited to ASCII.
-        swap_interval -- An integer number of video frames between
-            buffer swaps. This value is write-only and applies to the
-            current context. It will be clamped to the range permitted
-            by the context's configuration.
-        vendor -- The vendor string for this EGL implementation.
-        version -- A 3-tuple describing the implementation version, in
-            the format (major, minor, vendor_info).
+    """
+    def __new__(cls, display_id=None, init=True, *, handle=None):
+        # Is there an existing display created with these arguments? Note that
+        # if both display_id and handle are None (and the EGL version is 1.4 or
+        # above), then the display_id would've been replaced with the token
+        # EGL_DEFAULT_DISPLAY before being created (and cached), so check for
+        # that case here too.
+        if handle is None and display_id is None and egl.egl_version >= (1, 4):
+            display_id = egl.EGL_DEFAULT_DISPLAY
+        instance = cls._get_existing((handle, display_id)) # pylint: disable=no-member
 
-    '''
-    def __init__(self, dhandle=None, native_id=None, delay_init=False):
-        '''Get a display, either a specified one or the default one.
+        return (instance if instance is not None else
+                super().__new__(cls))
 
-        Keyword arguments:
-            dhandle -- As the instance attribute. If omitted, the
-                native_id is used, if supplied, or else the EGL default
-                display is requested.
-            native_id -- An identifier for a platform-native display.
-                This is ignored if dhandle is supplied. If both are
-                omitted, the EGL default display is requested.
-            delay_init -- If True, the display's initialize() method
-                will not be called automatically. This should then be
-                done by the application before doing any EGL operations.
+    def __init__(self, display_id=None, init=True, *, handle=None):
+        # Define _as_parameter_ at once, as it's checked by the destructor
+        # (which may be called if __init__ fails, say if a display_id was
+        # omitted prior to EGL version 1.4).
+        self._as_parameter_ = None
 
-        '''
-        self.dhandle = (dhandle if dhandle is not None else
-                        native.eglGetDisplay(DEFAULT_DISPLAY
-                                             if native_id is None else
-                                             native_id))
-        if not delay_init:
-            self.initialize()
+        # Specifying a display by its EGLDisplay handle overrides everything
+        # else.
+        if handle is not None:
+            self._as_parameter_ = handle
+            self._display_id = display_id
+
+            self.__class__._add_to_cache(self) # pylint: disable=no-member
+            return
+
+        if display_id is None:
+            if egl.egl_version < (1, 4):
+                raise ValueError('default display not available before EGL '
+                                 '1.4')
+            display_id = egl.EGL_DEFAULT_DISPLAY
+
+        self._as_parameter_ = egl.eglGetDisplay(display_id)
+        self._display_id = display_id
+
+        self.__class__._add_to_cache(self) # pylint: disable=no-member
+
+        # Forwards compatibility.
+        self._swap_interval = 1 # Default per § 3.10.3
+        self._attribs = MappingProxyType({})
+
+        if init:
+            egl.eglInitialize(self)
 
     def __del__(self):
-        '''Delete this display and all EGL resources in this thread.
+        # Remove this display from the cache.
+        try:
+            self.__class__._remove_from_cache(self)
+        except AttributeError:
+            # This instance never got its handle properly assigned.
+            pass
+        except KeyError:
+            # This instance never got cached.
+            pass
 
-        Multithreaded applications should also call release_thread()
-        from all other threads in which this display has been used.
+        # Don't do anything else for NoDisplay.
+        if self._as_parameter_ is egl.EGL_NO_DISPLAY:
+            return
 
-        '''
-        release_thread()
-        self.terminate()
+        # Terminate this display.
+        try:
+            egl.eglTerminate(self)
+        except BadDisplayError:
+            # This instance has an invalid handle, so there's nothing to
+            # terminate.
+            pass
+        except ArgumentError:
+            # This instance never had its handle assigned (probably because it
+            # was created on EGL 1.3 or earlier without a display_id), so
+            # ctypes wouldn't even pass it to eglTerminate.
+            pass
+        else:
+            # If termination was successful, also release EGL resources in this
+            # thread.
+            if egl.egl_version >= (1, 2):
+                egl.eglReleaseThread()
+
+    def __bool__(self):
+        return self._as_parameter_ is not egl.EGL_NO_DISPLAY
 
     def __eq__(self, other):
-        '''Compare two displays for equivalence.
-
-        Two displays are considered equal if they have the same foreign
-        function reference (i.e. the dhandle attribute).
-
-        '''
         try:
-            return self.dhandle == other.dhandle
+            return other._as_parameter_ == self._as_parameter_
         except AttributeError:
-            # The other object doesn't have a dhandle.
             return False
 
+    def __repr__(self):
+        if self._as_parameter_ is egl.EGL_NO_DISPLAY:
+            return '<{}: EGL_NO_DISPLAY>'.format(self.__class__.__name__)
+        return '<{}: {:#08x}>'.format(self.__class__.__name__,
+                                      self._as_parameter_)
+
+    def __str__(self):
+        if self._as_parameter_ is egl.EGL_NO_DISPLAY:
+            # The ability to get the version string from NoDisplay was added in
+            # a revision to EGL 1.5, so doing so may or may not fail on that
+            # version! Let's not worry about it and just try it anyway.
+            try:
+                vstring = self.version_string
+            except BadDisplayError:
+                return '<{}: EGL_NO_DISPLAY>'.format(self.__class__.__name__)
+            else:
+                return '<{}: EGL_NO_DISPLAY, EGL {}>'.format(
+                    self.__class__.__name__, vstring)
+        return '<{}: {:#08x}, EGL {}>'.format(self.__class__.__name__,
+                                              self._as_parameter_,
+                                              self.version_string)
+
+    @classmethod
+    def get_current_display(cls):
+        """Get the display for the current context on the calling thread."""
+        handle = egl.eglGetCurrentDisplay()
+        # The mismatch between c_void_p(None) (the value of EGL_NO_DISPLAY) and
+        # a plain None is causing issues. So, while it breaks encapsulation,
+        # let's compare the given handle to None.
+        if handle is None:
+            return NoDisplay
+        return cls._new_or_existing((handle, None), handle=handle) # pylint: disable=no-member
+
+    def choose_config(self, attribs, num_config=None):
+        """Get available configurations that match given attributes."""
+        if num_config is None:
+            num_config = self.get_config_count()
+        configs = (egl._common.EGLConfig * num_config)()
+        actual_count = egl.eglChooseConfig(self, attrib_list(attribs),
+                                           configs, num_config)
+        return tuple(Config._new_or_existing((configs[n], None), # pylint: disable=no-member
+                                             self, configs[n])
+                     for n in range(actual_count))
+
+    def get_config_count(self) -> int:
+        """Get the number of configurations available on this display."""
+        return egl.eglGetConfigs(self, None, 0)
+
+    def get_configs(self, num_config=None):
+        """Get a list of available configurations."""
+        if num_config is None:
+            num_config = self.get_config_count()
+        configs = (egl._common.EGLConfig * num_config)()
+        actual_count = egl.eglGetConfigs(self, configs, num_config)
+        return tuple(Config._new_or_existing((configs[n], None), # pylint: disable=no-member
+                                             self, configs[n])
+                     for n in range(actual_count))
+
+    def initialize(self):
+        """Initialise this display."""
+        return egl.eglInitialize(self)
+
+    def terminate(self):
+        """Terminate all resources associated with this display."""
+        egl.eglTerminate(self)
+
     @property
-    def _as_parameter_(self):
-        '''Get the display reference for use by foreign functions.'''
-        return self.dhandle
-
-    def _attr(self, attr):
-        '''Query an EGL instance parameter.
-
-        Keyword arguments:
-            attr -- A value identifying the parameter sought. This
-                should be a symbolic constant from those defined in this
-                module (CLIENT_APIS, EXTENSIONS, VENDOR, or VERSION).
-        Returns:
-            A string value for the EGL parameter requested.
-
-        '''
-        # TODO: The codec chosen is a bit arbitrary and might be best left off.
-        # Client applications can just use the bytes or decode them themselves.
-        return native.eglQueryString(self, attr).decode('ISO-8859-1')
-
-    @property
-    def client_apis(self):
-        '''Get the client APIs available on this EGL instance.'''
-        return tuple(self._attr(CLIENT_APIS).split())
+    def attribs(self):
+        """The attributes used to create this display, if any."""
+        return self._attribs
 
     @property
     def extensions(self):
-        '''Get the extensions available on this EGL instance.'''
-        return tuple(self._attr(EXTENSIONS).split())
-
-    def set_swap_interval(self, val):
-        '''Set the number of video frames between buffer swaps.
-
-        This value applies to the current context, and will be silently
-        clamped to the range defined by the context's configuration.
-
-        Keyword arguments:
-            val -- The number of frames to set the interval to.
-
-        '''
-        native.eglSwapInterval(self, int(val))
-    swap_interval = property(fset=set_swap_interval)
+        """The EGL extensions supported by this display."""
+        return egl.eglQueryString(self, egl.EGL_EXTENSIONS).decode()
 
     @property
     def vendor(self):
-        '''Get the vendor string for this EGL instance.'''
-        return self._attr(VENDOR)
+        """The vendor information for the EGL implementation."""
+        return egl.eglQueryString(self, egl.EGL_VENDOR).decode()
 
     @property
     def version(self):
-        '''Get the EGL version of this EGL instance.'''
-        major_minor, vendor = self._attr(VERSION).split(None, 1)
-        major, minor = major_minor.split('.')
-        return Version(int(major), int(minor), vendor)
+        """The version information for the EGL implementation."""
+        vnum, *vendor_info = self.version_string.split(maxsplit=1)
+        vendor_info = '' if not vendor_info else vendor_info[0]
+        major, minor = vnum.split('.', maxsplit=1)
+        return int(major), int(minor), vendor_info
 
-    def initialize(self):
-        '''Initialize EGL for this display.
+    @property
+    def version_string(self):
+        """The version information string for the EGL implementation."""
+        return egl.eglQueryString(self, egl.EGL_VERSION).decode()
 
-        Returns:
-            An EGL version number, in (major, minor, vendor) format.
-            The vendor part is an empty string; after initialization
-            it can be obtained from the version attribute.
 
-        '''
-        # Create and initialize the return pointers.
-        major, minor = native.make_int_p(), native.make_int_p()
+NoDisplay = Display(handle=egl.EGL_NO_DISPLAY)
 
-        native.eglInitialize(self, major, minor)
-        return (major.contents.value, minor.contents.value, '')
 
-    def load_extension(self, extname):
-        '''Load an extension conditional on it being declared available.
+# These are defined here to avoid a circular dependency issue, where the
+# display module depends on the config module, config depends on context, and
+# context depends on display.
+def get_current_surface(cls, readdraw): # pylint: disable=unused-argument
+    """Get a surface bound to the current context.
 
-        The extensions attribute of this display is used to determine
-        whether the extension named is supported by the implementation
-        of EGL that the display represents. An ImportError will be
-        raised to signify that the extension is unavailable. Also, even
-        when it is declared to be available, if an ImportError occurs
-        anyway while the extension module is being loaded, it will be
-        raised.
+    Note that this class method gets a surface bound to the current
+    context, not to any particular context instance. The same goes for
+    the class properties current_draw_surface and current_read_surface,
+    which are syntactic sugar for this method.
 
-        Keyword arguments:
-            extname -- The name string of the extension. Name strings
-                are consistently of the form EGL_xxx_yyy, where xxx
-                represents the vendor proposing the extension (or EXT
-                for a cross-vendor proposal) and yyy is a descriptive
-                name for the extension.
+    """
+    handle = egl.eglGetCurrentSurface(readdraw)
+    return (None if handle == egl.EGL_NO_SURFACE else
+            Surface._new_or_existing((handle,),  # pylint: disable=no-member
+                                     Display.get_current_display(), handle))
+setattr(Context, 'get_current_surface', classmethod(get_current_surface))
 
-        '''
-        # Ensure the name is a string.
-        extname = str(extname)
+def release_current(cls): # pylint: disable=unused-argument
+    """Release the current context for the calling thread."""
+    egl.eglMakeCurrent(Display.get_current_display(), egl.EGL_NO_SURFACE,
+                       egl.EGL_NO_SURFACE, egl.EGL_NO_CONTEXT)
+setattr(Context, 'release_current', classmethod(release_current))
 
-        if extname not in self.extensions:
-            raise ImportError('implementation does not declare support for ' +
-                              extname)
 
-        # What module has this extension?
-        from .ext import extensions as extlist
-        module_name = extlist.get(extname)
+if egl.egl_version >= (1, 1):
+    def get_swap_interval(self):
+        """The number of video frames to wait between buffer swaps."""
+        return self._swap_interval
+    def set_swap_interval(self, interval):
+        # pylint: disable=missing-function-docstring
+        egl.eglSwapInterval(self, interval)
+        self._swap_interval = interval
+    setattr(Display, 'swap_interval', property(get_swap_interval,
+                                               set_swap_interval))
 
-        if module_name is None:
-            raise ImportError("no module found for extension "
-                              "'{}'".format(extname))
-        else:
-            pkg_with_module = __import__('ext', globals(), locals(),
-                                         [module_name], 1)
-            return getattr(pkg_with_module, module_name)
 
-    def clear_context(self):
-        '''Release the current context, if any.'''
-        native.eglMakeCurrent(self, NO_SURFACE, NO_SURFACE, NO_CONTEXT)
+if egl.egl_version >= (1, 2):
+    def client_apis(self):
+        """The client APIs supported on this display."""
+        return egl.eglQueryString(self, egl.EGL_CLIENT_APIS).decode()
+    setattr(Display, 'client_apis', property(client_apis))
 
-    def terminate(self):
-        '''Invalidate all resources associated with this display.
+    def release_thread():
+        """Release EGL resources used in this thread.
 
-        The display handle itself remains valid. The display can even be
-        reinitialized (by calling initialize()), though the terminated
-        resources will not be made valid again.
+        This cleanup is performed automatically for the current thread when
+        a display is deleted. Multithreaded applications that share one
+        display across several threads must call this function in each
+        thread to ensure all resources are deallocated.
 
-        It is not generally necessary to call this function directly, as
-        it is called by the display's destructor method. The only
-        difference is that the destructor also calls release_thread().
+        """
+        egl.eglReleaseThread()
 
-        '''
-        native.eglTerminate(self)
+    __all__.extend(['release_thread'])
 
-def release_thread():
-    '''Release EGL resources used in this thread.
 
-    This cleanup is performed automatically for the current thread when
-    a display is deleted. Multithreaded applications that share one
-    display across several threads must call this function in each
-    thread to ensure all resources are deallocated.
+if egl.egl_version >= (1, 4):
+    # This is defined here for the same reason as get_current_surface, above.
+    def get_current_context(cls):
+        """Get the current context for the calling thread."""
+        handle = egl.eglGetCurrentContext()
+        return (None if handle == egl.EGL_NO_CONTEXT else
+                cls._new_or_existing((handle,), Display.get_current_display(),
+                                     handle))
+    setattr(Context, 'get_current_context', classmethod(get_current_context))
 
-    '''
-    native.eglReleaseThread()
+
+if egl.egl_version >= (1, 5):
+    from .image import Image
+    from .sync import Sync
+
+    def get_platform_display(cls, platform, native_display, attribs=None,
+                             init=True):
+        """Get a display associated with a given platform."""
+        handle = egl.eglGetPlatformDisplay(platform, native_display,
+                                           attrib_list(attribs, new_type=True))
+        dpy = cls(handle=handle)
+        # Save an immutable view of the attributes used.
+        dpy._attribs = MappingProxyType({} if attribs is None else attribs)
+
+        if init:
+            dpy.initialize()
+
+        return dpy
+    setattr(Display, 'get_platform_display', classmethod(get_platform_display))
+
+    def create_image(self, target, buffer, attribs=None):
+        """Create an image from the given buffer.
+
+        This method creates an image without reference to a context. None
+        of the targets in the core specification allow this; this method
+        is only valid for extension use.
+
+        """
+        return Image(self,
+                     egl.eglCreateImage(self, egl.EGL_NO_CONTEXT, target,
+                                        buffer,
+                                        attrib_list(attribs, new_type=True)))
+    setattr(Display, 'create_image', create_image)
+
+    def create_sync(self, synctype, attribs=None):
+        """Create a sync object."""
+        return Sync(self,
+                    egl.eglCreateSync(self, synctype,
+                                      attrib_list(attribs, new_type=True)))
+    setattr(Display, 'create_sync', create_sync)

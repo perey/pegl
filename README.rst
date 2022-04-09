@@ -2,53 +2,26 @@
 Pegl: Python 3 binding for EGL
 ==============================
 
-Pegl is a binding to EGL_ 1.4, written in native Python 3 through the
-ctypes_ library. It provides comprehensive access to EGL_ functions,
-while offering a very Pythonic API.
+Pegl is a binding to EGL_, written in native Python 3 through the ctypes_
+library. It provides comprehensive access to EGL functions, while offering a
+Pythonic API.
 
-EGL_ is a specification from the Khronos Group that provides an
-intermediate layer between other Khronos specifications (OpenGL, OpenGL
-ES, OpenVG), called "client APIs", and the native graphics system. EGL_
-can supply an implicit rendering context for each of the client APIs,
-as well as features like surfaces and buffering.
+EGL is a specification from the Khronos Group that provides an intermediate
+layer between other Khronos specifications (OpenGL, OpenGL ES, OpenVG), called
+“client APIs”, and the native graphics system. EGL can supply an implicit
+rendering context for each of the client APIs, as well as features like
+surfaces and buffering.
 
-Pegl wraps EGL_ version 1.4. It is unlikely to be backwards compatible
-with previous versions of the specification.
+Pegl wraps EGL_ version 1.5, and is backwards compatible with previous versions
+of the specification.
+
+The current Pegl version is 0.2a1. As an alpha version, care should be taken
+before making use of the library! Please test it out and open a GitHub issue to
+report the results.
 
 .. _EGL: http://www.khronos.org/egl
 .. _ctypes: http://docs.python.org/py3k/library/ctypes
 
-Roadmap
-=======
-
-The current Pegl version is 0.1a4_1.4. As an alpha version, care should
-be taken before making use of the library; it wraps the complete EGL API
-and all intended extensions, but it is very much untested.
-
-Pegl version numbers are in this format:
-
-    ``w.x_y.z``
-
-where ``w.x`` represents the major/minor Pegl release (including alpha,
-beta or release candidate status, if appropriate), and ``y.z`` represents
-the EGL version being wrapped.
-
-----------
-0.x series
-----------
-
-Releases in this series will provide a wrapper that is Pythonic, but
-still fairly low-level, and the API is not guaranteed to be stable.
-
-----------
-1.x series
-----------
-
-Once the basic Pegl functionality is tested and considered usable, I
-will aim to improve the API, so that an EGL environment can be set up
-with a minimum of code. When I'm happy with the results, version
-numbers will be bumped up to 1.x, and some assurance of API stability
-will be given.
 
 License
 =======
@@ -58,147 +31,72 @@ Pegl is free software, released under the `GNU GPLv3`_. See the file
 
 .. _GNU GPLv3: http://www.gnu.org/licenses/gpl
 
+
 Use
 ===
 A typical use case might feature these steps:
 
-1. Create a ``Display`` instance (`pegl.display`_).
-2. Import whatever attribute objects (`pegl.attribs`_) you need to
-   express your requirements
-3. Get a ``Config`` instance (`pegl.config`_) to match your
-   requirements.
-4. Bind the client API you want to use (`pegl.context`_).
-5. Get a ``Context`` instance (`pegl.context`_) and/or a ``Surface``
-   instance (`pegl.surface`_), as necessary.
-6. Do your work in the client API.
-7. Repeat from step 4 to mix different client APIs in the one
-   application.
+1. Create a ``Display`` instance
+2. Get a ``Config`` instance to match your requirements
+3. Bind the client API you want to use
+4. Get a ``Context`` instance and/or a ``Surface`` instance, as necessary
+5. Do your work in the client API
+6. Repeat from step 3 to mix different client APIs in the one application
 
-Sample code for steps 1 to 5 might look like this:
+Sample code for steps 1 to 4 might look like this:
 
 >>> import pegl
->>> from pegl.attribs.config import ClientAPIs, CBufferTypes
->>> from pegl.attribs.context import ContextAPIs
->>> dpy = pegl.display.Display()
->>> conf = pegl.config.get_configs(dpy,
-...                                {'RENDERABLE_TYPE': ClientAPIs(OPENVG=1),
-...                                 'COLOR_BUFFER_TYPE': CBufferTypes.RGB})[0]
->>> pegl.context.bind_api(ContextAPIs.OPENVG)
->>> ctx = pegl.context.Context(dpy, conf)
->>> surf = pegl.surface.PbufferSurface(dpy, conf, {'WIDTH': 640,
-...                                                'HEIGHT': 480})
->>> ctx.make_current(draw_surface=surf)
+>>> dpy = pegl.Display()
+>>> conf = dpy.choose_config({pegl.ConfigAttrib.RENDERABLE_TYPE:
+...                           pegl.ClientAPIFlag.OPENGL_ES})[0]
+>>> pegl.bind_api(ClientAPI.OPENGL_ES)
+>>> ctx = conf.get_context()
+>>> surf = conf.create_pbuffer_surface({pegl.SurfaceAttrib.WIDTH: 640,
+...                                     pegl.SurfaceAttrib.HEIGHT: 480})
+>>> ctx.make_current(draw=surf)
 
-The Library
-===========
-The main Pegl package, ``pegl``, contains six modules and two
-subpackages. The top-level package namespace also holds all exception
-types, plus a few constants and utility functions.
 
-------------
-pegl.attribs
-------------
-The ``attribs`` subpackage divides the many EGL attributes into modules
-according to the object type to which they apply. These modules contain
-various named tuples and classes, providing namespaces by which the
-attributes are grouped and given symbolic names. Import the ones you
-need, as you need them.
+Development and testing
+=======================
 
------------
-pegl.config
------------
-The ``config`` module revolves around the ``Config`` class, which
-represents a set of EGL configuration options. You will want to obtain
-a Config that matches your application requirements (color depth, APIs
-supported, etc.) by calling ``get_configs()`` and using one of the
-configurations it returns. EGL sorts the configurations so that you
-will usually get the best match by choosing the first result.
+Pegl uses tox_ to run tests and compile coverage data. Tests are currently set
+up for Python versions 3.7 through 3.9.
 
-------------
-pegl.context
-------------
-The ``context`` module chiefly features the ``Context`` class and the
-functions ``bind_api()`` and ``bound_api()``. Once you have a
-configuration, you will usually want to bind an API and then create a
-``Context`` instance with your ``Display`` and ``Config``.
+I test Pegl on Linux (Fedora with current Mesa releases) and on Windows
+(Windows 10 with current ANGLE_ releases). Please run tests on other platforms
+and open an issue to report your results!
 
-------------
-pegl.display
-------------
-An EGL display is not merely a representation of a physical screen; it
-is the basic environment of all EGL operations, and holds details of the
-EGL implementation itself. The ``display`` module has a ``Display``
-class that handles all of these functions. Creating a ``Display``
-instance will usually be the first step when using EGL.
+.. _ANGLE: https://chromium.googlesource.com/angle/angle/
+.. _tox: https://github.com/tox-dev/tox
 
---------
-pegl.ext
---------
-A large selection of EGL extensions are given wrappers in the ``ext``
-subpackage. Note that, with the exception of ``ext.ext_extensiontypes``
-(``EGL_EXT_client_extensions``), extensions should be loaded using the
-``load_extension()`` method of a ``Display`` object (or the function of
-the same name that ``ext.ext_extensiontypes`` provides) rather than
-being imported directly.
+-----------------------------------------
+The `PEGLEGLVERSION` environment variable
+-----------------------------------------
 
-All non-draft extensions in the EGL Registry as of March 2014 [#]_ are
-supported, except for the following:
+By default, Pegl will attempt to load all EGL functions up to version 1.5. If
+any of a given version’s functions cannot be loaded from the native library, it
+infers that the library does not support that version and stops there.
 
-+-----+----------------------------------+--------------------------------+
-|Ext #|           Name string            |             Reason             |
-+=====+==================================+================================+
-|1    |``EGL_KHR_config_attribs``        |Now part of core EGL.           |
-+-----+----------------------------------+--------------------------------+
-|17   |``EGL_NV_coverage_sample``        |NVIDIA proprietary.             |
-+-----+----------------------------------+                                |
-|18   |``EGL_NV_depth_nonlinear``        |                                |
-+-----+----------------------------------+--------------------------------+
-|24   |``EGL_HI_clientpixmap``           |Underspecified; specifically,   |
-|     |                                  |``EGL_CLIENT_PIXMAP_POINTER_HI``|
-|     |                                  |is undefined.                   |
-+-----+----------------------------------+--------------------------------+
-|25   |``EGL_HI_colorformats``           |Seems pointless without the     |
-|     |                                  |above. Also, its enum values are|
-|     |                                  |missing from ``eglenum.spec``.  |
-+-----+----------------------------------+--------------------------------+
-|30   |``EGL_NV_coverage_sample_resolve``|NVIDIA proprietary.             |
-+-----+----------------------------------+                                +
-|46   |``EGL_NV_3dvision_surface``       |                                |
-+-----+----------------------------------+--------------------------------+
-|61   |``EGL_KHR_get_all_proc_addresses``|Would involve an architectural  |
-|     |and ``EGL_KHR_client_get_`` etc.  |change to the ``native`` module.|
-+-----+----------------------------------+--------------------------------+
+It is possible to force Pegl to stop early by setting the `PEGLEGLVERSION`
+environment variable. For instance, setting it to `1.4` will cause Pegl to not
+attempt loading EGL 1.5 functions, even if the library supports them.
 
-In addition, some extensions that are not officially registered, but are
-widely available through the Mesa library, are supported by Pegl:
+This is used in the tests to check backwards compatibility, albeit imperfectly.
 
-* ``EGL_NOK_swap_region``
-* ``EGL_WL_bind_wayland_display``
+-------
+Roadmap
+-------
 
-.. [#] Extension numbers 1 to 6, 8 to 10, 16 to 20, and 23 to 66.
+0.x series
+----------
 
------------
-pegl.native
------------
-The ``native`` module provides the wrapper around the functions in the
-native EGL library, as well as error checking wrapped around them. It is
-generally not necessary to access this module in your own applications.
+Releases in this series will provide a wrapper that is Pythonic, but still
+fairly low-level, and the API is not guaranteed to be stable.
 
-------------
-pegl.surface
-------------
-The ``surface`` module has classes for the different types of rendering
-surface that EGL supports: on-screen surfaces bound to native windows
-(``WindowSurface``), off-screen surfaces bound to pixel buffers
-(``PbufferSurface``), and surfaces that render to native pixmap objects
-(``PixmapSurface``).
+1.x series
+----------
 
----------
-pegl.sync
----------
-The ``sync`` module wraps the small number of core EGL synchronization
-functions that help ensure that native and client rendering calls do not
-interfere with one another. More advanced synchronization features are
-available in extensions_ (``pegl.ext.khr_sync``, ``pegl.ext.nv_sync``).
-
-.. _extensions: `pegl.ext`_
+Once the basic Pegl functionality is tested and considered usable, I will aim
+to improve the API, so that an EGL environment can be set up with a minimum of
+code. When I’m happy with the results, version numbers will be bumped up to
+1.x, with a corresponding assurance of API stability.

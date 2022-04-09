@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''EGL context management.'''
+"""EGL context management for Pegl."""
 
-# Copyright © 2012 Tim Pederick.
+# Copyright © 2012, 2020, 2021 Tim Pederick.
 #
 # This file is part of Pegl.
 #
@@ -19,234 +19,155 @@
 # You should have received a copy of the GNU General Public License
 # along with Pegl. If not, see <http://www.gnu.org/licenses/>.
 
-# Standard library imports.
-from collections import namedtuple
-from ctypes import c_int
+__all__ = ['Context']
 
 # Local imports.
-from . import native, NO_CONTEXT, NO_SURFACE
-from .attribs import AttribList, NONE
-from .attribs.context import ContextAttribs, ContextAPIs
-from .config import get_configs
-from .display import current_display
+from . import egl
+from ._caching import cached
+from .enums import ReadOrDraw
+from .errors import BadContextError
 
-_api_lookup = lambda api: {ContextAPIs.OPENGL: 'OpenGL',
-                           ContextAPIs.OPENGL_ES: 'OpenGL ES',
-                           ContextAPIs.OPENVG: 'OpenVG',
-                           NONE: None}.get(api, 'unknown')
 
-def bind_api(api):
-    '''Bind a client API to EGL in this thread.
+class ContextMeta(type):
+    """Metaclass for EGL contexts, to enable class properties."""
+    # Note that Context.get_current_surface is added to the class by the
+    # pegl.display module, since its implementation needs the Display
+    # class.
+    @property
+    def current_draw_surface(cls):
+        """The surface bound to the current context for drawing."""
+        return cls.get_current_surface(ReadOrDraw.DRAW)
 
-    Keyword arguments:
-        api -- The API to bind. This may be specified as a symbolic
-            constant (OPENGL, OPENGL_ES, or OPENVG), or as a string
-            naming one of those three APIs.
+    @property
+    def current_read_surface(cls):
+        """The surface bound to the current context for reading."""
+        return cls.get_current_surface(ReadOrDraw.READ)
 
-    '''
-    if api not in ContextAPIs:
-        # Try looking it up as a string label instead of a symbolic constant.
-        guess_api = {'OPENGL': ContextAPIs.OPENGL,
-                     'OPENGL_ES': ContextAPIs.OPENGL_ES,
-                     'OPENVG': ContextAPIs.OPENVG,
-                     }.get(str(api).upper().replace(' ', '_'))
-        if guess_api is None:
-            raise ValueError('not a valid API: {!r}'.format(api))
-        else:
-            api = guess_api
-    native.eglBindAPI(api)
 
-def bound_api(raw=False):
-    '''Get the client API currently bound to EGL in this thread.
+@cached('_as_parameter_')
+class Context(metaclass=ContextMeta):
+    """An EGL rendering context."""
+    def __init__(self, display, handle):
+        self._display = display
+        self._as_parameter_ = handle
 
-    Keyword arguments:
-        raw -- If True, the integer value representing the API is
-            returned as a hexadecimal string. If False or omitted,
-            the name of the API is returned instead.
-    Returns:
-        A string, or None if no API is bound.
-
-    '''
-    api = native.eglQueryAPI()
-    if api == NONE:
-        return None
-    elif raw:
-        return hex(api)
-    else:
-        return _api_lookup(api)
-
-def current_context():
-    '''Get the current EGL context.'''
-    ctxhandle = native.eglGetCurrentContext()
-    if ctxhandle == NO_CONTEXT:
-        return None
-    else:
-        return Context(ctxhandle=ctxhandle)
-
-class Context:
-    '''Represents an EGL context.
-
-    Instance attributes:
-        display -- The EGL display to which this context belongs; an
-            instance of Display. This is set when the context is
-            instantiated and is read-only thereafter.
-        config -- The configuration that sets the parameters of this
-            context; an instance of Config. This is set when the context
-            is instantiated and is read-only thereafter.
-        ctxhandle -- The foreign object handle for this context.
-        api -- The client API for which this context was created.
-        api_version -- The client API version specified when this
-            context was created. This is only relevant for OpenGL ES
-            contexts.
-        render_buffer -- The buffer used by client API rendering, a
-            value from RenderBufferTypes.
-
-    '''
-    def __init__(self, *args, **kwargs):
-        '''Create the context.
-
-        Keyword arguments:
-            ctxhandle -- As the instance attribute. If this is supplied,
-                no other arguments may be given.
-            display -- As the instance attribute.
-            config -- As the instance attribute.
-            share_context -- An optional Context instance with which
-                this context will share all resources that may be
-                shared. If a context shares with more than one other
-                context, all of those contexts will share the same
-                resources.
-            opengl_es_version -- Optionally specify the version of the
-                OpenGL ES API to be supported. Only relevant when
-                OpenGL ES is the current API, and optional even then;
-                if omitted, EGL 1.4 specifies that OpenGL ES 1.x will
-                be the default.
-
-        '''
-        # Which arguments have been supplied?
-        if len(args) == 1:
-            # Just the handle, as a positional argument.
-            self._from_handle(args[0])
-        elif len(kwargs) == 1 and 'ctxhandle' in kwargs:
-            # Just the handle, as a keyword argument.
-            self._from_handle(kwargs['ctxhandle'])
-        else:
-            # The full set of arguments, except maybe the optional ones.
-            self._normal_init(*args, **kwargs)
-
-    def _normal_init(self, display, config, share_context=None,
-                     opengl_es_version=None):
-        '''Create the context without a foreign object handle.
-
-        Keyword arguments:
-            display, config, share_context, opengl_es_version -- As the
-                arguments to __init__().
-
-        '''
-        self.display = display
-        self.config = config
-
-        share_ctxhandle = (NO_CONTEXT if share_context is None else
-                           share_context.ctxhandle)
-        attribs = AttribList(attribs=ContextAttribs)
-        if opengl_es_version is not None:
-            attribs['CONTEXT_CLIENT_VERSION'] = opengl_es_version
-
-        # Finally, create the context and save its handle.
-        self.ctxhandle = native.eglCreateContext(self.display, self.config,
-                                                 share_ctxhandle, attribs)
-
-    def _from_handle(self, ctxhandle):
-        '''Create the context from a foreign object handle.
-
-        Keyword arguments:
-            ctxhandle -- The foreign object handle to use.
-
-        '''
-        if ctxhandle == NO_CONTEXT:
-            raise ValueError('cannot create a context using the null-context '
-                             'handle')
-
-        self.ctxhandle = ctxhandle
-        # Since this call method is intended only for use by current_context(),
-        # the display is going to be the current_display(). Or so one assumes.
-        # FIXME: Race condition? The "current" display might have changed
-        # between calls to current_context() and current_display()!
-        self.display = current_display()
-
-        # Safe to call _attr now that display and ctxhandle are set.
-        config_id = self._attr(ContextAttribs.CONFIG_ID)
-        self.config = get_configs(self.display,
-                                  {ContextAttribs.CONFIG_ID: config_id})[0]
+        self.__class__._add_to_cache(self) # pylint: disable=no-member
 
     def __del__(self):
-        '''Delete the context object.'''
-        native.eglDestroyContext(self.display, self)
-
-    def __eq__(self, other):
-        '''Compare two contexts for equivalence.
-
-        Two contexts are considered equal if they have the same foreign
-        function reference (i.e. the ctxhandle attribute).
-
-        '''
+        # Remove this context from the cache.
         try:
-            return self.ctxhandle == other.ctxhandle
+            self.__class__._remove_from_cache(self)
         except AttributeError:
-            # The other object doesn't have a ctxhandle.
-            return False
+            # This instance never got its handle properly assigned.
+            pass
+        except KeyError:
+            # This instance never got cached.
+            pass
+
+        # Destroy this context.
+        try:
+            egl.eglDestroyContext(self._display, self)
+        except BadContextError:
+            # This instance has an invalid handle, so there's nothing to
+            # destroy.
+            pass
+
+    @classmethod
+    def get_current_surface(cls, readdraw): # pylint: disable=missing-function-docstring
+        # Implemented in pegl.display to avoid dependency problems.
+        raise NotImplementedError # pragma: nocover
+
+    @classmethod
+    def release_current(cls): # pylint: disable=missing-function-docstring
+        # Implemented in pegl.display to avoid dependency problems.
+        raise NotImplementedError # pragma: nocover
+
+    def make_current(self, draw=None, read=None):
+        """Make this context current for the calling thread.
+
+        A single surface may be specified for both drawing and reading
+        (which is compulsory for OpenVG contexts), or different surfaces
+        may be specified for each. It is also possible to bind no surface
+        for both—but not for just one of them. If only one surface is
+        supplied, it will be bound for both drawing and reading.
+
+        """
+        if draw is None:
+            if read is not None:
+                draw = read
+            else:
+                draw = read = egl.EGL_NO_SURFACE
+        elif read is None:
+            read = draw
+
+        egl.eglMakeCurrent(self._display, draw, read, self)
 
     @property
-    def _as_parameter_(self):
-        '''Get the context reference for use by foreign functions.'''
-        return self.ctxhandle
-
-    def _attr(self, attr):
-        '''Get the value of a context attribute.
-
-        Keyword arguments:
-            attr -- The identifier of the attribute requested.
-
-        '''
-        # Query the attribute, storing the result in a pointer.
-        result = native.make_int_p()
-        native.eglQueryContext(self.display, self, attr, result)
-
-        # Dereference the pointer.
-        return result.contents.value
+    def config(self):
+        """The config object used to create this context."""
+        # Implemented in pegl.config to avoid dependency problems.
+        raise NotImplementedError # pragma: nocover
 
     @property
-    def api(self):
-        '''Get the client API that this context supports.'''
-        return _api_lookup(self._attr(ContextAttribs.CONTEXT_CLIENT_TYPE))
+    def config_id(self):
+        """The unique ID of the config used to create this context."""
+        return egl.eglQueryContext(self._display, self, egl.EGL_CONFIG_ID)
 
-    @property
-    def api_version(self):
-        '''Get the client API version that this context supports.
 
-        This value is presently only relevant for OpenGL ES contexts.
+if egl.egl_version >= (1, 2):
+    from .enums import ClientAPI, RenderBuffer
 
-        '''
-        return _api_lookup(self._attr(ContextAttribs.CONTEXT_CLIENT_VERSION))
+    def bind_api(api):
+        """Bind a client API as the current renderer in this thread."""
+        egl.eglBindAPI(api)
 
-    @property
+    def query_api():
+        """Get the client API that is bound for this thread."""
+        api = ClientAPI(egl.eglQueryAPI())
+        return None if api == ClientAPI.NONE else api
+
+    __all__.extend(['bind_api', 'query_api'])
+
+    def client_type(self):
+        """The client API this context supports."""
+        return ClientAPI(egl.eglQueryContext(self._display, self,
+                                             egl.EGL_CONTEXT_CLIENT_TYPE))
+    setattr(Context, 'client_type', property(client_type))
+
     def render_buffer(self):
-        '''Get the buffer used when rendering via this context.'''
-        return self._attr(ContextAttribs.RENDER_BUFFER)
+        """Which buffer client APIs will render to."""
+        buffer = RenderBuffer(egl.eglQueryContext(self._display, self,
+                                                  egl.EGL_RENDER_BUFFER))
+        return None if buffer == RenderBuffer.NONE else buffer
+    setattr(Context, 'render_buffer', property(render_buffer))
 
-    def make_current(self, draw_surface=None, read_surface=None):
-        '''Make this context the current one in this thread.
 
-        Keyword arguments:
-            draw_surface -- An optional surface object to make the
-                current one for drawing operations.
-            read_surface -- An optional surface object to make the
-                current one for read operations. If read_surface is
-                omitted and draw_surface is not, the same surface will
-                be used for both.
+if egl.egl_version >= (1, 3):
+    def client_version(self):
+        """The major version of the client API this context supports."""
+        return egl.eglQueryContext(self._display, self,
+                                   egl.EGL_CONTEXT_CLIENT_VERSION)
+    setattr(Context, 'client_version', property(client_version))
+    # Alias for consistency with context creation, where as of EGL 1.5,
+    # CLIENT_VERSION is renamed to MAJOR_VERSION and MINOR_VERSION is
+    # provided alongside.
+    setattr(Context, 'major_version', property(client_version))
 
-        '''
-        if draw_surface is None:
-            draw_surface = NO_SURFACE
-        if read_surface is None:
-            read_surface = draw_surface
-        native.eglMakeCurrent(self.display, draw_surface, read_surface, self)
+
+if egl.egl_version >= (1, 4):
+    def get_current_context(cls): # pylint: disable=missing-function-docstring
+        # Implemented in pegl.display to avoid dependency problems.
+        raise NotImplementedError # pragma: nocover
+    setattr(Context, 'get_current_context', classmethod(get_current_context))
+
+
+if egl.egl_version >= (1, 5):
+    from .attribs import attrib_list
+    from .image import Image
+
+    def create_image(self, target, buffer, attribs=None):
+        """Create an image from the given buffer."""
+        return Image(self._display, egl.eglCreateImage(
+                                        self._display, self, target, buffer,
+                                        attrib_list(attribs, new_type=True)))
+    setattr(Context, 'create_image', create_image)

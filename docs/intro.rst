@@ -6,7 +6,7 @@ What is Pegl?
 =============
 
 Pegl is a Python binding for the EGL API, written in native Python 3 using the
-ctypes_ module in the Python standard library.
+ctypes_ module from the Python standard library.
 
 .. _ctypes: http://docs.python.org/py3k/library/ctypes
 
@@ -15,7 +15,7 @@ Okay, but what is EGL?
 ----------------------
 
 EGL_ is a specification from the `Khronos Group`_, the consortium that manages
-such widely-used cross-platform media APIs as OpenGL. Here’s how the EGL_ site
+such widely-used cross-platform media APIs as OpenGL. Here’s how the EGL site
 itself describes EGL:
 
     EGL™ is an interface between Khronos rendering APIs such as OpenGL ES or
@@ -51,11 +51,10 @@ Aside from those platform-specific APIs, lots of cross-platform libraries have
 been developed to paper over the differences between platforms: GLUT, SDL,
 SFML, and more, not to mention OpenGL modules for all the major GUI toolkits
 out there. EGL doesn’t *replace* these, although it could underlie them.
-Notably, you still need some way of getting a drawing area (windowed or
-full-screen) from the system, before you can “bind” an EGL drawing surface to
-it. But EGL does take care of many of the functions common to these libraries
-and APIs. (A quick scan of function names suggests that it’s most similar to
-CGL.)
+Notably, you still need some way of getting a drawing area (windowed, 
+full-screen, or off-screen) from the system, before you can “bind” an EGL
+drawing surface to it. But EGL does take care of many of the functions common
+to these libraries and APIs.
 
 EGL isn’t just for OpenGL ES. It can work with OpenGL too (although all the
 other libraries are pretty entrenched there, so you’ll have a hard time

@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools >= 40.9.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+source = ["src/pegl"]
+omit = ["setup.py", "tests/*"]
+parallel = true
+dynamic_context = "test_function"
+
+[tool.pylint.'BASIC']
+good-names = ["e", "n", "fn"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = ["too-few-public-methods",
+           "too-many-public-methods",
+           "protected-access"]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py{37,38,39}-egl{10,11,12,13,14,15,any,bad,unknown},coverage-report
+
+[testenv]
+deps =
+    nose2
+    coverage[toml]
+    pywayland;platform_system=="Linux"
+commands = coverage run -m nose2
+passenv = DISPLAY XAUTHORITY XDG_RUNTIME_DIR
+setenv =
+    egl10: PEGLEGLVERSION = 1.0
+    egl11: PEGLEGLVERSION = 1.1
+    egl12: PEGLEGLVERSION = 1.2
+    egl13: PEGLEGLVERSION = 1.3
+    egl14: PEGLEGLVERSION = 1.4
+    egl15: PEGLEGLVERSION = 1.5
+    eglbad: PEGLEGLVERSION = uhoh
+    eglunknown: PEGLEGLVERSION = 0.9
+
+[testenv:coverage-report]
+skip_install = true
+commands =
+    coverage combine
+    coverage report
+    coverage html --show-contexts
+"""

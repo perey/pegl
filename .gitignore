@@ -9,6 +9,9 @@ __pycache__
 *.so
 *.dll
 
+# Virtual environment
+.venv/
+
 # Packages
 *.egg
 *.egg-info
@@ -29,7 +32,8 @@ lib64
 pip-log.txt
 
 # Unit test / coverage reports
-.coverage
+.coverage*
+htmlcov
 .tox
 nosetests.xml
 
@@ -38,3 +42,6 @@ nosetests.xml
 
 # Built documentation
 docs/_build
+
+# apitrace trace files
+*.trace
