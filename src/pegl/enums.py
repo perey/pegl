@@ -54,7 +54,7 @@
 #     ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #     POSSIBILITY OF SUCH DAMAGE.
 
-# Standard library imports.
+# Third-party library imports.
 from aenum import IntEnum, IntFlag, extend_enum
 
 # Local imports.
