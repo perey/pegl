@@ -81,11 +81,22 @@ def needs_context(cls):
         else:
             self.ndobj = None
             self.dpy = pegl.Display()
-        self.cfg = self.dpy.get_configs(1)[0]
+
+        # Ensure pbuffer surfaces can be created.
+        try:
+            self.cfg = self.dpy.choose_config(
+                {pegl.ConfigAttrib.SURFACE_TYPE: pegl.SurfaceTypeFlag.PBUFFER}, 1)[0]
+        except IndexError:
+            # They can't! Clean up and abort.
+            # TODO: Can a window surface be created for testing instead?
+            del self.dpy
+            del self.ndobj
+            raise
+
         self.ctx = self.cfg.create_context()
         self.surf = self.cfg.create_pbuffer_surface(
-            {pegl.SurfaceAttrib.WIDTH: 20,
-             pegl.SurfaceAttrib.HEIGHT: 20})
+            {pegl.SurfaceAttrib.WIDTH: 32,
+             pegl.SurfaceAttrib.HEIGHT: 32})
         self.ctx.make_current(self.surf)
     setattr(cls, 'setUp', setUp)
 
