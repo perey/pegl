@@ -25,9 +25,9 @@ from __future__ import annotations
 import os
 import sys
 from warnings import warn
-from typing import Any
+from typing import Any, Callable
 
-def get_native_display() -> tuple[int, Any]:
+def get_native_display() -> tuple[int, Any, Callable[[], None]]:
     if sys.platform.startswith('win'):
         from ctypes import windll
         return (windll.user32.GetDC(None), None)
@@ -38,7 +38,7 @@ def get_native_display() -> tuple[int, Any]:
         wldpy.connect()
         # Work around ctypes (Pegl)/cffi (PyWayland) incompatibility.
         from cffi import FFI
-        return int(FFI().cast('intptr_t', wldpy._ptr)), wldpy
+        return int(FFI().cast('intptr_t', wldpy._ptr)), wldpy, wldpy.disconnect
 
 def warn_on_version_mismatch(pegl_version: tuple[int, int],
                              impl_version: tuple[int, int]) -> None:

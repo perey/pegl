@@ -34,15 +34,19 @@ def needs_display(cls):
     def setUp(self):
         """Set up a display for testing."""
         if pegl.egl_version < (1, 4):
-            ndhandle, self.ndobj = get_native_display()
+            ndhandle, self.ndobj, self.ndobj_cleanup = get_native_display()
             self.dpy = pegl.Display(ndhandle)
         else:
             self.ndobj = None
+            self.ndobj_cleanup = lambda: None
             self.dpy = pegl.Display()
     setattr(cls, 'setUp', setUp)
 
     def tearDown(self):
         """Finalize the display used for testing."""
+        self.dpy.terminate()
+        self.ndobj_cleanup()
+
         del self.dpy
         del self.ndobj
     setattr(cls, 'tearDown', tearDown)
@@ -54,10 +58,11 @@ def needs_config(cls):
     def setUp(self):
         """Set up a display and config for testing."""
         if pegl.egl_version < (1, 4):
-            ndhandle, self.ndobj = get_native_display()
+            ndhandle, self.ndobj, self.ndobj_cleanup = get_native_display()
             self.dpy = pegl.Display(ndhandle)
         else:
             self.ndobj = None
+            self.ndobj_cleanup = lambda: None
             self.dpy = pegl.Display()
         self.cfg = self.dpy.get_configs(1)[0]
     setattr(cls, 'setUp', setUp)
@@ -65,6 +70,9 @@ def needs_config(cls):
     def tearDown(self):
         """Finalize the display used for testing."""
         # Configs don't need finalizing.
+        self.dpy.terminate()
+        self.ndobj_cleanup()
+
         del self.dpy
         del self.ndobj
     setattr(cls, 'tearDown', tearDown)
@@ -76,10 +84,11 @@ def needs_context(cls):
     def setUp(self):
         """Set up a context and its requirements for testing."""
         if pegl.egl_version < (1, 4):
-            ndhandle, self.ndobj = get_native_display()
+            ndhandle, self.ndobj, self.ndobj_cleanup = get_native_display()
             self.dpy = pegl.Display(ndhandle)
         else:
             self.ndobj = None
+            self.ndobj_cleanup = lambda: None
             self.dpy = pegl.Display()
 
         # Ensure pbuffer surfaces can be created.
@@ -89,9 +98,12 @@ def needs_context(cls):
         except IndexError:
             # They can't! Clean up and abort.
             # TODO: Can a window surface be created for testing instead?
+            self.dpy.terminate()
+            self.ndobj_cleanup()
+
             del self.dpy
             del self.ndobj
-            raise
+            self.skipTest('Could not create a pbuffer surface')
 
         self.ctx = self.cfg.create_context()
         self.surf = self.cfg.create_pbuffer_surface(
@@ -105,6 +117,10 @@ def needs_context(cls):
         pegl.Context.release_current()
         del self.surf
         del self.ctx
+
+        self.dpy.terminate()
+        self.ndobj_cleanup()
+
         del self.dpy
         del self.ndobj
     setattr(cls, 'tearDown', tearDown)

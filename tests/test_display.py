@@ -141,7 +141,7 @@ class TestDisplayCreation(unittest.TestCase):
     """Test the different ways to get a display."""
     def setUp(self):
         """Get a native display handle to use."""
-        self.native_display, self.ndobj = get_native_display()
+        self.native_display, self.ndobj, self.ndobj_cleanup = get_native_display()
 
     @unittest.skipIf(pegl.egl_version < (1, 4), 'EGL version too low')
     def test_get_default_display(self):
@@ -230,6 +230,7 @@ class TestDisplayCreation(unittest.TestCase):
 
     def tearDown(self):
         """Destroy the native display object."""
+        self.ndobj_cleanup()
         del self.ndobj
 
 
@@ -544,10 +545,11 @@ class TestUninitializedDisplay(unittest.TestCase):
     def setUp(self):
         """Set up an uninitialized display for testing."""
         if pegl.egl_version < (1, 4):
-            ndhandle, self.ndobj = get_native_display()
+            ndhandle, self.ndobj, self.ndobj_cleanup = get_native_display()
             self.dpy = display.Display(ndhandle, init=False)
         else:
             self.ndobj = None
+            self.ndobj_cleanup = lambda: None
             self.dpy = display.Display(init=False)
 
     @unittest.skipIf(pegl.egl_version < (1, 2), 'EGL version too low')
@@ -652,6 +654,9 @@ class TestUninitializedDisplay(unittest.TestCase):
     def tearDown(self):
         """Finalize the display used for testing."""
         # Configs don't need finalizing.
+        self.dpy.terminate()
+        self.ndobj_cleanup()
+
         del self.dpy
         del self.ndobj
 
@@ -666,10 +671,11 @@ class TestTerminatedDisplay(TestUninitializedDisplay):
     def setUp(self):
         """Set up and terminate a display for testing."""
         if pegl.egl_version < (1, 4):
-            ndhandle, self.ndobj = get_native_display()
+            ndhandle, self.ndobj, self.ndobj_cleanup = get_native_display()
             self.dpy = display.Display(ndhandle)
         else:
             self.ndobj = None
+            self.ndobj_cleanup = lambda: None
             self.dpy = display.Display()
         self.dpy.terminate()
 
