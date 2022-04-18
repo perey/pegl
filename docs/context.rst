@@ -10,7 +10,7 @@ instance is made current in a thread, and is then used for subsequent rendering
 operations in that thread until another context (or no context) is made
 current.
 
-The classes and functions listed below are defined in the
+The class and functions listed below are defined in the
 :py:mod:`pegl.context` module, but are also imported to the top-level
 :py:mod:`pegl` namespace.
 

@@ -9,9 +9,8 @@ depth, buffer size, and the like. Configurations are obtained from
 :py:class:`pegl.display.Display` instances, and once selected, they can be used
 to create rendering surfaces and contexts.
 
-The classes and functions listed below are defined in the
-:py:mod:`pegl.config` module, but are also imported to the top-level
-:py:mod:`pegl` namespace.
+The :py:class:`Config` class is defined in the :py:mod:`pegl.config` module,
+but it is also imported to the top-level :py:mod:`pegl` namespace.
 
 The Config class
 ================
