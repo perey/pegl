@@ -30,7 +30,7 @@ from typing import Any, Callable
 def get_native_display() -> tuple[int, Any, Callable[[], None]]:
     if sys.platform.startswith('win'):
         from ctypes import windll
-        return (windll.user32.GetDC(None), None)
+        return (windll.user32.GetDC(None), None, lambda: None)
     else:
         # TODO: Non-Wayland systems!
         import pywayland.client
