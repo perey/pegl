@@ -49,7 +49,8 @@ The Sync class
         
         The underlying EGL function is :eglfunc:`eglWaitSync`.
 
-    .. py:method:: sync_condition -> pegl.enums.SyncCondition
+    .. py:method:: sync_condition() -> pegl.enums.SyncCondition
+        :property:
 
         The condition that will cause this sync object to be signaled.
         Read-only.
@@ -57,14 +58,16 @@ The Sync class
         The underlying EGL function is :eglfunc:`eglGetSyncAttrib` with an
         ``attribute`` of ``EGL_SYNC_CONDITION``.
 
-    .. py:method:: sync_status -> bool
+    .. py:method:: sync_status() -> bool
+        :property:
 
         Whether or not the sync object has been signaled. Read-only.
         
         The underlying EGL function is :eglfunc:`eglGetSyncAttrib` with an
         ``attribute`` of ``EGL_SYNC_STATUS``.
 
-    .. py:method:: sync_type -> pegl.enums.SyncType
+    .. py:method:: sync_type() -> pegl.enums.SyncType
+        :property:
 
         The type of this sync object. Read-only.
         

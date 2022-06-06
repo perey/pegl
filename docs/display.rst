@@ -16,7 +16,7 @@ The class and function listed below are defined in the
 The Display class
 =================
 
-.. py:class:: Display(display_id: Optional[int]=None, init=True)
+.. py:class:: Display(display_id: Optional[int]=None, init: bool=True)
 
     A display is both a representation of a (physical or virtual) display, and
     an environment for other EGL objects.
@@ -58,7 +58,7 @@ The Display class
         The underlying EGL function is :eglfunc:`eglGetCurrentDisplay`.
 
     .. py:method::
-        get_platform_display(platform: pegl.enums.Platform, native_display: int, attribs: Optional[dict[pegl.enums.DisplayAttrib, Any]]=None, init=True) -> Display
+        get_platform_display(platform: pegl.enums.Platform, native_display: int, attribs: Optional[dict[pegl.enums.DisplayAttrib, Any]]=None, init: bool=True) -> Display
         :classmethod:
 
         An alternate constructor for a display that takes a platform
@@ -81,7 +81,7 @@ The Display class
         :py:obj:`NoDisplay` is returned.
 
         The underlying EGL functions are :eglfunc:`eglGetPlatformDisplay` and,
-        if the ``init`` argument is True, :eglfunc:`eglInitialize`.
+        if the ``init`` argument is ``True``, :eglfunc:`eglInitialize`.
 
         .. availability:: EGL 1.5
 
@@ -274,7 +274,8 @@ The Display class
     .. availability::
         EGL 1.0. Getting the :py:attr:`~Display.extensions` property is first
         allowed in extensions to EGL 1.4, and is core in EGL 1.5. Getting the
-        :py:attr:`~Display.version` property was allowed in a revision of EGL
+        :py:attr:`~Display.version_string` property (and, by extension, the
+        :py:attr:`~Display.version` property) was allowed in a revision of EGL
         1.5.
 
 Other functions
