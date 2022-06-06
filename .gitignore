@@ -7,6 +7,10 @@ __pycache__
 
 # C extensions
 *.so
+*.dll
+
+# Virtual environment
+.venv/
 
 # Packages
 *.egg
@@ -28,12 +32,16 @@ lib64
 pip-log.txt
 
 # Unit test / coverage reports
-.coverage
+.coverage*
+htmlcov
 .tox
 nosetests.xml
 
-#Translations
+# Translations
 *.mo
 
-#Mr Developer
-.mr.developer.cfg
+# Built documentation
+docs/_build
+
+# apitrace trace files
+*.trace
