@@ -49,8 +49,8 @@ Sample code for steps 1 to 4 might look like this:
 >>> dpy = pegl.Display()
 >>> conf = dpy.choose_config({pegl.ConfigAttrib.RENDERABLE_TYPE:
 ...                           pegl.ClientAPIFlag.OPENGL_ES})[0]
->>> pegl.bind_api(ClientAPI.OPENGL_ES)
->>> ctx = conf.get_context()
+>>> pegl.bind_api(pegl.ClientAPI.OPENGL_ES)
+>>> ctx = conf.create_context()
 >>> surf = conf.create_pbuffer_surface({pegl.SurfaceAttrib.WIDTH: 640,
 ...                                     pegl.SurfaceAttrib.HEIGHT: 480})
 >>> ctx.make_current(draw=surf)
