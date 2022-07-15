@@ -292,14 +292,14 @@ if egl.egl_version >= (1, 1):
 
     def max_swap_interval(self):
         """The maximum number of video frames between buffer swaps."""
-        return bool(egl.eglGetConfigAttrib(self._display, self,
-                                           egl.EGL_MAX_SWAP_INTERVAL))
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_MAX_SWAP_INTERVAL)
     setattr(Config, 'max_swap_interval', property(max_swap_interval))
 
     def min_swap_interval(self):
         """The minimum number of video frames between buffer swaps."""
-        return bool(egl.eglGetConfigAttrib(self._display, self,
-                                           egl.EGL_MIN_SWAP_INTERVAL))
+        return egl.eglGetConfigAttrib(self._display, self,
+                                      egl.EGL_MIN_SWAP_INTERVAL)
     setattr(Config, 'min_swap_interval', property(min_swap_interval))
 
 
