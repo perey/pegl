@@ -204,13 +204,14 @@ class Config:
     def native_visual_id(self):
         """A platform-specific identifier for the native visual"""
         return egl.eglGetConfigAttrib(self._display, self,
-                                       egl.EGL_NATIVE_VISUAL_ID)
+                                      egl.EGL_NATIVE_VISUAL_ID)
 
     @property
     def native_visual_type(self):
         """A platform-defined type for the native visual."""
-        return egl.eglGetConfigAttrib(self._display, self,
+        value = egl.eglGetConfigAttrib(self._display, self,
                                        egl.EGL_NATIVE_VISUAL_TYPE)
+        return None if value == egl.EGL_NONE else value
 
     @property
     def red_size(self):

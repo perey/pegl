@@ -310,15 +310,19 @@ The Config class
     .. py:method:: native_visual_id() -> int
         :property:
 
-        A platform-specific identifier for the native visual.
+        A platform-specific identifier for the native visual associated with
+        window surfaces created using this configuration. If there is no
+        associated native visual, the identifier is 0.
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_NATIVE_VISUAL_ID``.
 
-    .. py:method:: native_visual_type() -> Any
+    .. py:method:: native_visual_type() -> Optional[Any]
         :property:
 
-        A platform-defined type for the native visual.
+        A platform-defined type for the native visual associated with window
+        surfaces created using this configuration. If there is no associated
+        native visual, the type is ``None``.
 
         The underlying EGL function is :eglfunc:`eglGetConfigAttrib` with an
         ``attribute`` of ``EGL_NATIVE_VISUAL_TYPE``.
