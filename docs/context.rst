@@ -37,8 +37,8 @@ The Context class
     .. py:method:: get_current_context() -> Optional[Context]
         :classmethod:
 
-        Get the context that is current for this thread, or None if no context
-        (or no client API) is bound.
+        Get the context that is current for this thread, or ``None`` if no
+        context (or no client API) is bound.
 
         The underlying EGL function is :eglfunc:`eglGetCurrentContext`.
 
@@ -112,7 +112,7 @@ The Context class
 
         The underlying EGL function is :eglfunc:`eglMakeCurrent`.
 
-    .. py:method:: client_type() -> pegl.enums.ClientType
+    .. py:method:: client_type() -> pegl.enums.ClientAPI
         :property:
 
         The client API that this context supports.
