@@ -8,7 +8,7 @@ What is Pegl?
 Pegl is a Python binding for the EGL API, written in native Python 3 using the
 ctypes_ module from the Python standard library.
 
-.. _ctypes: http://docs.python.org/py3k/library/ctypes
+.. _ctypes: https://docs.python.org/3/library/ctypes.html
 
 ----------------------
 Okay, but what is EGL?
@@ -38,7 +38,7 @@ platform-specific, but every OpenGL program had to do them somehow… in fact,
 so did every graphical application, no matter what graphics API it used.
 
 Different platforms provide their own native APIs for some of these things:
-alphabetically, some of the main ones are CGL on OS X, GLX on the X Window
+alphabetically, some of the main ones are CGL on macOS, GLX on the X Window
 System, and WGL on Microsoft Windows. Already you can start to see what EGL
 patterns its name on and get an idea of what it’s for.
 
