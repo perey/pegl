@@ -1,6 +1,37 @@
 [build-system]
-requires = ["setuptools >= 40.9.0", "wheel"]
+requires = ["setuptools >= 61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "Pegl"
+description = "Python 3 wrapper for the EGL API"
+requires-python = "~= 3.7"
+dependencies = [
+    "aenum==2.2.6"
+]
+readme = "README.rst"
+license = {file = "COPYING"}
+authors = [
+    {name = "Tim Pederick"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Software Development :: Libraries"
+]
+dynamic = ["version"]
+
+[project.urls]
+repository = "https://github.com/perey/pegl"
 
 [tool.coverage.run]
 source = ["src/pegl"]
@@ -15,6 +46,9 @@ good-names = ["e", "n", "fn"]
 disable = ["too-few-public-methods",
            "too-many-public-methods",
            "protected-access"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pegl.__version__"}
 
 [tool.tox]
 legacy_tox_ini = """
